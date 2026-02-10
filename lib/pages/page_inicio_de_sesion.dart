@@ -55,7 +55,7 @@ class InicioDeSesionState extends State<InicioDeSesion> {
                 borderRadius: BorderRadius.circular(20),
               ),
               child: Image.asset(
-                'assets/logo_app.png',
+                'assets/logo_app/logo_app.png',
                 fit: BoxFit.contain,
               ),
             ),

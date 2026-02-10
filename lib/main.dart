@@ -6,7 +6,7 @@ import 'pages/page_menu.dart';
 void main() {
   runApp(const MyApp());
 }
-
+//poner separadores entre los widgets del menu, acomodar el logo y las demas interfaces
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
