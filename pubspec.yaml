@@ -32,7 +32,7 @@ dependencies:
   url_launcher: ^6.2.1
   geolocator: ^11.0.0
   permission_handler: ^11.3.0
-  
+
   flutter:
     sdk: flutter
 
@@ -45,6 +45,7 @@ dev_dependencies:
     sdk: flutter
 
   flutter_launcher_icons: ^0.13.1
+  flutter_native_splash: ^2.4.3
 
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is
@@ -59,15 +60,25 @@ flutter_launcher_icons:
   android: true
   ios: true
   remove_alpha_ios: true
-  image_path: "assets/logo_app/logo_app.jpeg"
+  image_path: "assets/logo_app/logo_app.png"
 # The following section is specific to Flutter packages.
 flutter:
   assets:
     - assets/imagenes/
+    - assets/logo_app/
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
   # the material Icons class.
   uses-material-design: true
+
+flutter_native_splash:
+  color: "#000000"
+  image: assets/logo_app/logo_app.png
+  android: true
+  ios: true
+  android_12:
+    image: assets/logo_app/logo_app.png
+    color: "#000000"
 
   # To add assets to your application, add an assets section, like this:
   # assets:
