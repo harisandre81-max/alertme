@@ -4,10 +4,7 @@ import 'chatbot.dart';
 import 'page_carga.dart';
 import 'dart:async';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:geolocator/geolocator.dart';
-import 'package:permission_handler/permission_handler.dart';
-import 'package:url_launcher/url_launcher.dart';
-import 'package:telephony/telephony.dart';
+
 
 class MenuUI extends StatelessWidget {
   const MenuUI({super.key});
@@ -462,10 +459,10 @@ class _VerticalBox extends StatelessWidget {
         child: Row(
           children: [
             const SizedBox(width: 10),
-            const CircleAvatar(
+           /* const CircleAvatar(
               radius: 30,
               backgroundImage: AssetImage('assets/avatar.png'),
-            ),
+            ),*/
             const SizedBox(width: 50),
             Text(
               text, // 👈 TEXTO VARIABLE
@@ -548,37 +545,12 @@ class EmergencyPopup extends StatefulWidget {
 class _EmergencyPopupState extends State<EmergencyPopup>
     with SingleTickerProviderStateMixin {
 
-Future<String> getLocation() async {
-  final permission = await Permission.location.request();
-  if (!permission.isGranted) return 'Ubicación no permitida';
-
-  final position = await Geolocator.getCurrentPosition(
-    desiredAccuracy: LocationAccuracy.high,
-  );
-
-  return 'https://maps.google.com/?q=${position.latitude},${position.longitude}';
-}
-
-  final Telephony telephony = Telephony.instance;
-
-Future<void> sendSMSWithLocation() async {
-  bool? permissionsGranted = await telephony.requestPhoneAndSmsPermissions;
-
-  if (permissionsGranted == false) {
-    print("Permiso SMS denegado");
-    return;
-  }
-
-  final location = await getLocation();
-
-  await telephony.sendSms(
-    to: '6751107805',
-    message: 'hola beto\nMi ubicación es:\n$location',
-  );
-
-  print("SMS enviado");
-}
-
+//uso de futures para envio de mensaje con localizacion
+///
+/////
+/////
+///
+///
 
   int _countdown = 3;
   Timer? _timer;
@@ -608,10 +580,16 @@ Future<void> sendSMSWithLocation() async {
       _sent = true;
     });
 
-      await sendSMSWithLocation();
+      //encvio del mensaje (sendsms();)
+      //
+      //
+      ///
+      ////
+      ///
+      ///
+      ///
 
-
-    // simula envío y cierra el popup
+    //cierra el popup
     Future.delayed(const Duration(seconds: 2), () {
       if (mounted) Navigator.pop(context);
     });
