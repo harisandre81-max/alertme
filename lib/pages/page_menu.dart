@@ -7,6 +7,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:telephony/telephony.dart';
 
 class MenuUI extends StatelessWidget {
   const MenuUI({super.key});
@@ -30,6 +31,7 @@ class MenuUI extends StatelessWidget {
   );
 }
 
+  
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -539,7 +541,7 @@ class EmergencyPopup extends StatefulWidget {
 class _EmergencyPopupState extends State<EmergencyPopup>
     with SingleTickerProviderStateMixin {
 
-      Future<String> getLocation() async {
+ Future<String> getLocation() async {
   final permission = await Permission.location.request();
   if (!permission.isGranted) return 'Ubicación no permitida';
 
@@ -549,17 +551,28 @@ class _EmergencyPopupState extends State<EmergencyPopup>
 
   return 'https://maps.google.com/?q=${position.latitude},${position.longitude}';
 } 
-  Future<void> sendSMSWithLocation() async {
+
+  final Telephony telephony = Telephony.instance;
+
+
+Future<void> sendSMSWithLocation() async {
+  bool? permissionsGranted = await telephony.requestPhoneAndSmsPermissions;
+
+  if (permissionsGranted != true) {
+    print("Permiso SMS denegado");
+    return;
+  }
+
   final location = await getLocation();
 
-  final uri = Uri.parse(
-    'sms:6751107805?body=${Uri.encodeComponent(
-      'hola beto\nMi ubicación es:\n$location',
-    )}',
+  await telephony.sendSms(
+    to: '6751107805',
+    message: 'hola beto\nMi ubicación es:\n$location',
   );
 
-  await launchUrl(uri);
+  print("SMS enviado");
 }
+
 
   int _countdown = 3;
   Timer? _timer;
@@ -580,7 +593,7 @@ class _EmergencyPopupState extends State<EmergencyPopup>
     )..repeat(reverse: true);
 
     // Contador
-    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) async {
   if (_countdown == 1) {
     timer.cancel();
 
@@ -589,7 +602,8 @@ class _EmergencyPopupState extends State<EmergencyPopup>
       _sent = true;
     });
 
-      sendSMSWithLocation();
+      await sendSMSWithLocation();
+
 
     // simula envío y cierra el popup
     Future.delayed(const Duration(seconds: 2), () {
