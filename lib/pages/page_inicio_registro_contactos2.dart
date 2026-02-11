@@ -57,10 +57,9 @@ class _Contact2State extends State<Contact2> {
                 color: Colors.transparent,
                 borderRadius: BorderRadius.circular(20),
               ),
-              child: Icon(
-                Icons.shield,
-                size: 90,
-                color: Colors.deepPurple,
+              child: Image.asset(
+                'assets/logo_inter/logo.png',
+                fit: BoxFit.contain,
               ),
             ),
 

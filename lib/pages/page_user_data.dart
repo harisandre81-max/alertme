@@ -97,7 +97,7 @@ final ImagePicker _picker = ImagePicker();
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color.fromARGB(255, 255, 255, 255),
+      backgroundColor: const Color.fromARGB(255, 255, 252, 247),
       appBar: AppBar(
         centerTitle: true,
         backgroundColor: const Color(0xFFE6F0D5),
@@ -248,7 +248,7 @@ class _InfoTile extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       decoration: BoxDecoration(
-        color: const Color(0xFFE6F0D5),
+        color: const Color.fromARGB(136, 255, 182, 98),
         borderRadius: BorderRadius.circular(16),
       ),
       child: Row(

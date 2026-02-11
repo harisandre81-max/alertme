@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'page_user_data.dart';
-import 'page_inicio_de_sesion.dart';
+import 'chatbot.dart';
 import 'page_carga.dart';
 import 'dart:async';
 import 'package:url_launcher/url_launcher.dart';
@@ -35,20 +35,22 @@ class MenuUI extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Color.fromARGB(255, 255, 255, 255),
 
       // SUB MENÚ SUPERIOR
       appBar: AppBar(
         toolbarHeight: 100,
         elevation: 0,
+  leadingWidth: 80,
         backgroundColor: const Color(0xFFE6F0D5),
         leading: Padding(
           padding: const EdgeInsets.all(15.0),
-          child: Icon(
-             size: 36,
-            Icons.verified_user,
-            color: Colors.deepPurple,
-          ),
+          child: Image.asset(
+      'assets/logo_inter/logo.png',
+      width: 60,
+      height: 60,
+      fit: BoxFit.contain,
+    ),
         ),
         actions: [
           Padding(
@@ -147,7 +149,13 @@ class MenuUI extends StatelessWidget {
                     ],
                   ),
                 ),
-                const SizedBox(height: 80),
+                const SizedBox(height: 40),
+                Container(
+  width: 500,
+  height: 10,
+  color: const Color.fromARGB(255, 51, 71, 7), // color suave
+    ),
+                const SizedBox(height: 40),
                 Column(
   children: [
     _VerticalBox(
@@ -166,7 +174,6 @@ class MenuUI extends StatelessWidget {
   },
     ),
     const SizedBox(height: 20),
-
     _VerticalBox(
       text: '¿Cómo estás?',
       onTap: () {
@@ -264,7 +271,7 @@ class MenuUI extends StatelessWidget {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => const InicioDeSesion(),
+              builder: (context) => const ChatBotApp(),
             ),
           );
         },
@@ -318,7 +325,7 @@ class _ContactCardState extends State<ContactCard> {
       height: 180,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFFF7F3FF),
+        color: const Color.fromARGB(255, 255, 254, 251),
         borderRadius: BorderRadius.circular(16),
       ),
       child: Row(
@@ -541,7 +548,7 @@ class EmergencyPopup extends StatefulWidget {
 class _EmergencyPopupState extends State<EmergencyPopup>
     with SingleTickerProviderStateMixin {
 
- Future<String> getLocation() async {
+Future<String> getLocation() async {
   final permission = await Permission.location.request();
   if (!permission.isGranted) return 'Ubicación no permitida';
 
@@ -550,15 +557,14 @@ class _EmergencyPopupState extends State<EmergencyPopup>
   );
 
   return 'https://maps.google.com/?q=${position.latitude},${position.longitude}';
-} 
+}
 
   final Telephony telephony = Telephony.instance;
-
 
 Future<void> sendSMSWithLocation() async {
   bool? permissionsGranted = await telephony.requestPhoneAndSmsPermissions;
 
-  if (permissionsGranted != true) {
+  if (permissionsGranted == false) {
     print("Permiso SMS denegado");
     return;
   }
@@ -676,17 +682,7 @@ Future<void> sendSMSWithLocation() async {
 
             const SizedBox(height: 100),
 
-            // AVATARES
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: const [
-                CircleAvatar(radius: 22, backgroundImage: AssetImage('assets/avatar.png')),
-                SizedBox(width: 12),
-                CircleAvatar(radius: 22, backgroundImage: AssetImage('assets/avatar.png')),
-                SizedBox(width: 12),
-                CircleAvatar(radius: 22, backgroundImage: AssetImage('assets/avatar.png')),
-              ],
-            ),
+            
 
             const SizedBox(height: 100),
 

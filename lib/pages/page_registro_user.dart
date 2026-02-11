@@ -73,18 +73,17 @@ class _RegisterUserState extends State<RegisterUser> {
 
       // LOGO
       Container(
-        height: 90,
-        width: 120,
-        decoration: BoxDecoration(
-          color: Colors.transparent,
-          borderRadius: BorderRadius.circular(20),
-        ),
-        child: const Icon(
-          Icons.shield,
-          size: 90,
-          color: Colors.deepPurple,
-        ),
-      ),
+              height: 90,
+              width: 120,
+              decoration: BoxDecoration(
+                color: Colors.transparent,
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Image.asset(
+                'assets/logo_inter/logo.png',
+                fit: BoxFit.contain,
+              ),
+            ),
 
       const Spacer(),
     ],

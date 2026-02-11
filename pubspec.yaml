@@ -41,6 +41,7 @@ dependencies:
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
+  syncfusion_flutter_pdfviewer: ^32.2.3
 
 dev_dependencies:
   flutter_test:
@@ -62,12 +63,14 @@ flutter_launcher_icons:
   android: true
   ios: true
   remove_alpha_ios: true
-  image_path: "assets/logo_app/logo_app.png"
+  image_path: "assets/logo_app/iconprincipal.png"
 # The following section is specific to Flutter packages.
 flutter:
   assets:
     - assets/imagenes/
     - assets/logo_app/
+    - assets/logo_inter/
+    - assets/pdfs/terminos.pdf
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
   # the material Icons class.
@@ -75,11 +78,11 @@ flutter:
 
 flutter_native_splash:
   color: "#000000"
-  image: assets/logo_app/logo_app.png
+  image: assets/logo_app/iconprincipal.png
   android: true
   ios: true
   android_12:
-    image: assets/logo_app/logo_app.png
+    image: assets/logo_app/iconprincipal.png
     color: "#000000"
 
   # To add assets to your application, add an assets section, like this:
