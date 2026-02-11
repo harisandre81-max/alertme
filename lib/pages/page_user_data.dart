@@ -125,7 +125,7 @@ final ImagePicker _picker = ImagePicker();
   children: [
     CircleAvatar(
       radius: 60,
-      backgroundColor: const Color(0xFFE6F0D5),
+      backgroundColor: const Color.fromARGB(136, 255, 182, 98),
       backgroundImage: _profileImage != null
       ? FileImage(_profileImage!)
       : const AssetImage('assets/avatar.png') as ImageProvider,

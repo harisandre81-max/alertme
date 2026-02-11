@@ -160,23 +160,22 @@ Informa a un maestro u orientador escolar.
     return Scaffold(
       appBar: AppBar(
         // BOTÓN REGRESAR
-      IconButton(
-        icon: const Icon(
-          Icons.arrow_back,
-          color: Colors.deepPurple,
-          size: 28,
-        ),
-        onPressed: () {
-          Navigator.pop(context);
-        },
-      ),
-
-      const SizedBox(width: 85),
-        backgroundColor: const Color(0xFFE6EED2),
-        title: const Text(
-          "AlertMe • Lumi",
-          style: TextStyle(color: Colors.deepPurple,),
-        ),
+       backgroundColor: const Color(0xFFE6EED2),
+  leading: IconButton(
+    icon: const Icon(
+      Icons.arrow_back,
+      color: Colors.deepPurple,
+      size: 28,
+    ),
+    onPressed: () {
+      Navigator.pop(context);
+    },
+  ),
+       title: const Text(
+    "AlertMe • Lumi",
+    style: TextStyle(color: Colors.deepPurple),
+  ),
+    centerTitle: false, // opcional
       ),
       body: Column(
         children: [
@@ -226,6 +225,7 @@ Informa a un maestro u orientador escolar.
   Widget _inputArea() {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+      //padding: const EdgeInsets.fromLTRB(8, 6, 8, 20),
       color: const Color(0xFFF9F6E6),
       child: Row(
         children: [
@@ -248,6 +248,7 @@ Informa a un maestro u orientador escolar.
       ),
     );
   }
+  
 }
 
 class Message {
