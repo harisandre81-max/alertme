@@ -10,8 +10,44 @@ import 'package:telephony/telephony.dart';
  final Telephony telephony = Telephony.instance;
  Location location = Location();
 
-//VERIFICAION DE PERMISOS DE UBICACION
-Future<bool> checkLocation() async {
+//Fin del codigo de verificacion de permisos de ubicacion
+
+//Inicio de la funcion de mensaje y ubicacion
+ void mostrarubicacion() async{
+  LocationData datos = await location.getLocation();
+
+  print('Latitud: ${datos.latitude}');
+  print('Longitud: ${datos.longitude}');
+  print('Altitud: ${datos.altitude}');
+
+  String ubicacion = "https://maps.google.com/?q=${datos.latitude},${datos.longitude}";
+
+  await telephony.sendSms(to: '6751035059', message: 'Ayuda, estoy en peligro' + '\nMi ubcacion es: $ubicacion' );
+
+ }
+
+class MenuUI extends StatelessWidget {
+  const MenuUI({super.key});
+
+  Future<void> showLoading(BuildContext context, {int seconds = 3}) async {
+  showDialog(
+    context: context,
+    barrierDismissible: false,
+    builder: (_) => const LoadingScreen(),
+  );
+
+  await Future.delayed(Duration(seconds: seconds));
+  Navigator.of(context).pop();
+  }
+/*
+  void showEmergencyPopup(BuildContext context) {
+  showDialog(
+    context: context,
+    barrierDismissible: false,
+    builder: (_) => const EmergencyPopup(),
+  );
+}*/
+  Future<bool> checkLocation() async {
   bool serviceEnabled;
   PermissionStatus permissionGranted;
 
@@ -35,31 +71,6 @@ Future<bool> checkLocation() async {
   return await location.getLocation();
 
  }
-//FIN DE VERIFICACION DE PERMISOS DE UBICACION
-
-
-class MenuUI extends StatelessWidget {
-  const MenuUI({super.key});
-
-  Future<void> showLoading(BuildContext context, {int seconds = 3}) async {
-  showDialog(
-    context: context,
-    barrierDismissible: false,
-    builder: (_) => const LoadingScreen(),
-  );
-
-  await Future.delayed(Duration(seconds: seconds));
-  Navigator.of(context).pop();
-  }
-
-  void showEmergencyPopup(BuildContext context) {
-  showDialog(
-    context: context,
-    barrierDismissible: false,
-    builder: (_) => const EmergencyPopup(),
-  );
-}
-
   
   @override
   Widget build(BuildContext context) {
@@ -260,30 +271,25 @@ class MenuUI extends StatelessWidget {
       ),
       
       child: Center(
-       child: Transform.translate(
-        offset: const Offset(0, -40),
-        child: GestureDetector(
-      onTap: () {
-        showEmergencyPopup(context);
-      },
-        child: Container(
-          width: 100,
-          height: 100,
-          decoration: BoxDecoration(
-            color: Color.fromARGB(255, 255, 98, 98),
-            shape: BoxShape.circle,
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black26,
-                blurRadius: 8,
-                offset: Offset(0, 4),
-              ),
-            ],
-          ),
-        ),
-       ),
-        ),
+  child: SizedBox(
+    width: 100,
+    height: 100,
+    child: ElevatedButton(
+      onPressed: mostrarubicacion,
+      style: ElevatedButton.styleFrom(
+        backgroundColor: const Color.fromARGB(255, 255, 98, 98),
+        shape: const CircleBorder(),
+        elevation: 8,
       ),
+      child: const Icon(
+        Icons.location_on,
+        color: Colors.white,
+        size: 40,
+      ),
+    ),
+  ),
+),
+
     ),
       ],
     ),
@@ -566,7 +572,7 @@ Widget build(BuildContext context) {
   );
 }
 }
-
+/*
 class EmergencyPopup extends StatefulWidget {
   const EmergencyPopup({super.key});
 
@@ -727,7 +733,7 @@ class _EmergencyPopupState extends State<EmergencyPopup>
       ),
     );
   }
-}
+}*/
 
 // MODELO (siempre fuera del widget)
 class InstitucionInfo {
