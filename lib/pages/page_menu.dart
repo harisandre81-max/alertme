@@ -4,6 +4,38 @@ import 'chatbot.dart';
 import 'page_carga.dart';
 import 'dart:async';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:location/location.dart';
+import 'package:telephony/telephony.dart';
+
+ final Telephony telephony = Telephony.instance;
+ Location location = Location();
+
+//VERIFICAION DE PERMISOS DE UBICACION
+Future<bool> checkLocation() async {
+  bool serviceEnabled;
+  PermissionStatus permissionGranted;
+
+  serviceEnabled = await location.serviceEnabled();
+  if (!serviceEnabled) {
+    serviceEnabled = await location.requestService();
+    if (!serviceEnabled) return false;
+  }
+
+  permissionGranted = await location.hasPermission();
+  if (permissionGranted == PermissionStatus.denied) {
+    permissionGranted = await location.requestPermission();
+    if (permissionGranted != PermissionStatus.granted) return false;
+  }
+
+  return true;
+}
+
+ Future<LocationData?> ubicacion() async{
+  if(!await checkLocation()) return null;
+  return await location.getLocation();
+
+ }
+//FIN DE VERIFICACION DE PERMISOS DE UBICACION
 
 
 class MenuUI extends StatelessWidget {
@@ -557,6 +589,8 @@ class _EmergencyPopupState extends State<EmergencyPopup>
   late AnimationController _anim;
   bool _sent = false;
 
+  //implementacion del la funcionalidad del boton
+
 
   @override
   void initState() {
@@ -580,14 +614,17 @@ class _EmergencyPopupState extends State<EmergencyPopup>
       _sent = true;
     });
 
-      //encvio del mensaje (sendsms();)
-      //
-      //
-      ///
-      ////
-      ///
-      ///
-      ///
+//FUNCION DEL ENVIO DE MENSAJE Y UBICACION
+    if(_sent == true){
+       LocationData datos = await location.getLocation();
+
+      String ubicacion = "https://maps.google.com/?q=${datos.latitude},${datos.longitude}";
+
+      await telephony.sendSms(to: '6751035059', message: '🚨 Ayuda, estoy en peligro 🚨' + '\n⚠️📍Mi ubicación es: $ubicacion');
+
+ 
+    }
+//FIN DE LA FUNCION DE ENVIO DE MENSAJE Y UBICACION
 
     //cierra el popup
     Future.delayed(const Duration(seconds: 2), () {

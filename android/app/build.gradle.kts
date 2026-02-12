@@ -9,6 +9,7 @@ android {
     namespace = "com.example.alertme"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
+    namespace "com.shounakmulay.telephony"
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
