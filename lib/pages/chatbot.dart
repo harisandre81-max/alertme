@@ -75,74 +75,101 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   void _scrollToBottom() {
-    _scrollController.animateTo(
-      _scrollController.position.maxScrollExtent,
-      duration: const Duration(milliseconds: 300),
-      curve: Curves.easeOut,
-    );
+    Future.delayed(const Duration(milliseconds: 100), () {
+      if (_scrollController.hasClients) {
+        _scrollController.animateTo(
+          _scrollController.position.maxScrollExtent,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOut,
+        );
+      }
+    });
   }
 
   String chatbotResponse(String input) {
-    input = input.toLowerCase();
+    input = input.toLowerCase().trim();
 
     if (!_yaSaludo) {
       _yaSaludo = true;
       return "Hola. Cuéntame qué está pasando.";
     }
 
-    if (_contains(input, ["me golpean", "me pegan", "", "me empujan"])) {
-      return """
-Tipo de violencia identificado: Violencia física.
+    // VIOLENCIA FÍSICA
+    if (_contains(input, [
+      "me golpean",
+      "me pegan",
+      "me empujan",
+      "me pegaron",
+      "me golpearon"
+    ])) {
+      return """Tipo de violencia identificado: Violencia física.
 
 Nadie tiene derecho a hacerte daño.
-Busca ayuda inmediata con un adulto de confianza
-o autoridades.
-""";
+Busca ayuda inmediata con un adulto de confianza o autoridades.""";
     }
 
-    if (_contains(input, ["insultan", "me gritan", "me humillan"])) {
-      return """
-Tipo de violencia identificado: Violencia psicológica.
+    // VIOLENCIA PSICOLÓGICA
+    if (_contains(input, [
+      "me insultan",
+      "me gritan",
+      "me humillan",
+      "me ofenden"
+    ])) {
+      return """Tipo de violencia identificado: Violencia psicológica.
 
 Las palabras también causan daño.
-Hablar con alguien de confianza puede ayudarte.
-""";
+Habla con alguien de confianza o un orientador.""";
     }
 
-    if (_contains(input, ["me controlan", "me ignoran", "me manipulan"])) {
-      return """
-Tipo de violencia identificado: Violencia emocional.
-
-El control no es normal.
-Busca apoyo emocional y orientación.
-""";
-    }
-
-    if (_contains(input, ["abuso", "me obligaron", "me tocaron","me Violaron"])) {
-      return """
-Tipo de violencia identificado: Violencia sexual.
+    // VIOLENCIA SEXUAL
+    if (_contains(input, [
+      "abuso",
+      "me tocaron",
+      "me obligaron",
+      "violaron"
+    ])) {
+      return """Tipo de violencia identificado: Violencia sexual.
 
 Esto es grave y no es tu culpa.
-Busca ayuda inmediata con autoridades o personal especializado.
-""";
+Busca ayuda inmediata con autoridades o personal especializado.""";
     }
 
-    if (_contains(input, ["en mi casa", "mi familia", "mi papá", "mi mamá"])) {
-      return """
-Tipo de violencia identificado: Violencia doméstica.
+    // VIOLENCIA DOMÉSTICA
+    if (_contains(input, [
+      "en mi casa",
+      "mi papá",
+      "mi mamá",
+      "mi padrastro",
+      "mi familia"
+    ])) {
+      return """Tipo de violencia identificado: Violencia doméstica.
 
 La violencia en el hogar no es normal.
-Busca apoyo con familiares, maestros o instituciones.
-""";
+Busca apoyo con familiares, maestros o instituciones.""";
     }
 
-    if (_contains(input, ["escuela", "bullying", "me molestan"])) {
-      return """
-Tipo de violencia identificado: Violencia escolar.
+    // VIOLENCIA ESCOLAR
+    if (_contains(input, [
+      "escuela",
+      "bullying",
+      "me molestan"
+    ])) {
+      return """Tipo de violencia identificado: Violencia escolar.
 
 No estás solo.
-Informa a un maestro u orientador escolar.
-""";
+Informa a un maestro u orientador escolar.""";
+    }
+
+    // VIOLENCIA CONTRA NIÑOS
+    if (_contains(input, [
+      "soy niño",
+      "soy niña",
+      "menor"
+    ])) {
+      return """Tipo de violencia identificado: Violencia contra niños y niñas.
+
+Ningún tipo de violencia está justificado.
+Busca ayuda con adultos responsables o instituciones de protección infantil.""";
     }
 
     return "Te escucho. Puedes contarme un poco más.";
@@ -159,29 +186,15 @@ Informa a un maestro u orientador escolar.
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        // BOTÓN REGRESAR
-       backgroundColor: const Color(0xFFE6EED2),
-  leading: IconButton(
-    icon: const Icon(
-      Icons.arrow_back,
-      color: Colors.deepPurple,
-      size: 28,
-    ),
-    onPressed: () {
-      Navigator.pop(context);
-    },
-  ),
-       title: const Text(
-    "AlertMe • Lumi",
-    style: TextStyle(color: Colors.deepPurple),
-  ),
-    centerTitle: false, // opcional
+        backgroundColor: const Color(0xFF8D77AB),
+        title: const Text(
+          "AlertMe • Lumi",
+          style: TextStyle(color: Color(0xFFFDC67F)),
+        ),
       ),
       body: Column(
         children: [
           Expanded(
-            child: Container(
-            color: const Color(0xFFF9F6E6),
             child: ListView.builder(
               controller: _scrollController,
               itemCount: _messages.length,
@@ -190,10 +203,8 @@ Informa a un maestro u orientador escolar.
               },
             ),
           ),
-          ),
           _sugerencias(),
           _inputArea(),
-          const SizedBox(height: 50),
         ],
       ),
     );
@@ -201,13 +212,13 @@ Informa a un maestro u orientador escolar.
 
   Widget _sugerencias() {
     return SizedBox(
-      height: 45,
+      height: 50,
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
         itemCount: _respuestasSugeridas.length,
         itemBuilder: (context, index) {
           return Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 4),
+            padding: const EdgeInsets.symmetric(horizontal: 6),
             child: ElevatedButton(
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFFFDC67F),
@@ -226,7 +237,6 @@ Informa a un maestro u orientador escolar.
   Widget _inputArea() {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-      //padding: const EdgeInsets.fromLTRB(8, 6, 8, 20),
       color: const Color(0xFFF9F6E6),
       child: Row(
         children: [
@@ -249,7 +259,6 @@ Informa a un maestro u orientador escolar.
       ),
     );
   }
-  
 }
 
 class Message {
