@@ -7,6 +7,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:location/location.dart';
 import 'package:telephony/telephony.dart';
 
+
  final Telephony telephony = Telephony.instance;
  Location location = Location();
 
@@ -26,8 +27,16 @@ import 'package:telephony/telephony.dart';
 
  }
 
-class MenuUI extends StatelessWidget {
+class MenuUI extends StatefulWidget {
   const MenuUI({super.key});
+
+  @override
+  State<MenuUI> createState() => _MenuUIState();
+}
+
+class _MenuUIState extends State<MenuUI> {
+
+  final ScrollController _scrollController = ScrollController();
 
   Future<void> showLoading(BuildContext context, {int seconds = 3}) async {
   showDialog(
@@ -134,31 +143,37 @@ class MenuUI extends StatelessWidget {
               children: [
               const SizedBox(height: 20),
                 // TU CONTENEDOR HORIZONTAL
-                Center(
-                  child: Container(
-                    width: 388,
-                    height: 220,
-                    decoration: BoxDecoration(
-                      color: const Color.fromARGB(255, 233, 245, 212),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    padding: const EdgeInsets.all(16),
-                    child: SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: Row(
-                        children: [
-                          ContactCard(
-                          ),
+                Column(
+  crossAxisAlignment: CrossAxisAlignment.start,
+  children: [
 
-                          const SizedBox(width: 23),
-                          ContactCard(                          
-                          ),
+    // HEADER estilo "Reels"
+    Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: Row(
+        children: const [
+          Icon(Icons.contact_page, 
+              color: Colors.deepPurple, size: 24),
+          SizedBox(width: 8),
+          Text(
+            "Contactos",
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: Colors.deepPurple,
+            ),
+          ),
+        ],
+      ),
+    ),
 
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
+    const SizedBox(height: 15),
+
+    Center(
+      child: ContactSlider(), // 👈 Nuevo widget
+    ),
+  ],
+),
 
                 const SizedBox(height: 80),
                 SingleChildScrollView(
@@ -190,24 +205,24 @@ class MenuUI extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 40),
-                Container(
+               /* Container(
   width: 500,
   height: 10,
   color: const Color.fromARGB(255, 51, 71, 7), // color suave
-    ),
+    ),*/
                 const SizedBox(height: 40),
                 Column(
   children: [
     _VerticalBox(
-      text: 'Hola',
+      text: 'DIF',
       onTap: () {
     showDetailCard(
       context,
       InstitucionInfo(
-        name: 'Josh Fechter',
+         name: 'Sistema para el Desarrollo Integral de la Familia',
         phone: '+88 01828 9457 20',
-        address: 'Ciudad de México',
-        description: 'Contacto de confianza para emergencias.',
+        address: 'calle Aquiles Serdán #102, Zona Centro, 34890',
+        description: 'institución pública mexicana, en sus niveles nacional, estatal y municipal, dedicada a brindar asistencia social y proteger los derechos de grupos vulnerables.',
         image: 'assets/avatar.png',
       ),
     );
@@ -215,7 +230,7 @@ class MenuUI extends StatelessWidget {
     ),
     const SizedBox(height: 20),
     _VerticalBox(
-      text: '¿Cómo estás?',
+      text: '911',
       onTap: () {
     showDetailCard(
       context,
@@ -232,7 +247,7 @@ class MenuUI extends StatelessWidget {
     const SizedBox(height: 20),
 
     _VerticalBox(
-      text: 'Bienvenido, Luis',
+      text: 'Proteción civil',
       onTap: () {
     showDetailCard(
       context,
@@ -348,10 +363,10 @@ class ContactCard extends StatefulWidget {
 }
 
 class _ContactCardState extends State<ContactCard> {
-  String nombre = 'Josh Fechter';
-  String edad = '32';
-  String parentesco = 'Hermano';
-  String telefono = '+88 01828 9457 20';
+  String nombre = 'Luis';
+  String edad = '19';
+  String parentesco = 'Amigo';
+  String telefono = '6751035059';
 
   @override
   Widget build(BuildContext context) {
@@ -366,14 +381,7 @@ class _ContactCardState extends State<ContactCard> {
       child: Row(
         children: [
           // Avatar
-          Container(
-            width: 80,
-            height: 80,
-            decoration: const BoxDecoration(
-              color: Color(0xFFE6D9FF),
-              shape: BoxShape.circle,
-            ),
-          ),
+          
           const SizedBox(width: 16),
 
           // Info
@@ -470,7 +478,95 @@ class _ContactCardState extends State<ContactCard> {
 
 }
 
+class ContactSlider extends StatefulWidget {
+  const ContactSlider({super.key});
 
+  @override
+  State<ContactSlider> createState() => _ContactSliderState();
+}
+
+class _ContactSliderState extends State<ContactSlider> {
+
+  final PageController _controller = PageController();
+  int currentPage = 0;
+
+  final List<Widget> contacts = const [
+    ContactCard(),
+    ContactCard(),
+  ];
+
+  void nextPage() {
+    if (currentPage < contacts.length - 1) {
+      _controller.nextPage(
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
+    }
+  }
+
+  void previousPage() {
+    if (currentPage > 0) {
+      _controller.previousPage(
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 388,
+      height: 220,
+      decoration: BoxDecoration(
+        color: const Color.fromARGB(255, 233, 245, 212),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      padding: const EdgeInsets.all(16),
+      child: Stack(
+        children: [
+
+          // PAGE VIEW
+          PageView.builder(
+            controller: _controller,
+            physics: const NeverScrollableScrollPhysics(), // 👈 QUITA EL SCROLL
+            itemCount: contacts.length,
+            onPageChanged: (index) {
+              setState(() {
+                currentPage = index;
+              });
+            },
+            itemBuilder: (context, index) {
+              return contacts[index];
+            },
+          ),
+
+          // BOTÓN IZQUIERDA <
+          if (currentPage > 0)
+            Positioned(
+              left: 0,
+              top: 70,
+              child: IconButton(
+                icon: const Icon(Icons.chevron_left, size: 36),
+                onPressed: previousPage,
+              ),
+            ),
+
+          // BOTÓN DERECHA >
+          if (currentPage < contacts.length - 1)
+            Positioned(
+              right: 0,
+              top: 70,
+              child: IconButton(
+                icon: const Icon(Icons.chevron_right, size: 36),
+                onPressed: nextPage,
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
 
 class _VerticalBox extends StatelessWidget {
   final String text;

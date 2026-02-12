@@ -193,6 +193,7 @@ Informa a un maestro u orientador escolar.
           ),
           _sugerencias(),
           _inputArea(),
+          const SizedBox(height: 50),
         ],
       ),
     );
