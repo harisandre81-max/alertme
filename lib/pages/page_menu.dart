@@ -34,6 +34,38 @@ class MenuUI extends StatefulWidget {
   State<MenuUI> createState() => _MenuUIState();
 }
 
+class SectionHeader extends StatelessWidget {
+  final String title;
+  final IconData icon;
+
+  const SectionHeader({
+    super.key,
+    required this.title,
+    required this.icon,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: Row(
+        children: [
+          Icon(icon, color: Colors.deepPurple, size: 24),
+          const SizedBox(width: 8),
+          Text(
+            title,
+            style: const TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: Colors.deepPurple,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _MenuUIState extends State<MenuUI> {
 
   final ScrollController _scrollController = ScrollController();
@@ -48,14 +80,7 @@ class _MenuUIState extends State<MenuUI> {
   await Future.delayed(Duration(seconds: seconds));
   Navigator.of(context).pop();
   }
-/*
-  void showEmergencyPopup(BuildContext context) {
-  showDialog(
-    context: context,
-    barrierDismissible: false,
-    builder: (_) => const EmergencyPopup(),
-  );
-}*/
+
   Future<bool> checkLocation() async {
   bool serviceEnabled;
   PermissionStatus permissionGranted;
@@ -88,16 +113,16 @@ class _MenuUIState extends State<MenuUI> {
 
       // SUB MENÚ SUPERIOR
       appBar: AppBar(
-        toolbarHeight: 100,
+        toolbarHeight: 110,
         elevation: 0,
   leadingWidth: 80,
         backgroundColor: const Color(0xFFE6F0D5),
         leading: Padding(
-          padding: const EdgeInsets.all(15.0),
+          padding: const EdgeInsets.all(5.0),
           child: Image.asset(
       'assets/logo_inter/logo.png',
-      width: 60,
-      height: 60,
+      width: 70,
+      height: 70,
       fit: BoxFit.contain,
     ),
         ),
@@ -107,7 +132,7 @@ class _MenuUIState extends State<MenuUI> {
             child: IconButton(
 
               icon: const Icon(
-                size: 36,
+                size: 43,
                 Icons.person,
                 color: Color(0xFFFFB562),
               ),
@@ -156,7 +181,7 @@ class _MenuUIState extends State<MenuUI> {
               color: Colors.deepPurple, size: 24),
           SizedBox(width: 8),
           Text(
-            "Contactos",
+            "Contactos de emergencia",
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
@@ -175,59 +200,48 @@ class _MenuUIState extends State<MenuUI> {
   ],
 ),
 
-                const SizedBox(height: 80),
-                SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: Row(
-                    children: [
-                      const SizedBox(width: 20),
-
-                      _HorizontalButton(
-                        text: 'Cultura de la paz',
-                        image: 'assets/imagenes/info_culturapaz.jpeg',
-                      ),
-                      const SizedBox(width: 16),
-
-                      _HorizontalButton(
-                        text: 'Derechos de los nna',
-                        image: 'assets/imagenes/info_derechosnna.jpeg',
-                      ),
-                      const SizedBox(width: 16),
-
-                      _HorizontalButton(
-                        text: 'Tipos de violencia',
-                        image: 'assets/imagenes/info_tiposdeviolencia.jpeg',
-                      ),
-
-
-                      const SizedBox(width: 20),
-                    ],
-                  ),
-                ),
                 const SizedBox(height: 40),
-               /* Container(
-  width: 500,
-  height: 10,
-  color: const Color.fromARGB(255, 51, 71, 7), // color suave
-    ),*/
+
+const SectionHeader(
+  title: "Infografías",
+  icon: Icons.menu_book,
+),
+
+const SizedBox(height: 15),
+
+                const HorizontalButtonSlider(),
+                
                 const SizedBox(height: 40),
+
+                const SectionHeader(
+  title: "Instituciones de apoyo",
+  icon: Icons.local_hospital,
+),
+
                 Column(
   children: [
     _VerticalBox(
-      text: 'DIF',
-      onTap: () {
+  text: 'DIF',
+  onTap: () {
     showDetailCard(
       context,
       InstitucionInfo(
-         name: 'Sistema para el Desarrollo Integral de la Familia',
-        phone: '+88 01828 9457 20',
-        address: 'calle Aquiles Serdán #102, Zona Centro, 34890',
-        description: 'institución pública mexicana, en sus niveles nacional, estatal y municipal, dedicada a brindar asistencia social y proteger los derechos de grupos vulnerables.',
+        name: 'Sistema DIF',
+        phone: '911',
+        address: 'Zona Centro',
+        description: 'Institución pública...',
         image: 'assets/avatar.png',
       ),
     );
   },
-    ),
+
+  phoneNumber: '911',
+
+  onPhoneTap: () async {
+    final uri = Uri.parse('tel:911');
+    await launchUrl(uri, mode: LaunchMode.externalApplication);
+  },
+),
     const SizedBox(height: 20),
     _VerticalBox(
       text: '911',
@@ -242,6 +256,12 @@ class _MenuUIState extends State<MenuUI> {
         image: 'assets/avatar.png',
       ),
     );
+  },
+  phoneNumber: '911',
+
+  onPhoneTap: () async {
+    final uri = Uri.parse('tel:911');
+    await launchUrl(uri, mode: LaunchMode.externalApplication);
   },
     ),
     const SizedBox(height: 20),
@@ -259,6 +279,12 @@ class _MenuUIState extends State<MenuUI> {
         image: 'assets/avatar.png',
       ),
     );
+  },
+  phoneNumber: '911',
+
+  onPhoneTap: () async {
+    final uri = Uri.parse('tel:911');
+    await launchUrl(uri, mode: LaunchMode.externalApplication);
   },
     ),
   ],
@@ -296,11 +322,15 @@ class _MenuUIState extends State<MenuUI> {
         shape: const CircleBorder(),
         elevation: 8,
       ),
-      child: const Icon(
-        Icons.location_on,
-        color: Colors.white,
-        size: 40,
-      ),
+      child: const Text(
+  "SOS",
+  style: TextStyle(
+    color: Colors.white,
+    fontSize: 29,
+    fontWeight: FontWeight.bold,
+    letterSpacing: 2,
+  ),
+),
     ),
   ),
 ),
@@ -386,6 +416,8 @@ class _ContactCardState extends State<ContactCard> {
 
           // Info
           Expanded(
+            child: Padding(
+    padding: const EdgeInsets.only(left: 40),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -394,7 +426,7 @@ class _ContactCardState extends State<ContactCard> {
                     Expanded(
                       child: Text( nombre,
                         style: TextStyle(
-                          fontSize: 18,
+                          fontSize: 20,
                           fontWeight: FontWeight.bold,
                           color: Color(0xFF5E3AA1),
                         ),
@@ -408,13 +440,14 @@ class _ContactCardState extends State<ContactCard> {
                   ],
                 ),
                 const SizedBox(height: 8),
-                 Text('Edad: $edad', style: const TextStyle(color: Color(0xFF5E3AA1))),
-                 Text('Parentezco: $parentesco', style: const TextStyle(color: Color(0xFF5E3AA1))),
-                 Text(telefono, style: const TextStyle(color: Color(0xFF5E3AA1))),
+                 Text('Edad: $edad', style: const TextStyle(color: Color(0xFF5E3AA1),fontSize: 18)),
+                 Text('Parentezco: $parentesco', style: const TextStyle(color: Color(0xFF5E3AA1),fontSize: 18)),
+                 Text(telefono, style: const TextStyle(color: Color(0xFF5E3AA1),fontSize: 18)),
 
               ],
             ),
-          )
+          ),
+          ),
         ],
       ),
     );
@@ -571,10 +604,14 @@ class _ContactSliderState extends State<ContactSlider> {
 class _VerticalBox extends StatelessWidget {
   final String text;
   final VoidCallback onTap;
+  final VoidCallback? onPhoneTap; // 👈 nuevo
+  final String? phoneNumber;      // 👈 nuevo
 
   const _VerticalBox({
     required this.text,
     required this.onTap,
+    this.onPhoneTap,
+    this.phoneNumber,
   });
 
   @override
@@ -592,26 +629,40 @@ class _VerticalBox extends StatelessWidget {
         ),
         child: Row(
           children: [
-            const SizedBox(width: 10),
-           /* const CircleAvatar(
-              radius: 30,
+            const CircleAvatar(
+              radius: 20,
               backgroundImage: AssetImage('assets/avatar.png'),
-            ),*/
-            const SizedBox(width: 50),
-            Text(
-              text, // 👈 TEXTO VARIABLE
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-                color: Colors.deepPurple,
+            ),
+            const SizedBox(width: 20),
+
+            // TEXTO
+            Expanded(
+              child: Text(
+                text,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.deepPurple,
+                ),
               ),
             ),
+
+            // ICONO TELÉFONO
+            if (phoneNumber != null)
+              IconButton(
+                icon: const Icon(
+                  Icons.phone,
+                  color: Colors.deepPurple,
+                ),
+                onPressed: onPhoneTap,
+              ),
           ],
         ),
       ),
     );
   }
 }
+
 
 class _HorizontalButton extends StatelessWidget {
   final String text;
@@ -622,206 +673,61 @@ class _HorizontalButton extends StatelessWidget {
     required this.image,
   });
 
-  
-  @override
-Widget build(BuildContext context) {
-  return GestureDetector(
-    onTap: () {
-      showDialog(
-        context: context,
-        barrierDismissible: true,
-        barrierColor: Colors.black54,
-        builder: (_) {
-          return Dialog(
-            backgroundColor: Colors.transparent,
-            insetPadding: const EdgeInsets.all(20),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(16),
-              child: InteractiveViewer(
-                minScale: 1,
-                maxScale: 4,
-                child: Image.asset(image, fit: BoxFit.contain),
-              ),
-            ),
-          );
-        },
-      );
-    },
-    child: Container(
-      width: 200,
-      height: 50,
-      decoration: BoxDecoration(
-        color:  Color(0xFFFFB562),
-        borderRadius: BorderRadius.circular(25),
-      ),
-      child: Center(
-        child: Text(
-          text,
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-      ),
-    ),
-  );
-}
-}
-/*
-class EmergencyPopup extends StatefulWidget {
-  const EmergencyPopup({super.key});
-
-  @override
-  State<EmergencyPopup> createState() => _EmergencyPopupState();
-}
-
-class _EmergencyPopupState extends State<EmergencyPopup>
-    with SingleTickerProviderStateMixin {
-
-//uso de futures para envio de mensaje con localizacion
-///
-/////
-/////
-///
-///
-
-  int _countdown = 3;
-  Timer? _timer;
-  late AnimationController _anim;
-  bool _sent = false;
-
-  //implementacion del la funcionalidad del boton
-
-
-  @override
-  void initState() {
-    super.initState();
-
-    // Animación de pulso
-    _anim = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 800),
-      lowerBound: 0.9,
-      upperBound: 1.05,
-    )..repeat(reverse: true);
-
-    // Contador
-    _timer = Timer.periodic(const Duration(seconds: 1), (timer) async {
-  if (_countdown == 1) {
-    timer.cancel();
-
-    setState(() {
-      _countdown = 0;
-      _sent = true;
-    });
-
-//FUNCION DEL ENVIO DE MENSAJE Y UBICACION
-    if(_sent == true){
-       LocationData datos = await location.getLocation();
-
-      String ubicacion = "https://maps.google.com/?q=${datos.latitude},${datos.longitude}";
-
-      await telephony.sendSms(to: '6751035059', message: '🚨 Ayuda, estoy en peligro 🚨' + '\n⚠️📍Mi ubicación es: $ubicacion');
-
- 
-    }
-//FIN DE LA FUNCION DE ENVIO DE MENSAJE Y UBICACION
-
-    //cierra el popup
-    Future.delayed(const Duration(seconds: 2), () {
-      if (mounted) Navigator.pop(context);
-    });
-
-  } else {
-    setState(() {
-      _countdown--;
-    });
-  }
-});
-  }
-
-  @override
-  void dispose() {
-    _timer?.cancel();
-    _anim.dispose();
-    super.dispose();
-  }
-
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: Colors.redAccent.withOpacity(0.95),
-      child: SafeArea(
+    return GestureDetector(
+      onTap: () {
+        showDialog(
+          context: context,
+          builder: (_) => Dialog(
+            child: InteractiveViewer(
+              child: Image.asset(image),
+            ),
+          ),
+        );
+      },
+      child: Container(
+        width: 100,
+        height: 120, // más alto para imagen + texto
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: const Color(0xFFE6F0D5),
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black12,
+              blurRadius: 4,
+              offset: Offset(0, 3),
+            ),
+          ],
+        ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             
-
-            ScaleTransition(
-              scale: _anim,
-              child: CircleAvatar(
-                radius: 50,
-                backgroundColor: Colors.white,
-                child: Text(
-                  '$_countdown',
-                  style: const TextStyle(
-                    fontSize: 36,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.red,
-                  ),
+            // Imagen pequeña
+            Container(
+              width: 50,
+              height: 50,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(8),
+                image: DecorationImage(
+                  image: AssetImage(image),
+                  fit: BoxFit.cover,
                 ),
               ),
             ),
 
-            const SizedBox(height: 100),
+            const SizedBox(height: 8),
 
-             Text(
-            _sent ? '🚨 Alerta enviada' : 'Enviando alerta en...',
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 22,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-
-
-            const SizedBox(height: 10),
-
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 30),
-              child: Text(
-                'Enviando alerta a tus contactos, mantente a salvo.',
-                textAlign: TextAlign.center,
-                style: TextStyle(color: Colors.white70),
-              ),
-            ),
-
-            const SizedBox(height: 100),
-
-            
-
-            const SizedBox(height: 100),
-
-            // BOTÓN CANCELAR
-            GestureDetector(
-              onTap: () {
-                Navigator.pop(context);
-              },
-              child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 40, vertical: 14),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(30),
-                ),
-                child: const Text(
-                  'Cancelar',
-                  style: TextStyle(
-                    color: Colors.red,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
+            // Texto debajo
+            Text(
+              text,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: Colors.deepPurple,
               ),
             ),
           ],
@@ -829,7 +735,7 @@ class _EmergencyPopupState extends State<EmergencyPopup>
       ),
     );
   }
-}*/
+}
 
 // MODELO (siempre fuera del widget)
 class InstitucionInfo {
@@ -952,6 +858,65 @@ void showDetailCard(BuildContext context, InstitucionInfo user) {
     },
   );
 }
+class MiniCardButton extends StatelessWidget {
+  final String text;
+  final String imagePath;
+  final VoidCallback onTap;
+
+  const MiniCardButton({
+    super.key,
+    required this.text,
+    required this.imagePath,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 100,
+        height: 120,
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: const Color(0xFFE6F0D5),
+          borderRadius: BorderRadius.circular(15),
+          boxShadow: const [
+            BoxShadow(
+              color: Colors.black12,
+              blurRadius: 5,
+              offset: Offset(0, 3),
+            ),
+          ],
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Image.asset(
+              imagePath,
+              width: 50,
+              height: 50,
+              fit: BoxFit.cover,
+            ),
+
+            const SizedBox(height: 8),
+
+            Text(
+              text,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+                color: Colors.deepPurple,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 
 // CARD
 class InstitucionDetailCard extends StatelessWidget {
@@ -1030,3 +995,174 @@ class _InfoRow extends StatelessWidget {
     );
   }
 }
+
+class HorizontalButtonSlider extends StatefulWidget {
+  const HorizontalButtonSlider({super.key});
+
+  @override
+  State<HorizontalButtonSlider> createState() =>
+      _HorizontalButtonSliderState();
+}
+
+class _HorizontalButtonSliderState
+    extends State<HorizontalButtonSlider> {
+
+  final PageController _controller = PageController();
+  int currentPage = 0;
+
+  final List<Widget> buttons = const [
+  MiniCard(
+    text: 'Cultura de la paz',
+    image: 'assets/imagenes/info_culturapaz.jpeg',
+  ),
+  MiniCard(
+    text: 'Derechos de los nna',
+    image: 'assets/imagenes/info_derechosnna.jpeg',
+  ),
+  MiniCard(
+    text: 'Tipos de violencia',
+    image: 'assets/imagenes/info_tiposdeviolencia.jpeg',
+  ),
+];
+
+
+  void nextPage() {
+    if (currentPage < buttons.length - 1) {
+      _controller.nextPage(
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
+    }
+  }
+
+  void previousPage() {
+    if (currentPage > 0) {
+      _controller.previousPage(
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 160,
+      child: Stack(
+        children: [
+
+          PageView.builder(
+            controller: _controller,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: buttons.length,
+            onPageChanged: (index) {
+              setState(() {
+                currentPage = index;
+              });
+            },
+            itemBuilder: (context, index) {
+              return Center(child: buttons[index]);
+            },
+          ),
+
+          if (currentPage > 0)
+            Positioned(
+              left: 0,
+              top: 20,
+              child: IconButton(
+                icon: const Icon(Icons.chevron_left, size: 36),
+                onPressed: previousPage,
+              ),
+            ),
+
+          if (currentPage < buttons.length - 1)
+            Positioned(
+              right: 0,
+              top: 20,
+              child: IconButton(
+                icon: const Icon(Icons.chevron_right, size: 36),
+                onPressed: nextPage,
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+class MiniCard extends StatelessWidget {
+  final String text;
+  final String image;
+
+  const MiniCard({
+    super.key,
+    required this.text,
+    required this.image,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () {
+        showDialog(
+          context: context,
+          barrierDismissible: true, // 👈 se cierra tocando afuera
+          barrierColor: Colors.black54, // fondo oscuro
+          builder: (_) => Dialog(
+            backgroundColor: Colors.transparent,
+            insetPadding: const EdgeInsets.all(20),
+            child: GestureDetector(
+              onTap: () {}, // 👈 evita que se cierre al tocar la imagen
+              child: InteractiveViewer(
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(20),
+                  child: Image.asset(
+                    image,
+                    fit: BoxFit.contain,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+      child: Container(
+        width: 120,
+        height: 140,
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: const Color(0xFFE6F0D5),
+          borderRadius: BorderRadius.circular(15),
+          boxShadow: const [
+            BoxShadow(
+              color: Colors.black12,
+              blurRadius: 4,
+              offset: Offset(0, 3),
+            ),
+          ],
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Image.asset(
+              image,
+              width: 60,
+              height: 60,
+              fit: BoxFit.cover,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              text,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+                color: Colors.deepPurple,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+

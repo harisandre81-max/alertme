@@ -1,3 +1,4 @@
+import 'package:alertme/pages/page_inicio_de_sesion.dart';
 import 'package:flutter/material.dart';
 import 'page_menu.dart';
 import 'page_inicio_registro_contactos.dart';
@@ -47,32 +48,17 @@ class _RegisterUserState extends State<RegisterUser> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      resizeToAvoidBottomInset: false,
+      resizeToAvoidBottomInset: true,
       backgroundColor: const Color(0xFFE6F0D5),
       body: SafeArea(
-        child: Column(
-          children: [
-            // LOGO / ESCUDO (PLACEHOLDER)
-            Padding(
-  padding: const EdgeInsets.symmetric(horizontal: 16),
-  child: Row(
-    children: [
-      // BOTÓN REGRESAR
-      IconButton(
-        icon: const Icon(
-          Icons.arrow_back,
-          color: Colors.deepPurple,
-          size: 28,
-        ),
-        onPressed: () {
-          Navigator.pop(context);
-        },
-      ),
-
-      const SizedBox(width: 85),
-
+  child: SingleChildScrollView(
+    padding: const EdgeInsets.symmetric(horizontal: 20),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
       // LOGO
-      Container(
+        Center(
+      child: Container(
               height: 90,
               width: 120,
               decoration: BoxDecoration(
@@ -84,52 +70,40 @@ class _RegisterUserState extends State<RegisterUser> {
                 fit: BoxFit.contain,
               ),
             ),
-
-      const Spacer(),
-    ],
-  ),
-),
-
+        ),
 
             const SizedBox(height: 15),
 
-            // CARD PRINCIPAL
-            Expanded(
-              child: Container(
-                margin: const EdgeInsets.symmetric(horizontal: 20),
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFFFF6E3),
-                  borderRadius: BorderRadius.circular(30),
-                ),
+            
+        // CARD
+        Container(
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: const Color(0xFFFFF6E3),
+            borderRadius: BorderRadius.circular(30),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
 
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // TITULO + PASO
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: const [
-                         Padding(
-                        padding: EdgeInsets.only(left: 110),
-                        child: Text(
-                          'REGISTRATE',
-                          style: TextStyle(
-                            fontSize: 22,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.deepPurple,
-                          ),
-                        ),
-                      ),     
-                      ],
-                    ),
+              const Center(
+                child: Text(
+                  'REGÍSTRATE',
+                  style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.deepPurple,
+                  ),
+                ),
+              ),
+
                   const SizedBox(height: 20),
                     Form(
                       key: _formKey,
                       child: Column(
                         children: [
                           _InputBox(
-                            text: 'Ingresa tu nombre',
+                            text: 'Nombre',
                             controller: nomController,
                             validator: (value) {
                               if (value == null || value.isEmpty) {
@@ -139,10 +113,10 @@ class _RegisterUserState extends State<RegisterUser> {
                             },
                           ),
 
-                          const SizedBox(height: 15),
+                          const SizedBox(height: 10),
 
                           _InputBox(
-                            text: 'Ingresa tu edad',
+                            text: 'Edad',
                             controller: edadController,
                             keyboardType: TextInputType.number,
                             validator: (value) {
@@ -153,9 +127,9 @@ class _RegisterUserState extends State<RegisterUser> {
                             },
                           ),
                           
-                          const SizedBox(height: 15),
+                          const SizedBox(height: 10),
                           _InputBox(
-                            text: 'Ingresa tu dirección',
+                            text: 'Dirección',
                             controller: dirController,
                             keyboardType: TextInputType.streetAddress,
                             validator: (value) {
@@ -166,24 +140,10 @@ class _RegisterUserState extends State<RegisterUser> {
                             },
                           ),
 
-                          const SizedBox(height: 15),
+                          const SizedBox(height: 10),
 
                           _InputBox(
-                            text: 'Ingresa tu correo electrónico',
-                            controller: emailController,
-                            keyboardType: TextInputType.emailAddress,
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return 'Campo obligatorio';
-                              }
-                              return null;
-                            },
-                          ),
-
-                          const SizedBox(height: 15),
-
-                          _InputBox(
-                            text: 'Ingresa tu telefono',
+                            text: 'Telefono',
                             controller: telController,
                             keyboardType: TextInputType.phone,
                             validator: (value) {
@@ -194,10 +154,34 @@ class _RegisterUserState extends State<RegisterUser> {
                             },
                           ),
 
-                          const SizedBox(height: 15),
+                          const SizedBox(height: 10),
 
                           _InputBox(
-                            text: 'Ingresa tu contraseña',
+  text: 'Correo electrónico',
+  controller: emailController,
+  keyboardType: TextInputType.emailAddress,
+  validator: (value) {
+    if (value == null || value.isEmpty) {
+      return 'Campo obligatorio';
+    }
+
+    final emailRegex = RegExp(
+      r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
+    );
+
+    if (!emailRegex.hasMatch(value)) {
+      return 'Ingresa un correo válido';
+    }
+
+    return null;
+  },
+),
+
+
+                          const SizedBox(height: 5),
+
+                          _InputBox(
+                            text: 'Contraseña',
                             controller: passwordController,
                             keyboardType: TextInputType.visiblePassword,
                             isPassword: true,
@@ -205,11 +189,23 @@ class _RegisterUserState extends State<RegisterUser> {
                               if (value == null || value.isEmpty) {
                                 return 'Campo obligatorio';
                               }
+                              if (value.length < 8) {
+                                return 'Debe tener al menos 8 caracteres';
+                              }
+
+                              final passwordRegex = RegExp(
+                                r'^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*?&._-])[A-Za-z\d@$!%*?&._-]{8,}$',
+                              );
+
+                              if (!passwordRegex.hasMatch(value)) {
+                                return 'Debe contener letras, números y un carácter especial';
+                              }
+
                               return null;
                             },
                           ),
 
-                          const SizedBox(height: 10),
+                          const SizedBox(height: 5),
 
                           Row(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -264,7 +260,7 @@ class _RegisterUserState extends State<RegisterUser> {
                       ),
                     ),
 
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 10),
 
                     // BOTONES
                     // SIGUIENTE
@@ -296,23 +292,59 @@ class _RegisterUserState extends State<RegisterUser> {
                                 borderRadius: BorderRadius.circular(30),
                               ),
                               child: const Center(
-                                child: Text(
-                                  'Registrarse',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w600,
-                                    color: Colors.white,
-                                  ),
-                                ),
+                                child: Row(
+  mainAxisAlignment: MainAxisAlignment.center,
+  children: const [
+    Icon(
+      Icons.person_add_alt_1,
+      color: Colors.white,
+      size: 18,
+    ),
+    SizedBox(width: 8),
+    Text(
+      'Registrarse',
+      style: TextStyle(
+        fontSize: 12,
+        fontWeight: FontWeight.w600,
+        color: Colors.white,
+      ),
+    ),
+  ],
+),
+
                               ),
                             ),
                           ),
+                          const SizedBox(height: 40),
+                         Center( 
+                            child: GestureDetector(
+                            onTap: () async {
+                              await showLoading(context, seconds: 3);
+
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => const InicioDeSesion(),
+                                ),
+                              );
+                            },
+                        
+                            child: Text(
+                                '¿Ya tienes una cuenta?',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.deepPurple,
+                                ),
+                              ),
+
+                          ),
+                           ),
                   ],
                 ),
               ),
-            ),
-            const SizedBox(height: 20),
-          ],
+  ],
+  ),
         ),
       ),
     );
@@ -342,58 +374,75 @@ class _InputBox extends StatefulWidget {
     bool _obscure = true;
 
   @override
-  Widget build(BuildContext context) {
-     return TextFormField(
-      controller: widget.controller,
-      keyboardType: widget.keyboardType,
-      validator: widget.validator,
-      obscureText: widget.isPassword ? _obscure : false,
-      style: const TextStyle(fontSize: 14, color: Colors.deepPurple),
-      decoration: InputDecoration(
-        hintText: widget.text,
-        filled: true,
-        fillColor: Colors.white,
-        hintStyle: TextStyle(
+Widget build(BuildContext context) {
+  return Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+
+      // 🔹 ETIQUETA ARRIBA
+      Padding(
+        padding: const EdgeInsets.only(left: 8, bottom: 5),
+        child: Text(
+          widget.text, // este será el título
+          style: const TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
+            color: Colors.deepPurple,
+          ),
+        ),
+      ),
+
+      // 🔹 CAMPO DE TEXTO
+      TextFormField(
+        controller: widget.controller,
+        keyboardType: widget.keyboardType,
+        validator: widget.validator,
+        obscureText: widget.isPassword ? _obscure : false,
+        style: const TextStyle(
+          fontSize: 14,
+          color: Colors.deepPurple,
+        ),
+        decoration: InputDecoration(
+          filled: true,
+          fillColor: Colors.white,
+            hintText: 'ingrese sus datos...',
+          hintStyle: TextStyle(
             color: Colors.deepPurple.withOpacity(0.6),
             fontSize: 14,
           ),
-        suffixIcon: widget.isPassword
-            ? IconButton(
-                icon: Icon(
-                  _obscure ? Icons.visibility_off : Icons.visibility,
-                  color: Colors.deepPurple,
-                ),
-                onPressed: () {
-                  setState(() => _obscure = !_obscure);
-                },
-              )
-            : null,
-
-          helperText: ' ', // reserva espacio
-          helperStyle: const TextStyle(height: 1),
-
-           errorStyle: const TextStyle(
-            height: 1,
-            fontSize: 12,
-           ),
-
           contentPadding: const EdgeInsets.symmetric(horizontal: 20),
-        
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(20),
-          borderSide: BorderSide.none,
-        ),
-        
-        errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(20),
-          borderSide: const BorderSide(color: Colors.red),
-        ),
+          
+           // 👇 ICONO DE OJITO
+    suffixIcon: widget.isPassword
+        ? IconButton(
+            icon: Icon(
+              _obscure
+                  ? Icons.visibility_off
+                  : Icons.visibility,
+              color: Colors.deepPurple,
+            ),
+            onPressed: () {
+              setState(() {
+                _obscure = !_obscure;
+              });
+            },
+          )
+        : null,
 
-        focusedErrorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(20),
-          borderSide: const BorderSide(color: Colors.red),
+           helperText: ' ', // 👈 RESERVA ESPACIO
+  helperStyle: const TextStyle(height: 0.8),
+
+  errorStyle: const TextStyle(
+    height: 1,
+    fontSize: 12,
+  ),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(20),
+            borderSide: BorderSide.none,
+          ),
         ),
       ),
-    );
-  }
+    ],
+  );
+}
 }

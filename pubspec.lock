@@ -553,10 +553,10 @@ packages:
     dependency: "direct main"
     description:
       name: syncfusion_flutter_pdfviewer
-      sha256: fc19d085f75d1c1d5589b80570a000d6d794dc7955e358e48ea06e4917e608b3
+      sha256: "4071129b1274d66b90c0babe1aaacb4e867210ec5c78dc75bd64c472038cf602"
       url: "https://pub.dev"
     source: hosted
-    version: "32.2.3"
+    version: "32.2.4"
   syncfusion_flutter_signaturepad:
     dependency: transitive
     description:

@@ -26,6 +26,93 @@ class _Contact2State extends State<Contact2> {
   await Future.delayed(Duration(seconds: seconds));
   Navigator.of(context).pop();
 }
+String? parentescoSeleccionado;
+
+final List<String> opcionesParentesco = [
+  "Madre",
+  "Padre",
+  "Tutor",
+  "Profesor",
+];
+
+
+void mostrarDialogoContactos() {
+  showDialog(
+    context: context,
+    barrierDismissible: false,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        title: const Text(
+          'Necesitas registrar tus contactos',
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            color: Colors.deepPurple,
+          ),
+        ),
+        content: const Text(
+          'Debes registrar tus contactos de emergencia para poder usar la app.',
+        ),
+        actions: [
+  TextButton(
+    onPressed: () {
+      Navigator.pop(context);
+    },
+    child: Row(
+      mainAxisSize: MainAxisSize.min,
+      children: const [
+        Icon(
+          Icons.edit,
+          color: Colors.deepPurple,
+          size: 18,
+        ),
+        SizedBox(width: 6),
+        Text(
+          'Hacerlo ahora',
+          style: TextStyle(color: Colors.deepPurple),
+        ),
+      ],
+    ),
+  ),
+
+  ElevatedButton(
+    style: ElevatedButton.styleFrom(
+      backgroundColor: Colors.deepPurple,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(10),
+      ),
+    ),
+    onPressed: () {
+      Navigator.pop(context);
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const MenuUI()),
+      );
+    },
+    child: Row(
+      mainAxisSize: MainAxisSize.min,
+      children: const [
+        Icon(
+          Icons.schedule,
+          color: Colors.white,
+          size: 18,
+        ),
+        SizedBox(width: 6),
+        Text(
+          'Hacerlo más tarde',
+          style: TextStyle(color: Colors.white),
+        ),
+      ],
+    ),
+  ),
+],
+
+      );
+    },
+  );
+}
 
 
   @override
@@ -46,13 +133,10 @@ class _Contact2State extends State<Contact2> {
       body: SafeArea(
         child: Column(
           children: [
-
-            const SizedBox(height: 20),
-
             // LOGO / ESCUDO (PLACEHOLDER)
             Container(
-              height: 200,
-              width: 120,
+              height: 150,
+              width: 140,
               decoration: BoxDecoration(
                 color: Colors.transparent,
                 borderRadius: BorderRadius.circular(20),
@@ -84,9 +168,9 @@ class _Contact2State extends State<Contact2> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: const [
                          Padding(
-                        padding: EdgeInsets.only(left: 100),
+                        padding: EdgeInsets.only(left: 30),
                         child: Text(
-                          'CONTACTO',
+                          'REGISTRO DE CONTACTOS',
                           style: TextStyle(
                             fontSize: 22,
                             fontWeight: FontWeight.w600,
@@ -95,9 +179,9 @@ class _Contact2State extends State<Contact2> {
                         ),
                       ),     
                       Padding(
-                        padding: EdgeInsets.only(right: 100),
+                        padding: EdgeInsets.only(right: 20),
                         child: Text(
-                          '2',
+                          'NO.2',
                           style: TextStyle(
                             fontSize: 22,
                             fontWeight: FontWeight.w600,
@@ -107,13 +191,13 @@ class _Contact2State extends State<Contact2> {
                       ),
                       ],
                     ),
-                  const SizedBox(height: 20),
-                     Form(
+                  const SizedBox(height: 30),
+                    Form(
                       key: _formKey,
                       child: Column(
                         children: [
                           _InputBox(
-                            text: 'Ingresa su nombre',
+                            text: 'Nombre',
                             controller: nomController,
                             validator: (value) {
                               if (value == null || value.isEmpty) {
@@ -126,7 +210,7 @@ class _Contact2State extends State<Contact2> {
                           const SizedBox(height: 20),
 
                           _InputBox(
-                            text: 'Ingresa su edad',
+                            text: 'Edad',
                             controller: edadController,
                             keyboardType: TextInputType.number,
                             validator: (value) {
@@ -142,21 +226,46 @@ class _Contact2State extends State<Contact2> {
                           ),
 
                           const SizedBox(height: 20),
-                          _InputBox(
-                            text: 'Ingresa su parentezco',
-                            controller: parentezcoController,
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return 'Campo obligatorio';
-                              }
-                              return null;
-                            },
-                          ),
+                          DropdownButtonFormField<String>(
+  value: parentescoSeleccionado,
+  decoration: InputDecoration(
+    hintText: "Selecciona el parentesco",
+    filled: true,
+    fillColor: Colors.white,
+    contentPadding: const EdgeInsets.symmetric(horizontal: 20),
+    border: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(20),
+      borderSide: BorderSide.none,
+    ),
+    errorBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(20),
+      borderSide: const BorderSide(color: Colors.red),
+    ),
+  ),
+  items: opcionesParentesco.map((String opcion) {
+    return DropdownMenuItem<String>(
+      value: opcion,
+      child: Text(
+        opcion,
+        style: const TextStyle(color: Colors.deepPurple),
+      ),
+    );
+  }).toList(),
+  onChanged: (value) {
+    setState(() {
+      parentescoSeleccionado = value;
+      parentezcoController.text = value ?? "";
+    });
+  },
+  validator: (value) =>
+      value == null ? "Selecciona una opción" : null,
+),
+
 
                           const SizedBox(height: 20),
 
                           _InputBox(
-                            text: 'Ingresa su telefono',
+                            text: 'Telefono',
                             controller: telController,
                             keyboardType: TextInputType.phone,
                             validator: (value) {
@@ -179,14 +288,9 @@ class _Contact2State extends State<Contact2> {
                         // OMITIR
                        Expanded(
                         child: GestureDetector(
-                          onTap: () async{
-                            await showLoading(context, seconds: 3);
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => const MenuUI(),
-                              ),
-                            );
+                          onTap: () async {
+                              await showLoading(context, seconds: 3);
+                              mostrarDialogoContactos();
                           },
                           child: Container(
                             height: 56,
@@ -194,16 +298,26 @@ class _Contact2State extends State<Contact2> {
                               color: const Color(0xFFFFD8A8),
                               borderRadius: BorderRadius.circular(30),
                             ),
-                            child: const Center(
-                              child: Text(
-                                'OMITIR',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w600,
-                                  color: Colors.white,
-                                ),
-                              ),
-                            ),
+                            child: const Row(
+  mainAxisAlignment: MainAxisAlignment.center,
+  children: [
+    Icon(
+      Icons.skip_next_rounded,
+      color: Colors.white,
+      size: 20,
+    ),
+    SizedBox(width: 8),
+    Text(
+      'OMITIR',
+      style: TextStyle(
+        fontSize: 16,
+        fontWeight: FontWeight.w600,
+        color: Colors.white,
+      ),
+    ),
+  ],
+),
+
                           ),
                         ),
                       ),
@@ -229,23 +343,31 @@ class _Contact2State extends State<Contact2> {
                                 color: const Color(0xFFFFB562),
                                 borderRadius: BorderRadius.circular(30),
                               ),
-                              child: const Center(
-                                child: Text(
-                                  'SIGUIENTE',
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w600,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                              ),
+                              child: const Row(
+  mainAxisAlignment: MainAxisAlignment.center,
+  children: [
+    Text(
+      'SIGUIENTE',
+      style: TextStyle(
+        fontSize: 16,
+        fontWeight: FontWeight.w600,
+        color: Colors.white,
+      ),
+    ),
+    SizedBox(width: 8),
+    Icon(
+      Icons.arrow_forward_rounded,
+      color: Colors.white,
+      size: 20,
+    ),
+  ],
+),
+
                             ),
                           ),
                         ),
-
                       ],
                     ),
-
                   ],
                 ),
               ),
@@ -259,10 +381,9 @@ class _Contact2State extends State<Contact2> {
 }
 
 
-
 // INPUT VISUAL 
 class _InputBox extends StatelessWidget {
-    final String text;
+  final String text;
   final TextEditingController controller;
   final String? Function(String?)? validator;
   final TextInputType keyboardType;
@@ -276,49 +397,68 @@ class _InputBox extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return TextFormField(
-      controller: controller,
-      keyboardType: keyboardType,     
-      validator: validator,
-      
-      style: const TextStyle(
-        fontSize: 14,
-       color: Colors.deepPurple, // ← TEXTO DEL USUARIO
-     ),
-      decoration: InputDecoration(
-          hintText: text,
-          filled: true,
-          fillColor: Colors.white,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+
+        // 🔹 ETIQUETA ARRIBA
+        Padding(
+          padding: const EdgeInsets.only(left: 8, bottom: 5),
+          child: Text(
+            text,
+            style: const TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              color: Colors.deepPurple,
+            ),
+          ),
+        ),
+
+        // 🔹 CAMPO
+        TextFormField(
+          controller: controller,
+          keyboardType: keyboardType,
+          validator: validator,
+          style: const TextStyle(
+            fontSize: 14,
+            color: Colors.deepPurple,
+          ),
+          decoration: InputDecoration(
+            filled: true,
+            fillColor: Colors.white,
+              hintText: 'ingrese sus datos...',
           hintStyle: TextStyle(
             color: Colors.deepPurple.withOpacity(0.6),
             fontSize: 14,
           ),
+            contentPadding:
+                const EdgeInsets.symmetric(horizontal: 20),
 
-          helperText: ' ', // reserva espacio
-          helperStyle: const TextStyle(height: 1),
+            helperText: ' ',
+            helperStyle: const TextStyle(height: 0.8),
 
-           errorStyle: const TextStyle(
-            height: 1,
-            fontSize: 12,
-           ),
+            errorStyle: const TextStyle(
+              height: 1,
+              fontSize: 12,
+            ),
 
-          contentPadding: const EdgeInsets.symmetric(horizontal: 20),
-        
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(20),
-          borderSide: BorderSide.none,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(20),
+              borderSide: BorderSide.none,
+            ),
+
+            errorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(20),
+              borderSide: const BorderSide(color: Colors.red),
+            ),
+
+            focusedErrorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(20),
+              borderSide: const BorderSide(color: Colors.red),
+            ),
+          ),
         ),
-        
-        errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(20),
-          borderSide: const BorderSide(color: Colors.red),
-        ),
-
-        focusedErrorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(20),
-          borderSide: const BorderSide(color: Colors.red),
-        ),
-      ), 
+      ],
     );
   }
 }

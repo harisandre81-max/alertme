@@ -62,7 +62,7 @@ flutter_launcher_icons:
   android: true
   ios: true
   remove_alpha_ios: true
-  image_path: "assets/logo_app/iconprincipal.png"
+  image_path: "assets/logo_app/logoapp.png"
 # The following section is specific to Flutter packages.
 flutter:
   assets:
@@ -77,11 +77,11 @@ flutter:
 
 flutter_native_splash:
   color: "#000000"
-  image: assets/logo_app/iconprincipal.png
+  image: assets/logo_inter/logosplash.png
   android: true
   ios: true
   android_12:
-    image: assets/logo_app/iconprincipal.png
+    image: assets/logo_inter/logosplash.png
     color: "#000000"
 
   # To add assets to your application, add an assets section, like this:

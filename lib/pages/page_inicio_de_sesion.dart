@@ -42,6 +42,7 @@ class InicioDeSesionState extends State<InicioDeSesion> {
       backgroundColor: const Color(0xFFE6F0D5),
 
       body: SafeArea(
+        child: SingleChildScrollView(
         child: Column(
           children: [
            const SizedBox(height: 20),
@@ -49,7 +50,7 @@ class InicioDeSesionState extends State<InicioDeSesion> {
             // LOGO / ESCUDO (PLACEHOLDER)
             Container(
               height: 260,
-              width: 120,
+              width: 160,
               decoration: BoxDecoration(
                 color: Colors.transparent,
                 borderRadius: BorderRadius.circular(20),
@@ -63,8 +64,7 @@ class InicioDeSesionState extends State<InicioDeSesion> {
             const SizedBox(height: 20),
 
            // CARD PRINCIPAL
-            Expanded(
-              child: Container(
+ Container(
                 margin: const EdgeInsets.symmetric(horizontal: 20),
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
@@ -99,7 +99,7 @@ class InicioDeSesionState extends State<InicioDeSesion> {
                         children: [              
                     // INPUT CORREO
                     _InputBox(
-                      text: 'Ingresa tu correo electrónico',
+                      text: 'Correo electrónico',
                       controller: emailController,
                       validator: (value) {
                               if (value == null || value.isEmpty) {
@@ -109,10 +109,10 @@ class InicioDeSesionState extends State<InicioDeSesion> {
                             },
                     ),
 
-                    const SizedBox(height: 30),
+                    const SizedBox(height: 20),
                     // INPUT CONTRASEÑA
                     _InputBox(
-                      text: 'Ingresa tu contraseña',
+                      text: 'Contraseña',
                       controller: passwordController,
                       isPassword: true,
                       validator: (value) {
@@ -126,7 +126,7 @@ class InicioDeSesionState extends State<InicioDeSesion> {
                       ),
                     ),
 
-                    const SizedBox(height: 50),
+                    const SizedBox(height: 40),
 
                     // BOTON
                       // SIGUIENTE
@@ -148,16 +148,26 @@ class InicioDeSesionState extends State<InicioDeSesion> {
                                 color: const Color(0xFFFFB562),
                                 borderRadius: BorderRadius.circular(30),
                               ),
-                              child: const Center(
-                                child: Text(
-                                  'Iniciar sesión',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w600,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                              ),
+                              child: Row(
+  mainAxisAlignment: MainAxisAlignment.center,
+  children: const [
+    Icon(
+      Icons.login,
+      color: Colors.white,
+      size: 18,
+    ),
+    SizedBox(width: 8),
+    Text(
+      'Registrarse',
+      style: TextStyle(
+        fontSize: 12,
+        fontWeight: FontWeight.w600,
+        color: Colors.white,
+      ),
+    ),
+  ],
+),
+
                             ),
                           ),
                        
@@ -190,10 +200,11 @@ class InicioDeSesionState extends State<InicioDeSesion> {
                   ],
                 ),
               ),
-            ),
+    
             const SizedBox(height: 20),
           ],
         ),
+      ),
       ),
     );
   }
@@ -224,59 +235,77 @@ class _InputBox extends StatefulWidget {
   class _InputBoxState extends State<_InputBox> {
   bool _obscure = true;
 
-  @override
+    @override
   Widget build(BuildContext context) {
-     return TextFormField(
-      controller: widget.controller,
-      keyboardType: widget.keyboardType,
-      validator: widget.validator,
-      obscureText: widget.isPassword ? _obscure : false,
-      style: const TextStyle(fontSize: 14, color: Colors.deepPurple),
-      decoration: InputDecoration(
-        hintText: widget.text,
-        filled: true,
-        fillColor: Colors.white,
-        hintStyle: TextStyle(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+
+        // 🔹 ETIQUETA ARRIBA
+        Padding(
+          padding: const EdgeInsets.only(left: 8, bottom: 5),
+          child: Text(
+            widget.text,
+            style: const TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              color: Colors.deepPurple,
+            ),
+          ),
+        ),
+
+        // 🔹 CAMPO
+        TextFormField(
+          controller: widget.controller,
+          keyboardType: widget.keyboardType,
+          validator: widget.validator,
+          obscureText: widget.isPassword ? _obscure : false,
+          style: const TextStyle(
+            fontSize: 14,
+            color: Colors.deepPurple,
+          ),
+          decoration: InputDecoration(
+            filled: true,
+            fillColor: Colors.white,
+              hintText: 'ingrese sus datos...',
+          hintStyle: TextStyle(
             color: Colors.deepPurple.withOpacity(0.6),
             fontSize: 14,
           ),
-        suffixIcon: widget.isPassword
-            ? IconButton(
-                icon: Icon(
-                  _obscure ? Icons.visibility_off : Icons.visibility,
-                  color: Colors.deepPurple,
-                ),
-                onPressed: () {
-                  setState(() => _obscure = !_obscure);
-                },
-              )
-            : null,
+            contentPadding:
+                const EdgeInsets.symmetric(horizontal: 20),
 
-          helperText: ' ', // reserva espacio
-          helperStyle: const TextStyle(height: 1),
+            suffixIcon: widget.isPassword
+                ? IconButton(
+                    icon: Icon(
+                      _obscure
+                          ? Icons.visibility_off
+                          : Icons.visibility,
+                      color: Colors.deepPurple,
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        _obscure = !_obscure;
+                      });
+                    },
+                  )
+                : null,
 
-           errorStyle: const TextStyle(
-            height: 1,
-            fontSize: 12,
-           ),
+            helperText: ' ',
+            helperStyle: const TextStyle(height: 0.8),
 
-          contentPadding: const EdgeInsets.symmetric(horizontal: 20),
-        
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(20),
-          borderSide: BorderSide.none,
+            errorStyle: const TextStyle(
+              height: 1,
+              fontSize: 12,
+            ),
+
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(20),
+              borderSide: BorderSide.none,
+            ),
+          ),
         ),
-        
-        errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(20),
-          borderSide: const BorderSide(color: Colors.red),
-        ),
-
-        focusedErrorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(20),
-          borderSide: const BorderSide(color: Colors.red),
-        ),
-      ),
+      ],
     );
   }
 }

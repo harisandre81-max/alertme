@@ -188,7 +188,7 @@ Busca ayuda con adultos responsables o instituciones de protección infantil."""
       appBar: AppBar(
         backgroundColor: const Color(0xFF8D77AB),
         title: const Text(
-          "AlertMe • Lumi",
+          "AlertMe • bbLumi",
           style: TextStyle(color: Color(0xFFFDC67F)),
         ),
       ),
