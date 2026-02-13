@@ -27,6 +27,59 @@ class _ContactState extends State<Contact> {
   await Future.delayed(Duration(seconds: seconds));
   Navigator.of(context).pop();
 }
+  void mostrarDialogoContactos() {
+  showDialog(
+    context: context,
+    barrierDismissible: false,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        title: const Text(
+          'Necesitas registrar tus contactos',
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            color: Colors.deepPurple,
+          ),
+        ),
+        content: const Text(
+          'Debes registrar tus contactos de emergencia para poder usar la app.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context); // solo cierra el dialogo
+            },
+            child: const Text(
+              'Hacerlo ahora',
+              style: TextStyle(color: Colors.deepPurple),
+            ),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.deepPurple,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+            onPressed: () {
+              Navigator.pop(context); // cerrar dialogo
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (_) => const MenuUI()),
+              );
+            },
+            child: const Text(
+              'Hacerlo más tarde',
+              style: TextStyle(color: Colors.white),
+            ),
+          ),
+        ],
+      );
+    },
+  );
+}
 
 void mostrarDialogoContactos() {
   showDialog(
@@ -173,21 +226,34 @@ void mostrarDialogoContactos() {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: const [
+<<<<<<< HEAD
                          Padding(
                         padding: EdgeInsets.only(left: 30),
                         child: Text(
                           'REGISTRO DE CONTACTOS',
+=======
+                           Padding(
+                        padding: EdgeInsets.only(left: 100),
+                        child: Text(
+                          'Registro de contactos',
+>>>>>>> d801475763a74121f3d1879fc99bb40822e0f717
                           style: TextStyle(
                             fontSize: 22,
                             fontWeight: FontWeight.w600,
                             color: Colors.deepPurple,
                           ),
                         ),
-                      ),     
+                      ),         
                       Padding(
+<<<<<<< HEAD
                         padding: EdgeInsets.only(right: 20),
                         child: Text(
                           'NO.1',
+=======
+                        padding: EdgeInsets.only(right: 50),
+                        child: Text(
+                          'contacto no 1',
+>>>>>>> d801475763a74121f3d1879fc99bb40822e0f717
                           style: TextStyle(
                             fontSize: 22,
                             fontWeight: FontWeight.w600,
