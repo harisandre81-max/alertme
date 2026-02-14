@@ -214,10 +214,10 @@ const SizedBox(height: 15),
                 const SizedBox(height: 40),
 
                 const SectionHeader(
-  title: "Instituciones de apoyo",
-  icon: Icons.local_hospital,
-),
-
+               title: "Instituciones de apoyo",
+               icon: Icons.local_hospital,
+               ),  
+                const SizedBox(height: 15), 
                 Column(
   children: [
     _VerticalBox(
@@ -1047,7 +1047,7 @@ class _HorizontalButtonSliderState
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 160,
+      height: 300,
       child: Stack(
         children: [
 
@@ -1068,7 +1068,7 @@ class _HorizontalButtonSliderState
           if (currentPage > 0)
             Positioned(
               left: 0,
-              top: 20,
+              top: 130,
               child: IconButton(
                 icon: const Icon(Icons.chevron_left, size: 36),
                 onPressed: previousPage,
@@ -1078,7 +1078,7 @@ class _HorizontalButtonSliderState
           if (currentPage < buttons.length - 1)
             Positioned(
               right: 0,
-              top: 20,
+              top: 130,
               child: IconButton(
                 icon: const Icon(Icons.chevron_right, size: 36),
                 onPressed: nextPage,
@@ -1126,8 +1126,8 @@ class MiniCard extends StatelessWidget {
         );
       },
       child: Container(
-        width: 120,
-        height: 140,
+        width: 300,
+        height: 300,
         padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
           color: const Color(0xFFE6F0D5),
@@ -1141,26 +1141,33 @@ class MiniCard extends StatelessWidget {
           ],
         ),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Image.asset(
-              image,
-              width: 60,
-              height: 60,
-              fit: BoxFit.cover,
-            ),
-            const SizedBox(height: 8),
-            Text(
-              text,
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.bold,
-                color: Colors.deepPurple,
-              ),
-            ),
-          ],
+  children: [
+    Expanded(
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(12),
+        child: Image.asset(
+          image,
+          width: double.infinity,
+          fit: BoxFit.cover,
         ),
+      ),
+    ),
+    const SizedBox(height: 8),
+    Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 4),
+      child: Text(
+        text,
+        textAlign: TextAlign.center,
+        style: const TextStyle(
+          fontSize: 14,
+          fontWeight: FontWeight.bold,
+          color: Colors.deepPurple,
+        ),
+      ),
+    ),
+  ],
+),
+
       ),
     );
   }

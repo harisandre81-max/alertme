@@ -25,6 +25,15 @@ class _Contact3State extends State<Contact3> {
   await Future.delayed(Duration(seconds: seconds));
   Navigator.of(context).pop();
   }
+String? parentescoSeleccionado;
+
+final List<String> opcionesParentesco = [
+  "Madre",
+  "Padre",
+  "Tutor",
+  "Profesor",
+];
+
 
 void mostrarDialogoContactos() {
   showDialog(
@@ -171,7 +180,7 @@ void mostrarDialogoContactos() {
                       Padding(
                         padding: EdgeInsets.only(right: 20),
                         child: Text(
-                          'NO.3',
+                          'NO.2',
                           style: TextStyle(
                             fontSize: 22,
                             fontWeight: FontWeight.w600,
@@ -216,16 +225,41 @@ void mostrarDialogoContactos() {
                           ),
 
                           const SizedBox(height: 20),
-                          _InputBox(
-                            text: 'Parentezco',
-                            controller: parentezcoController,
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return 'Campo obligatorio';
-                              }
-                              return null;
-                            },
-                          ),
+                          DropdownButtonFormField<String>(
+  value: parentescoSeleccionado,
+  decoration: InputDecoration(
+    hintText: "Selecciona el parentesco",
+    filled: true,
+    fillColor: Colors.white,
+    contentPadding: const EdgeInsets.symmetric(horizontal: 20),
+    border: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(20),
+      borderSide: BorderSide.none,
+    ),
+    errorBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(20),
+      borderSide: const BorderSide(color: Colors.red),
+    ),
+  ),
+  items: opcionesParentesco.map((String opcion) {
+    return DropdownMenuItem<String>(
+      value: opcion,
+      child: Text(
+        opcion,
+        style: const TextStyle(color: Colors.deepPurple),
+      ),
+    );
+  }).toList(),
+  onChanged: (value) {
+    setState(() {
+      parentescoSeleccionado = value;
+      parentezcoController.text = value ?? "";
+    });
+  },
+  validator: (value) =>
+      value == null ? "Selecciona una opción" : null,
+),
+
 
                           const SizedBox(height: 20),
 
@@ -254,7 +288,6 @@ void mostrarDialogoContactos() {
                        Expanded(
                         child: GestureDetector(
                           onTap: () async {
-                              await showLoading(context, seconds: 3);
                               mostrarDialogoContactos();
                           },
                           child: Container(

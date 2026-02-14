@@ -158,7 +158,7 @@ class InicioDeSesionState extends State<InicioDeSesion> {
     ),
     SizedBox(width: 8),
     Text(
-      'Registrarse',
+      'Iniciar sesion',
       style: TextStyle(
         fontSize: 12,
         fontWeight: FontWeight.w600,

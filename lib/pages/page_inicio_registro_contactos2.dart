@@ -289,7 +289,6 @@ void mostrarDialogoContactos() {
                        Expanded(
                         child: GestureDetector(
                           onTap: () async {
-                              await showLoading(context, seconds: 3);
                               mostrarDialogoContactos();
                           },
                           child: Container(

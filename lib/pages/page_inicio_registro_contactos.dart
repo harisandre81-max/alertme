@@ -27,59 +27,15 @@ class _ContactState extends State<Contact> {
   await Future.delayed(Duration(seconds: seconds));
   Navigator.of(context).pop();
 }
-  void mostrarDialogoContactos() {
-  showDialog(
-    context: context,
-    barrierDismissible: false,
-    builder: (BuildContext context) {
-      return AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-        ),
-        title: const Text(
-          'Necesitas registrar tus contactos',
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            color: Colors.deepPurple,
-          ),
-        ),
-        content: const Text(
-          'Debes registrar tus contactos de emergencia para poder usar la app.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context); // solo cierra el dialogo
-            },
-            child: const Text(
-              'Hacerlo ahora',
-              style: TextStyle(color: Colors.deepPurple),
-            ),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.deepPurple,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
-              ),
-            ),
-            onPressed: () {
-              Navigator.pop(context); // cerrar dialogo
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (_) => const MenuUI()),
-              );
-            },
-            child: const Text(
-              'Hacerlo más tarde',
-              style: TextStyle(color: Colors.white),
-            ),
-          ),
-        ],
-      );
-    },
-  );
-}
+String? parentescoSeleccionado;
+
+final List<String> opcionesParentesco = [
+  "Madre",
+  "Padre",
+  "Tutor",
+  "Profesor",
+];
+
 
 void mostrarDialogoContactos() {
   showDialog(
@@ -176,23 +132,8 @@ void mostrarDialogoContactos() {
       backgroundColor: const Color(0xFFE6F0D5),
 
       body: SafeArea(
-         child: SingleChildScrollView(
         child: Column(
           children: [
-            Align(
-  alignment: Alignment.topLeft,
-  child: IconButton(
-    icon: const Icon(
-      Icons.arrow_back,
-      color: Colors.deepPurple,
-      size: 28,
-    ),
-    onPressed: () {
-      Navigator.pop(context);
-    },
-  ),
-),
-
             // LOGO / ESCUDO (PLACEHOLDER)
             Container(
               height: 150,
@@ -210,7 +151,8 @@ void mostrarDialogoContactos() {
             const SizedBox(height: 20),
 
             // CARD PRINCIPAL
-           Container(
+            Expanded(
+              child: Container(
                 margin: const EdgeInsets.symmetric(horizontal: 20),
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
@@ -226,34 +168,21 @@ void mostrarDialogoContactos() {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: const [
-<<<<<<< HEAD
                          Padding(
                         padding: EdgeInsets.only(left: 30),
                         child: Text(
                           'REGISTRO DE CONTACTOS',
-=======
-                           Padding(
-                        padding: EdgeInsets.only(left: 100),
-                        child: Text(
-                          'Registro de contactos',
->>>>>>> d801475763a74121f3d1879fc99bb40822e0f717
                           style: TextStyle(
                             fontSize: 22,
                             fontWeight: FontWeight.w600,
                             color: Colors.deepPurple,
                           ),
                         ),
-                      ),         
+                      ),     
                       Padding(
-<<<<<<< HEAD
                         padding: EdgeInsets.only(right: 20),
                         child: Text(
                           'NO.1',
-=======
-                        padding: EdgeInsets.only(right: 50),
-                        child: Text(
-                          'contacto no 1',
->>>>>>> d801475763a74121f3d1879fc99bb40822e0f717
                           style: TextStyle(
                             fontSize: 22,
                             fontWeight: FontWeight.w600,
@@ -298,16 +227,41 @@ void mostrarDialogoContactos() {
                           ),
 
                           const SizedBox(height: 20),
-                          _InputBox(
-                            text: 'Parentezco',
-                            controller: parentezcoController,
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return 'Campo obligatorio';
-                              }
-                              return null;
-                            },
-                          ),
+                          DropdownButtonFormField<String>(
+  value: parentescoSeleccionado,
+  decoration: InputDecoration(
+    hintText: "Selecciona el parentesco",
+    filled: true,
+    fillColor: Colors.white,
+    contentPadding: const EdgeInsets.symmetric(horizontal: 20),
+    border: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(20),
+      borderSide: BorderSide.none,
+    ),
+    errorBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(20),
+      borderSide: const BorderSide(color: Colors.red),
+    ),
+  ),
+  items: opcionesParentesco.map((String opcion) {
+    return DropdownMenuItem<String>(
+      value: opcion,
+      child: Text(
+        opcion,
+        style: const TextStyle(color: Colors.deepPurple),
+      ),
+    );
+  }).toList(),
+  onChanged: (value) {
+    setState(() {
+      parentescoSeleccionado = value;
+      parentezcoController.text = value ?? "";
+    });
+  },
+  validator: (value) =>
+      value == null ? "Selecciona una opción" : null,
+),
+
 
                           const SizedBox(height: 20),
 
@@ -417,10 +371,10 @@ void mostrarDialogoContactos() {
                   ],
                 ),
               ),
+            ),
             const SizedBox(height: 20),
           ],
         ),
-      ),
       ),
     );
   }
