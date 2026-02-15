@@ -1,9 +1,17 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'page_inicio_registro_contactos2.dart';
 import 'page_menu.dart';
 import 'page_carga.dart';
+import 'package:alertme/database/database_helper.dart';
+import 'package:image_picker/image_picker.dart';
 class Contact extends StatefulWidget {
-  const Contact({super.key});
+  final int usuarioId;
+
+  const Contact({
+    super.key,
+    required this.usuarioId,
+  });
 
   @override
   State<Contact> createState() => _ContactState();
@@ -15,7 +23,6 @@ class _ContactState extends State<Contact> {
     final TextEditingController telController = TextEditingController();
     final TextEditingController parentezcoController = TextEditingController();
     final _formKey = GlobalKey<FormState>();
-
   
   Future<void> showLoading(BuildContext context, {int seconds = 3}) async {
   showDialog(
@@ -89,7 +96,7 @@ void mostrarDialogoContactos() {
       Navigator.pop(context);
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (_) => const MenuUI()),
+        MaterialPageRoute(builder: (_) => MenuUI(usuarioId: widget.usuarioId)),
       );
     },
     child: Row(
@@ -114,7 +121,20 @@ void mostrarDialogoContactos() {
     },
   );
 }
+  File? _profileImage;
+final ImagePicker _picker = ImagePicker();
 
+  Future<void> _pickImage() async {
+  final XFile? image = await _picker.pickImage(
+    source: ImageSource.gallery,
+  );
+
+  if (image != null) {
+    setState(() {
+      _profileImage = File(image.path);
+    });
+  }
+}
 
   @override
     void dispose() {
@@ -192,7 +212,40 @@ void mostrarDialogoContactos() {
                       ),
                       ],
                     ),
-                  const SizedBox(height: 30),
+                  const SizedBox(height: 40),
+                  // FOTO DE PERFIL
+            Stack(
+  alignment: Alignment.bottomRight,
+  children: [
+    CircleAvatar(
+      radius: 60,
+      backgroundColor: const Color.fromARGB(136, 255, 182, 98),
+      backgroundImage: _profileImage != null
+      ? FileImage(_profileImage!)
+      : const AssetImage('assets/avatar.png') as ImageProvider,
+    ),
+
+    GestureDetector(
+      onTap: () {
+         _pickImage();
+        print('Editar foto');
+      },
+      child: Container(
+        padding: const EdgeInsets.all(6),
+        decoration: const BoxDecoration(
+          color: Colors.deepPurple,
+          shape: BoxShape.circle,
+        ),
+        child: const Icon(
+          Icons.edit,
+          size: 18,
+          color: Colors.white,
+        ),
+      ),
+    ),
+  ],
+),
+const SizedBox(height: 30),
                     Form(
                       key: _formKey,
                       child: Column(
@@ -227,40 +280,79 @@ void mostrarDialogoContactos() {
                           ),
 
                           const SizedBox(height: 20),
-                          DropdownButtonFormField<String>(
-  value: parentescoSeleccionado,
-  decoration: InputDecoration(
-    hintText: "Selecciona el parentesco",
-    filled: true,
-    fillColor: Colors.white,
-    contentPadding: const EdgeInsets.symmetric(horizontal: 20),
-    border: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(20),
-      borderSide: BorderSide.none,
-    ),
-    errorBorder: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(20),
-      borderSide: const BorderSide(color: Colors.red),
-    ),
-  ),
-  items: opcionesParentesco.map((String opcion) {
-    return DropdownMenuItem<String>(
-      value: opcion,
+                          Column(
+  crossAxisAlignment: CrossAxisAlignment.start,
+  children: [
+
+    // 🔹 ETIQUETA ARRIBA
+    const Padding(
+      padding: EdgeInsets.only(left: 8, bottom: 5),
       child: Text(
-        opcion,
-        style: const TextStyle(color: Colors.deepPurple),
+        "Parentesco",
+        style: TextStyle(
+          fontSize: 18,
+          fontWeight: FontWeight.w600,
+          color: Colors.deepPurple,
+        ),
       ),
-    );
-  }).toList(),
-  onChanged: (value) {
-    setState(() {
-      parentescoSeleccionado = value;
-      parentezcoController.text = value ?? "";
-    });
-  },
-  validator: (value) =>
-      value == null ? "Selecciona una opción" : null,
+    ),
+
+    // 🔹 DROPDOWN
+    DropdownButtonFormField<String>(
+      value: parentescoSeleccionado,
+      hint: const Text(
+        "Selecciona el parentesco",
+        style: TextStyle(
+          color: Color.fromARGB(167, 104, 58, 183),
+          fontSize: 18,
+          fontWeight: FontWeight.w400,
+        ),
+      ),
+      decoration: InputDecoration(
+        filled: true,
+        fillColor: Colors.white,
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 20),
+        helperText: ' ',
+        helperStyle: const TextStyle(height: 0.8),
+        errorStyle: const TextStyle(
+          height: 1,
+          fontSize: 12,
+        ),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(20),
+          borderSide: BorderSide.none,
+        ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(20),
+          borderSide: const BorderSide(color: Colors.red),
+        ),
+        focusedErrorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(20),
+          borderSide: const BorderSide(color: Colors.red),
+        ),
+      ),
+      items: opcionesParentesco.map((String opcion) {
+        return DropdownMenuItem<String>(
+          value: opcion,
+          child: Text(
+            opcion,
+            style: const TextStyle(color: Colors.deepPurple),
+          ),
+        );
+      }).toList(),
+      onChanged: (value) {
+        setState(() {
+          parentescoSeleccionado = value;
+          parentezcoController.text = value ?? "";
+        });
+      },
+      validator: (value) =>
+          value == null ? "Selecciona una opción" : null,
+    ),
+  ],
 ),
+
 
 
                           const SizedBox(height: 20),
@@ -310,7 +402,7 @@ void mostrarDialogoContactos() {
     Text(
       'OMITIR',
       style: TextStyle(
-        fontSize: 16,
+        fontSize: 18,
         fontWeight: FontWeight.w600,
         color: Colors.white,
       ),
@@ -328,14 +420,27 @@ void mostrarDialogoContactos() {
                         Expanded(
                           child: GestureDetector(
                             onTap: () async {
-                              if (_formKey.currentState!.validate()) {
-                                await showLoading(context, seconds: 3);
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(builder: (context) => const Contact2()),
-                                );
-                              }
-                            },
+  if (_formKey.currentState!.validate()) {
+
+    await DatabaseHelper.instance.insertContactoLimitado({
+      'usuario_id': widget.usuarioId,  // 👈 AQUÍ SE USA
+      'nombre': nomController.text,
+      'edad': int.parse(edadController.text),
+      'telefono': telController.text,
+      'parentesco': parentescoSeleccionado,
+    });
+
+    await showLoading(context, seconds: 3);
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => Contact2(usuarioId: widget.usuarioId),
+      ),
+    );
+  }
+},
+
 
                             child: Container(
                               height: 56,
@@ -349,7 +454,7 @@ void mostrarDialogoContactos() {
     Text(
       'SIGUIENTE',
       style: TextStyle(
-        fontSize: 16,
+        fontSize: 18,
         fontWeight: FontWeight.w600,
         color: Colors.white,
       ),
@@ -407,7 +512,7 @@ class _InputBox extends StatelessWidget {
           child: Text(
             text,
             style: const TextStyle(
-              fontSize: 13,
+              fontSize: 18,
               fontWeight: FontWeight.w600,
               color: Colors.deepPurple,
             ),
@@ -420,7 +525,7 @@ class _InputBox extends StatelessWidget {
           keyboardType: keyboardType,
           validator: validator,
           style: const TextStyle(
-            fontSize: 14,
+            fontSize: 18,
             color: Colors.deepPurple,
           ),
           decoration: InputDecoration(
@@ -429,7 +534,7 @@ class _InputBox extends StatelessWidget {
               hintText: 'ingrese sus datos...',
           hintStyle: TextStyle(
             color: Colors.deepPurple.withOpacity(0.6),
-            fontSize: 14,
+            fontSize: 18,
           ),
             contentPadding:
                 const EdgeInsets.symmetric(horizontal: 20),

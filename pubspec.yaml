@@ -32,6 +32,8 @@ dependencies:
   url_launcher: ^6.2.1
   telephony: ^0.2.0
   location: ^5.0.0
+  sqflite: ^2.3.0
+  path: ^1.8.3
 
 
   flutter:

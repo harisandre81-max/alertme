@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'page_menu.dart';
 import 'page_registro_user.dart';
 import 'page_carga.dart';
+import 'package:alertme/database/database_helper.dart';
 class InicioDeSesion extends StatefulWidget {
   const InicioDeSesion({super.key});
 
@@ -132,15 +133,37 @@ class InicioDeSesionState extends State<InicioDeSesion> {
                       // SIGUIENTE
                        GestureDetector(
                             onTap: () async {
-                              if (_formKey.currentState!.validate()) {
-                                await showLoading(context, seconds: 3);
+  if (_formKey.currentState!.validate()) {
 
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(builder: (context) => const MenuUI()),
-                                );
-                              }
-                            },
+    final user = await DatabaseHelper.instance.login(
+      emailController.text,
+      passwordController.text,
+    );
+
+    if (user != null) {
+
+      await showLoading(context, seconds: 2);
+
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => MenuUI(
+            usuarioId: user['id'],
+          ),
+        ),
+      );
+
+    } else {
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Correo o contraseña incorrectos'),
+        ),
+      );
+    }
+  }
+},
+
                             child: Container(
                               height: 56, 
                               width: double.infinity,
@@ -160,7 +183,7 @@ class InicioDeSesionState extends State<InicioDeSesion> {
     Text(
       'Iniciar sesion',
       style: TextStyle(
-        fontSize: 12,
+        fontSize: 18,
         fontWeight: FontWeight.w600,
         color: Colors.white,
       ),
@@ -189,7 +212,7 @@ class InicioDeSesionState extends State<InicioDeSesion> {
                             child: Text(
                                 '¿Aún no tienes una cuenta?',
                                 style: TextStyle(
-                                  fontSize: 14,
+                                  fontSize: 18,
                                   fontWeight: FontWeight.w600,
                                   color: Colors.deepPurple,
                                 ),
@@ -247,7 +270,7 @@ class _InputBox extends StatefulWidget {
           child: Text(
             widget.text,
             style: const TextStyle(
-              fontSize: 13,
+              fontSize: 18,
               fontWeight: FontWeight.w600,
               color: Colors.deepPurple,
             ),
@@ -261,7 +284,7 @@ class _InputBox extends StatefulWidget {
           validator: widget.validator,
           obscureText: widget.isPassword ? _obscure : false,
           style: const TextStyle(
-            fontSize: 14,
+            fontSize: 18,
             color: Colors.deepPurple,
           ),
           decoration: InputDecoration(
@@ -270,7 +293,7 @@ class _InputBox extends StatefulWidget {
               hintText: 'ingrese sus datos...',
           hintStyle: TextStyle(
             color: Colors.deepPurple.withOpacity(0.6),
-            fontSize: 14,
+            fontSize: 18,
           ),
             contentPadding:
                 const EdgeInsets.symmetric(horizontal: 20),

@@ -1,9 +1,13 @@
+import 'dart:io';
 import 'package:alertme/pages/page_inicio_de_sesion.dart';
 import 'package:flutter/material.dart';
 import 'page_menu.dart';
 import 'page_inicio_registro_contactos.dart';
 import 'page_terminos_y_condiciones.dart';
 import 'page_carga.dart';
+import 'package:alertme/database/database_helper.dart';
+import 'package:image_picker/image_picker.dart';
+ 
 class RegisterUser extends StatefulWidget {
   const RegisterUser({super.key});
 
@@ -44,6 +48,20 @@ class _RegisterUserState extends State<RegisterUser> {
       dirController.dispose();
       super.dispose();
     }
+  File? _profileImage;
+final ImagePicker _picker = ImagePicker();
+
+  Future<void> _pickImage() async {
+  final XFile? image = await _picker.pickImage(
+    source: ImageSource.gallery,
+  );
+
+  if (image != null) {
+    setState(() {
+      _profileImage = File(image.path);
+    });
+  }
+}           
 
   @override
   Widget build(BuildContext context) {
@@ -97,7 +115,40 @@ class _RegisterUserState extends State<RegisterUser> {
                 ),
               ),
 
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 40),
+                   // FOTO DE PERFIL
+            Stack(
+  alignment: Alignment.bottomRight,
+  children: [
+    CircleAvatar(
+      radius: 60,
+      backgroundColor: const Color.fromARGB(136, 255, 182, 98),
+      backgroundImage: _profileImage != null
+      ? FileImage(_profileImage!)
+      : const AssetImage('assets/avatar.png') as ImageProvider,
+    ),
+
+    GestureDetector(
+      onTap: () {
+         _pickImage();
+        print('Editar foto');
+      },
+      child: Container(
+        padding: const EdgeInsets.all(6),
+        decoration: const BoxDecoration(
+          color: Colors.deepPurple,
+          shape: BoxShape.circle,
+        ),
+        child: const Icon(
+          Icons.edit,
+          size: 18,
+          color: Colors.white,
+        ),
+      ),
+    ),
+  ],
+),
+                    const SizedBox(height: 30),
                     Form(
                       key: _formKey,
                       child: Column(
@@ -113,7 +164,7 @@ class _RegisterUserState extends State<RegisterUser> {
                             },
                           ),
 
-                          const SizedBox(height: 10),
+                          const SizedBox(height: 20),
 
                           _InputBox(
                             text: 'Edad',
@@ -127,7 +178,7 @@ class _RegisterUserState extends State<RegisterUser> {
                             },
                           ),
                           
-                          const SizedBox(height: 10),
+                          const SizedBox(height: 20),
                           _InputBox(
                             text: 'Dirección',
                             controller: dirController,
@@ -140,7 +191,7 @@ class _RegisterUserState extends State<RegisterUser> {
                             },
                           ),
 
-                          const SizedBox(height: 10),
+                          const SizedBox(height: 20),
 
                           _InputBox(
                             text: 'Telefono',
@@ -154,7 +205,7 @@ class _RegisterUserState extends State<RegisterUser> {
                             },
                           ),
 
-                          const SizedBox(height: 10),
+                          const SizedBox(height: 20),
 
                           _InputBox(
   text: 'Correo electrónico',
@@ -178,7 +229,7 @@ class _RegisterUserState extends State<RegisterUser> {
 ),
 
 
-                          const SizedBox(height: 5),
+                          const SizedBox(height: 20),
 
                           _InputBox(
                             text: 'Contraseña',
@@ -205,7 +256,7 @@ class _RegisterUserState extends State<RegisterUser> {
                             },
                           ),
 
-                          const SizedBox(height: 5),
+                          const SizedBox(height: 20),
 
                           Row(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -260,30 +311,56 @@ class _RegisterUserState extends State<RegisterUser> {
                       ),
                     ),
 
-                    const SizedBox(height: 10),
+                    const SizedBox(height: 20),
 
                     // BOTONES
                     // SIGUIENTE
                           GestureDetector(
-                            onTap: () async  {
-                              if (_formKey.currentState!.validate()) {
-                                 if (!acceptTerms) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
-                                        content: Text('Debes aceptar los términos y condiciones'),
-                                      ),
-                                    );
-                                    return;
-                                  }
+                            onTap: () async {
+  if (_formKey.currentState!.validate()) {
 
-                                await showLoading(context, seconds: 3);
+    if (!acceptTerms) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Debes aceptar los términos y condiciones'),
+        ),
+      );
+      return;
+    }
+    
 
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(builder: (context) => const Contact()),
-                                );
-                              }
-                            },
+    try {
+
+      // 🔹 GUARDAR USUARIO EN SQLITE
+      final userId = await DatabaseHelper.instance.insertUsuario({
+        'nombre': nomController.text,
+        'edad': int.parse(edadController.text),
+        'direccion': dirController.text,
+        'telefono': telController.text,
+        'email': emailController.text,
+        'password': passwordController.text,
+        'foto': _profileImage!.path, // <- agregar esta línea
+      });
+
+      await showLoading(context, seconds: 2);
+
+      // 🔹 PASAR EL ID AL REGISTRO DE CONTACTO
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => Contact(usuarioId: userId),
+        ),
+      );
+
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error al registrar usuario: $e'),
+        ),
+      );
+    }
+  }
+},
                             child: Container(
                               height: 56, 
                               width: double.infinity,
@@ -293,25 +370,24 @@ class _RegisterUserState extends State<RegisterUser> {
                               ),
                               child: const Center(
                                 child: Row(
-  mainAxisAlignment: MainAxisAlignment.center,
-  children: const [
-    Icon(
-      Icons.person_add_alt_1,
-      color: Colors.white,
-      size: 18,
-    ),
-    SizedBox(width: 8),
-    Text(
-      'Registrarse',
-      style: TextStyle(
-        fontSize: 12,
-        fontWeight: FontWeight.w600,
-        color: Colors.white,
-      ),
-    ),
-  ],
-),
-
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: const [
+                                  Icon(
+                                    Icons.person_add_alt_1,
+                                    color: Colors.white,
+                                    size: 18,
+                                  ),
+                                  SizedBox(width: 8),
+                                  Text(
+                                    'Registrarse',
+                                    style: TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ],
+                              ),
                               ),
                             ),
                           ),
@@ -332,7 +408,7 @@ class _RegisterUserState extends State<RegisterUser> {
                             child: Text(
                                 '¿Ya tienes una cuenta?',
                                 style: TextStyle(
-                                  fontSize: 14,
+                                  fontSize: 16,
                                   fontWeight: FontWeight.w600,
                                   color: Colors.deepPurple,
                                 ),
@@ -385,7 +461,7 @@ Widget build(BuildContext context) {
         child: Text(
           widget.text, // este será el título
           style: const TextStyle(
-            fontSize: 13,
+            fontSize: 18,
             fontWeight: FontWeight.w600,
             color: Colors.deepPurple,
           ),
@@ -399,7 +475,7 @@ Widget build(BuildContext context) {
         validator: widget.validator,
         obscureText: widget.isPassword ? _obscure : false,
         style: const TextStyle(
-          fontSize: 14,
+          fontSize: 18,
           color: Colors.deepPurple,
         ),
         decoration: InputDecoration(
@@ -408,7 +484,7 @@ Widget build(BuildContext context) {
             hintText: 'ingrese sus datos...',
           hintStyle: TextStyle(
             color: Colors.deepPurple.withOpacity(0.6),
-            fontSize: 14,
+            fontSize: 18,
           ),
           contentPadding: const EdgeInsets.symmetric(horizontal: 20),
           
@@ -434,7 +510,7 @@ Widget build(BuildContext context) {
 
   errorStyle: const TextStyle(
     height: 1,
-    fontSize: 12,
+    fontSize: 14,
   ),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(20),

@@ -1,57 +1,110 @@
 import 'package:flutter/material.dart';
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
-
-
+import 'page_inicio_de_sesion.dart';
+import 'package:alertme/database/database_helper.dart';
 class UserProfilePage extends StatefulWidget {
-  const UserProfilePage({super.key});
-  
+  final int usuarioId; // <-- id del usuario actual
+
+  const UserProfilePage({super.key, required this.usuarioId});
+
   @override
   State<UserProfilePage> createState() => _UserProfilePageState();
 }
 
-class _UserProfilePageState extends State<UserProfilePage> {
-  String userName = 'Luis Fernando Herrera';
-  String email = 'luis@email.com';
-  String phone = '555 555 5555';
-  String age = '25';
-  String city = 'Ciudad de México';
 
-  
+class _UserProfilePageState extends State<UserProfilePage> {
+  String userName = '';
+  String email = '';
+  String phone = '';
+  String age = '';
+  String city = '';
+  String? fotoPath;
+
+
+  String password = ''; // almacena la contraseña actual
+
+Future<void> _loadUserData() async {
+  final db = DatabaseHelper.instance;
+  final usuario = await db.loginById(widget.usuarioId);
+
+  if (usuario != null) {
+    setState(() {
+      userName = usuario['nombre'];
+      email = usuario['email'];
+      phone = usuario['telefono'];
+      age = usuario['edad'].toString();
+      city = usuario['direccion'];
+      password = usuario['password']; 
+      fotoPath = usuario['foto']; // si tu tabla tiene la columna 'foto'
+    });
+  }
+}
+
+  Future<void> _updateUsuario() async {
+  await DatabaseHelper.instance.updateUsuario(widget.usuarioId, {
+    'nombre': userName,
+    'email': email,
+    'telefono': phone,
+    'edad': int.tryParse(age) ?? 0,
+    'direccion': city,
+    'password': password,
+  });
+}
+
   File? _profileImage;
 final ImagePicker _picker = ImagePicker();
 
   void _editName(BuildContext context) {
-    final controller = TextEditingController(text: userName);
+  final controller = TextEditingController(text: userName);
 
-    showDialog(
-      context: context,
-      builder: (_) => AlertDialog(
-        title: const Text('Editar nombre'),
-        content: TextField(
-          controller: controller,
-          decoration: const InputDecoration(
-            hintText: 'Nombre completo',
-          ),
+  showDialog(
+    context: context,
+    builder: (_) => AlertDialog(
+      title: const Text('Editar nombre'),
+      content: TextField(controller: controller),
+      actions: [
+         TextButton(
+        onPressed: () => Navigator.pop(context),
+        child: Row(
+          mainAxisSize: MainAxisSize.min, // para que el Row ocupe solo el espacio necesario
+          children: const [
+            Icon(Icons.cancel, color: Colors.deepPurple),
+            SizedBox(width: 5),
+            Text('Cancelar', style: TextStyle(color: Colors.deepPurple)),
+          ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancelar'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              setState(() {
-                userName = controller.text;
-              });
-              Navigator.pop(context);
-            },
-            child: const Text('Guardar'),
-          ),
-        ],
       ),
-    );
-  }
+        ElevatedButton(
+  onPressed: () async {
+    // 1️⃣ Actualiza el estado local (síncrono)
+    setState(() {
+      userName = controller.text;
+    });
+
+    // 2️⃣ Actualiza la base de datos fuera de setState
+    await _updateUsuario();
+
+    // 3️⃣ Cierra el diálogo
+    Navigator.pop(context);
+  },
+   style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.deepPurple, // opcional: cambia color
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: const [
+            Icon(Icons.save, color: Colors.white),
+            SizedBox(width: 5),
+            Text('Guardar'),
+          ],
+        ),
+),
+      ],
+    ),
+  );
+}
+
 
   void _editField({
   required String title,
@@ -67,16 +120,42 @@ final ImagePicker _picker = ImagePicker();
       content: TextField(controller: controller),
       actions: [
         TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: const Text('Cancelar'),
+        onPressed: () => Navigator.pop(context),
+        child: Row(
+          mainAxisSize: MainAxisSize.min, // para que el Row ocupe solo el espacio necesario
+          children: const [
+            Icon(Icons.cancel, color: Colors.deepPurple),
+            SizedBox(width: 5),
+            Text('Cancelar', style: TextStyle(color: Colors.deepPurple)),
+          ],
         ),
+      ),
         ElevatedButton(
-          onPressed: () {
-            setState(() => onSave(controller.text));
-            Navigator.pop(context);
-          },
-          child: const Text('Guardar'),
+  onPressed: () async {
+    // 1️⃣ Primero actualiza el estado local (síncrono)
+    setState(() {
+      onSave(controller.text); // aquí solo cambia el valor en memoria
+    });
+
+    // 2️⃣ Luego, fuera de setState, haces la operación async
+    await _updateUsuario();
+
+    // 3️⃣ Finalmente, cierras el diálogo
+    Navigator.pop(context);
+  },
+   style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.deepPurple.withOpacity(0.6), // opcional: cambia color
         ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: const [
+            Icon(Icons.save, color: Colors.white),
+            SizedBox(width: 5),
+            Text('Guardar', style: const TextStyle(color: Colors.white),),
+          ],
+        ),
+),
+
       ],
     ),
   );
@@ -84,16 +163,21 @@ final ImagePicker _picker = ImagePicker();
 
 
   Future<void> _pickImage() async {
-  final XFile? image = await _picker.pickImage(
-    source: ImageSource.gallery,
-  );
+  final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
 
   if (image != null) {
     setState(() {
       _profileImage = File(image.path);
+      fotoPath = image.path; // actualizamos la variable
+    });
+
+    // Guardamos en la base de datos
+    await DatabaseHelper.instance.updateUsuario(widget.usuarioId, {
+      'foto': image.path,
     });
   }
 }
+
   void _showLogoutDialog(BuildContext context) {
   showDialog(
     context: context,
@@ -136,7 +220,11 @@ final ImagePicker _picker = ImagePicker();
     ),
   );
 }
-
+@override
+void initState() {
+  super.initState();
+  _loadUserData(); // cargamos datos al iniciar la pantalla
+}
 
   @override
   Widget build(BuildContext context) {
@@ -197,13 +285,13 @@ final ImagePicker _picker = ImagePicker();
   alignment: Alignment.bottomRight,
   children: [
     CircleAvatar(
-      radius: 60,
-      backgroundColor: const Color.fromARGB(136, 255, 182, 98),
-      backgroundImage: _profileImage != null
+  radius: 60,
+  backgroundImage: _profileImage != null
       ? FileImage(_profileImage!)
-      : const AssetImage('assets/avatar.png') as ImageProvider,
-    ),
-
+      : (fotoPath != null
+          ? FileImage(File(fotoPath!))
+          : const AssetImage('assets/avatar.png') as ImageProvider),
+),
     GestureDetector(
       onTap: () {
          _pickImage();
@@ -262,7 +350,11 @@ final ImagePicker _picker = ImagePicker();
               onEdit: () => _editField(
                 title: 'Editar email',
                 initialValue: email,
-                onSave: (v) => email = v,
+                onSave: (v) async {
+                  setState(() => email = v);
+                  await _updateUsuario();
+                },
+
               ),
             ),
 
@@ -272,7 +364,10 @@ final ImagePicker _picker = ImagePicker();
               onEdit: () => _editField(
                 title: 'Editar teléfono',
                 initialValue: phone,
-                onSave: (v) => phone = v,
+                onSave: (v) async {
+                  setState(() => phone = v);
+                  await _updateUsuario();
+                },
               ),
             ),
 
@@ -282,7 +377,10 @@ final ImagePicker _picker = ImagePicker();
               onEdit: () => _editField(
                 title: 'Editar edad',
                 initialValue: age,
-                onSave: (v) => age = v,
+                onSave: (v) async {
+                  setState(() => age = v);
+                  await _updateUsuario();
+                },
               ),
             ),
 
@@ -292,7 +390,10 @@ final ImagePicker _picker = ImagePicker();
               onEdit: () => _editField(
                 title: 'Editar ciudad',
                 initialValue: city,
-                onSave: (v) => city = v,
+                onSave: (v) async {
+                  setState(() => city = v);
+                  await _updateUsuario();
+                },
               ),
             ),
             const SizedBox(height: 40),
@@ -321,7 +422,7 @@ GestureDetector(
           'Cerrar sesión',
           style: TextStyle(
             color: Colors.white,
-            fontWeight: FontWeight.w600,
+            fontWeight: FontWeight.w600, fontSize: 18
           ),
         ),
       ],
@@ -360,13 +461,13 @@ class _InfoTile extends StatelessWidget {
       child: Row(
         children: [
           Icon(icon, color: Colors.deepPurple),
-          const SizedBox(width: 12),
+          const SizedBox(width: 18),
 
           Expanded(
             child: Text(
               text,
               style: const TextStyle(
-                fontSize: 14,
+                fontSize: 18,
                 color: Colors.deepPurple,
               ),
             ),

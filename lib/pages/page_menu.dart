@@ -6,7 +6,7 @@ import 'dart:async';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:location/location.dart';
 import 'package:telephony/telephony.dart';
-
+import 'package:alertme/database/database_helper.dart';
 
  final Telephony telephony = Telephony.instance;
  Location location = Location();
@@ -14,25 +14,57 @@ import 'package:telephony/telephony.dart';
 //Fin del codigo de verificacion de permisos de ubicacion
 
 //Inicio de la funcion de mensaje y ubicacion
- void mostrarubicacion() async{
+void mostrarubicacion(int usuarioId) async {
+  // 1️⃣ Verificar permisos y obtener ubicación
+  Location location = Location();
+  bool serviceEnabled = await location.serviceEnabled();
+  if (!serviceEnabled) serviceEnabled = await location.requestService();
+  if (!serviceEnabled) return;
+
+  PermissionStatus permissionGranted = await location.hasPermission();
+  if (permissionGranted == PermissionStatus.denied) {
+    permissionGranted = await location.requestPermission();
+    if (permissionGranted != PermissionStatus.granted) return;
+  }
+
   LocationData datos = await location.getLocation();
-
-  print('Latitud: ${datos.latitude}');
-  print('Longitud: ${datos.longitude}');
-  print('Altitud: ${datos.altitude}');
-
   String ubicacion = "https://maps.google.com/?q=${datos.latitude},${datos.longitude}";
 
-  await telephony.sendSms(to: '6751035059', message: 'Ayuda, estoy en peligro' + '\nMi ubcacion es: $ubicacion' );
+  // 2️⃣ Obtener contactos del usuario
+  List<Map<String, dynamic>> contactos =
+      await DatabaseHelper.instance.getContactos(usuarioId);
 
- }
+  if (contactos.isEmpty) {
+    print("No hay contactos registrados para enviar el SOS.");
+    return;
+  }
+
+  // 3️⃣ Enviar SMS a todos los contactos
+  final Telephony telephony = Telephony.instance;
+  for (var contacto in contactos) {
+    String telefono = contacto['telefono'];
+    await telephony.sendSms(
+      to: telefono,
+      message: '¡Ayuda! Estoy en peligro.\nMi ubicación es: $ubicacion',
+    );
+  }
+
+  print("SOS enviado a ${contactos.length} contactos.");
+}
+
 
 class MenuUI extends StatefulWidget {
-  const MenuUI({super.key});
+  final int usuarioId;
+
+  const MenuUI({
+    super.key,
+    required this.usuarioId,
+  });
 
   @override
   State<MenuUI> createState() => _MenuUIState();
 }
+
 
 class SectionHeader extends StatelessWidget {
   final String title;
@@ -109,7 +141,7 @@ class _MenuUIState extends State<MenuUI> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color.fromARGB(255, 255, 255, 255),
+      backgroundColor: Color.fromARGB(255, 255, 252, 247),
 
       // SUB MENÚ SUPERIOR
       appBar: AppBar(
@@ -141,7 +173,7 @@ class _MenuUIState extends State<MenuUI> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => const UserProfilePage(),
+                    builder: (_) => UserProfilePage(usuarioId: widget.usuarioId),
                   ),
                 );
               },
@@ -195,7 +227,7 @@ class _MenuUIState extends State<MenuUI> {
     const SizedBox(height: 15),
 
     Center(
-      child: ContactSlider(), // 👈 Nuevo widget
+      child: ContactSlider(usuarioId: widget.usuarioId), // 👈 Nuevo widget
     ),
   ],
 ),
@@ -313,10 +345,10 @@ const SizedBox(height: 15),
       
       child: Center(
   child: SizedBox(
-    width: 100,
+    width: 120,
     height: 100,
     child: ElevatedButton(
-      onPressed: mostrarubicacion,
+      onPressed: () => mostrarubicacion(widget.usuarioId),
       style: ElevatedButton.styleFrom(
         backgroundColor: const Color.fromARGB(255, 255, 98, 98),
         shape: const CircleBorder(),
@@ -344,7 +376,7 @@ const SizedBox(height: 15),
     // ===============================
     Positioned(
       right: 20,
-      top: MediaQuery.of(context).size.height / 2 - 20,
+      top: MediaQuery.of(context).size.height / 2 + 110,
       child: GestureDetector(
         onTap: () async {
           await showLoading(context, seconds: 3);
@@ -359,7 +391,7 @@ const SizedBox(height: 15),
           width: 50,
           height: 50,
           decoration: BoxDecoration(
-            color:  Color(0xFFFFB562),
+            color: const Color.fromARGB(255, 230, 212, 255), // morado que ya usas
             shape: BoxShape.circle,
             boxShadow: [
               BoxShadow(
@@ -369,11 +401,11 @@ const SizedBox(height: 15),
               ),
             ],
           ),
-          child: const Icon(
-            Icons.add,
-            color: Colors.white,
-            size: 22,
-          ),
+           child: const Icon(
+        Icons.chat_bubble_rounded,
+        color: Colors.white,
+        size: 28,
+      ),
         ),
       ),
     ),
@@ -386,17 +418,28 @@ const SizedBox(height: 15),
 }
 
 class ContactCard extends StatefulWidget {
-  const ContactCard({super.key});
+  final Map<String, dynamic> contacto;
+
+  const ContactCard({super.key, required this.contacto});
 
   @override
   State<ContactCard> createState() => _ContactCardState();
 }
 
 class _ContactCardState extends State<ContactCard> {
-  String nombre = 'Luis';
-  String edad = '19';
-  String parentesco = 'Amigo';
-  String telefono = '6751035059';
+  late String nombre;
+  late String edad;
+  late String parentesco;
+  late String telefono;
+
+  @override
+  void initState() {
+    super.initState();
+    nombre = widget.contacto['nombre'];
+    edad = widget.contacto['edad'].toString();
+    parentesco = widget.contacto['parentesco'];
+    telefono = widget.contacto['telefono'];
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -410,49 +453,45 @@ class _ContactCardState extends State<ContactCard> {
       ),
       child: Row(
         children: [
-          // Avatar
-          
           const SizedBox(width: 16),
-
-          // Info
           Expanded(
             child: Padding(
-    padding: const EdgeInsets.only(left: 40),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text( nombre,
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFF5E3AA1),
+              padding: const EdgeInsets.only(left: 40),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          nombre,
+                          style: const TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF5E3AA1),
+                          ),
                         ),
                       ),
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.edit, size: 20,
-                      color: Color(0xFF5E3AA1),),
-                      onPressed: _editCard,
-                    )
-                  ],
-                ),
-                const SizedBox(height: 8),
-                 Text('Edad: $edad', style: const TextStyle(color: Color(0xFF5E3AA1),fontSize: 18)),
-                 Text('Parentezco: $parentesco', style: const TextStyle(color: Color(0xFF5E3AA1),fontSize: 18)),
-                 Text(telefono, style: const TextStyle(color: Color(0xFF5E3AA1),fontSize: 18)),
-
-              ],
+                      IconButton(
+                        icon: const Icon(Icons.edit, size: 20, color: Color(0xFF5E3AA1)),
+                        onPressed: _editCard,
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Text('Edad: $edad', style: const TextStyle(color: Color(0xFF5E3AA1), fontSize: 20, fontWeight: FontWeight.w500)),
+                  Text('Parentesco: $parentesco', style: const TextStyle(color: Color(0xFF5E3AA1), fontSize: 20, fontWeight: FontWeight.w500)),
+                  Text('Teléfono: $telefono', style: const TextStyle(color: Color(0xFF5E3AA1), fontSize: 20, fontWeight: FontWeight.w500)),
+                ],
+              ),
             ),
-          ),
           ),
         ],
       ),
     );
   }
-    void _editCard() {
+
+  void _editCard() {
     final nameCtrl = TextEditingController(text: nombre);
     final ageCtrl = TextEditingController(text: edad);
     final relationCtrl = TextEditingController(text: parentesco);
@@ -462,92 +501,93 @@ class _ContactCardState extends State<ContactCard> {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-       builder: (_) => Align(
-    alignment: Alignment.topCenter,
-    child: Container(
-      margin: const EdgeInsets.only(top: 150),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-      ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(controller: nameCtrl, decoration: const InputDecoration(labelText: 'Nombre')),
-            TextField(controller: ageCtrl, decoration: const InputDecoration(labelText: 'Edad')),
-            TextField(controller: relationCtrl, decoration: const InputDecoration(labelText: 'Parentezco')),
-            TextField(controller: phoneCtrl, decoration: const InputDecoration(labelText: 'Teléfono')),
-            const SizedBox(height: 16),
-            Row(
-  mainAxisAlignment: MainAxisAlignment.end,
-  children: [
-    TextButton(
-      onPressed: () => Navigator.pop(context),
-      child: const Text('Cancelar'),
-    ),
-    const SizedBox(width: 8),
-    ElevatedButton(
-      onPressed: () {
-        setState(() {
-          nombre = nameCtrl.text;
-          edad = ageCtrl.text;
-          parentesco = relationCtrl.text;
-          telefono = phoneCtrl.text;
-        });
-        Navigator.pop(context);
-      },
-      child: const Text('Guardar'),
-    ),
-  ],
-),
-
-          ],
+      builder: (_) => Align(
+        alignment: Alignment.topCenter,
+        child: Container(
+          margin: const EdgeInsets.only(top: 150),
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16)),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(controller: nameCtrl, decoration: const InputDecoration(labelText: 'Nombre')),
+              TextField(controller: ageCtrl, decoration: const InputDecoration(labelText: 'Edad')),
+              TextField(controller: relationCtrl, decoration: const InputDecoration(labelText: 'Parentesco')),
+              TextField(controller: phoneCtrl, decoration: const InputDecoration(labelText: 'Teléfono')),
+              const SizedBox(height: 16),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancelar')),
+                  const SizedBox(width: 8),
+                  ElevatedButton(
+                    onPressed: () {
+                      setState(() {
+                        nombre = nameCtrl.text;
+                        edad = ageCtrl.text;
+                        parentesco = relationCtrl.text;
+                        telefono = phoneCtrl.text;
+                      });
+                      Navigator.pop(context);
+                    },
+                    child: const Text('Guardar'),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
-       ),
     );
   }
-
 }
 
+
 class ContactSlider extends StatefulWidget {
-  const ContactSlider({super.key});
+  final int usuarioId;
+  const ContactSlider({super.key, required this.usuarioId});
 
   @override
   State<ContactSlider> createState() => _ContactSliderState();
 }
 
 class _ContactSliderState extends State<ContactSlider> {
-
   final PageController _controller = PageController();
   int currentPage = 0;
+  List<Map<String, dynamic>> contacts = [];
 
-  final List<Widget> contacts = const [
-    ContactCard(),
-    ContactCard(),
-  ];
+  @override
+  void initState() {
+    super.initState();
+    _loadContacts();
+  }
+
+  Future<void> _loadContacts() async {
+  final datos = await DatabaseHelper.instance.getContactos(widget.usuarioId);
+  setState(() {
+    contacts = datos;
+  });
+}
+
 
   void nextPage() {
     if (currentPage < contacts.length - 1) {
-      _controller.nextPage(
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeInOut,
-      );
+      _controller.nextPage(duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
     }
   }
 
   void previousPage() {
     if (currentPage > 0) {
-      _controller.previousPage(
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeInOut,
-      );
+      _controller.previousPage(duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    if (contacts.isEmpty) {
+      return const Center(child: Text('No hay contactos registrados'));
+    }
+
     return Container(
       width: 388,
       height: 220,
@@ -558,48 +598,57 @@ class _ContactSliderState extends State<ContactSlider> {
       padding: const EdgeInsets.all(16),
       child: Stack(
         children: [
-
-          // PAGE VIEW
           PageView.builder(
-            controller: _controller,
-            physics: const NeverScrollableScrollPhysics(), // 👈 QUITA EL SCROLL
-            itemCount: contacts.length,
-            onPageChanged: (index) {
-              setState(() {
-                currentPage = index;
-              });
-            },
-            itemBuilder: (context, index) {
-              return contacts[index];
-            },
-          ),
+  controller: _controller,
+  physics: const NeverScrollableScrollPhysics(),
+  itemCount: contacts.length < 3 ? contacts.length + 1 : contacts.length, // 👈 si hay menos de 3 contactos, añadimos 1 extra para el '+'
+  onPageChanged: (index) {
+    setState(() => currentPage = index);
+  },
+  itemBuilder: (context, index) {
+  if (index < contacts.length) {
+    // Mostrar contacto existente
+    return ContactCard(contacto: contacts[index]);
+  } else {
+    // Mostrar tarjeta de '+' para agregar contacto
+    return GestureDetector(
+      onTap: () {
+        // ✅ Aquí va el bloque que mencionaste
+        String route = '';
+        if (contacts.length == 0) route = '/contact1';
+        if (contacts.length == 1) route = '/contact2';
+        if (contacts.length == 2) route = '/contact3';
 
-          // BOTÓN IZQUIERDA <
+        Navigator.pushNamed(context, route, arguments: widget.usuarioId)
+               .then((_) => _loadContacts());
+      },
+      child: Container(
+        width: 360,
+        height: 180,
+        margin: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.deepPurple.shade100,
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: const Center(
+          child: Icon(Icons.add, size: 50, color: Colors.white),
+        ),
+      ),
+    );
+  }
+},
+),
+
           if (currentPage > 0)
-            Positioned(
-              left: 0,
-              top: 70,
-              child: IconButton(
-                icon: const Icon(Icons.chevron_left, size: 36),
-                onPressed: previousPage,
-              ),
-            ),
-
-          // BOTÓN DERECHA >
+            Positioned(left: 0, top: 70, child: IconButton(icon: const Icon(Icons.chevron_left, size: 36), onPressed: previousPage)),
           if (currentPage < contacts.length - 1)
-            Positioned(
-              right: 0,
-              top: 70,
-              child: IconButton(
-                icon: const Icon(Icons.chevron_right, size: 36),
-                onPressed: nextPage,
-              ),
-            ),
+            Positioned(right: 0, top: 70, child: IconButton(icon: const Icon(Icons.chevron_right, size: 36), onPressed: nextPage)),
         ],
       ),
     );
   }
 }
+
 
 class _VerticalBox extends StatelessWidget {
   final String text;
@@ -640,7 +689,7 @@ class _VerticalBox extends StatelessWidget {
               child: Text(
                 text,
                 style: const TextStyle(
-                  fontSize: 16,
+                  fontSize: 20,
                   fontWeight: FontWeight.w600,
                   color: Colors.deepPurple,
                 ),
