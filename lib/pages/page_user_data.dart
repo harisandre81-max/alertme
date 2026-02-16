@@ -3,6 +3,9 @@ import 'dart:io';
 import 'package:image_picker/image_picker.dart';
 import 'page_inicio_de_sesion.dart';
 import 'package:alertme/database/database_helper.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:path/path.dart';
+
 class UserProfilePage extends StatefulWidget {
   final int usuarioId; // <-- id del usuario actual
 
@@ -37,6 +40,9 @@ Future<void> _loadUserData() async {
       city = usuario['direccion'];
       password = usuario['password']; 
       fotoPath = usuario['foto']; // si tu tabla tiene la columna 'foto'
+      if (usuario['foto'] != null && usuario['foto'].toString().isNotEmpty) {
+  _profileImage = File(usuario['foto']);
+}
     });
   }
 }
@@ -89,14 +95,14 @@ final ImagePicker _picker = ImagePicker();
     Navigator.pop(context);
   },
    style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.deepPurple, // opcional: cambia color
+          backgroundColor: Colors.deepPurple.withOpacity(0.6), // opcional: cambia color
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: const [
             Icon(Icons.save, color: Colors.white),
             SizedBox(width: 5),
-            Text('Guardar'),
+            Text('Guardar', style: const TextStyle(color: Colors.white),),
           ],
         ),
 ),
@@ -107,10 +113,12 @@ final ImagePicker _picker = ImagePicker();
 
 
   void _editField({
+  required BuildContext context,
   required String title,
   required String initialValue,
   required Function(String) onSave,
-}) {
+})
+ {
   final controller = TextEditingController(text: initialValue);
 
   showDialog(
@@ -166,17 +174,29 @@ final ImagePicker _picker = ImagePicker();
   final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
 
   if (image != null) {
+    final Directory appDir = await getApplicationDocumentsDirectory();
+
+    // Nombre único
+    final String fileName =
+        'perfil_${widget.usuarioId}_${DateTime.now().millisecondsSinceEpoch}.png';
+
+    final String savedPath = join(appDir.path, fileName);
+
+    // Copiar imagen al almacenamiento interno de la app
+    final File newImage = await File(image.path).copy(savedPath);
+
     setState(() {
-      _profileImage = File(image.path);
-      fotoPath = image.path; // actualizamos la variable
+      _profileImage = newImage;
+      fotoPath = savedPath;
     });
 
-    // Guardamos en la base de datos
+    // Guardar nueva ruta en la base de datos
     await DatabaseHelper.instance.updateUsuario(widget.usuarioId, {
-      'foto': image.path,
+      'foto': savedPath,
     });
   }
 }
+
 
   void _showLogoutDialog(BuildContext context) {
   showDialog(
@@ -254,6 +274,7 @@ void initState() {
     style: TextStyle(
       color: Colors.deepPurple,
       fontWeight: FontWeight.w600,
+      fontSize: 20
     ),
   ),
 ),
@@ -279,39 +300,40 @@ void initState() {
 ),
             
              const SizedBox(height: 30),
-
             // FOTO DE PERFIL
-            Stack(
-  alignment: Alignment.bottomRight,
-  children: [
-    CircleAvatar(
-  radius: 60,
-  backgroundImage: _profileImage != null
-      ? FileImage(_profileImage!)
-      : (fotoPath != null
-          ? FileImage(File(fotoPath!))
-          : const AssetImage('assets/avatar.png') as ImageProvider),
-),
-    GestureDetector(
-      onTap: () {
-         _pickImage();
-        print('Editar foto');
-      },
-      child: Container(
-        padding: const EdgeInsets.all(6),
-        decoration: const BoxDecoration(
-          color: Colors.deepPurple,
-          shape: BoxShape.circle,
-        ),
-        child: const Icon(
-          Icons.edit,
-          size: 18,
-          color: Colors.white,
+Center(
+  child: Stack(
+    alignment: Alignment.bottomRight,
+    children: [
+      CircleAvatar(
+        radius: 60,
+        backgroundColor: const Color.fromARGB(136, 255, 182, 98),
+        backgroundImage: _profileImage != null
+            ? FileImage(_profileImage!)
+            : const AssetImage('assets/avatar.png') as ImageProvider,
+      ),
+      GestureDetector(
+        onTap: () {
+          _pickImage();
+          print('Editar foto');
+        },
+        child: Container(
+          padding: const EdgeInsets.all(6),
+          decoration: const BoxDecoration(
+            color: Colors.deepPurple,
+            shape: BoxShape.circle,
+          ),
+          child: const Icon(
+            Icons.edit,
+            size: 18,
+            color: Colors.white,
+          ),
         ),
       ),
-    ),
-  ],
+    ],
+  ),
 ),
+
 
             const SizedBox(height: 30),
 
@@ -348,6 +370,7 @@ void initState() {
               text: email,
               icon: Icons.email,
               onEdit: () => _editField(
+                context: context,
                 title: 'Editar email',
                 initialValue: email,
                 onSave: (v) async {
@@ -362,6 +385,7 @@ void initState() {
               text: phone,
               icon: Icons.phone,
               onEdit: () => _editField(
+                context: context,
                 title: 'Editar teléfono',
                 initialValue: phone,
                 onSave: (v) async {
@@ -375,6 +399,7 @@ void initState() {
               text: age,
               icon: Icons.cake,
               onEdit: () => _editField(
+                context: context,
                 title: 'Editar edad',
                 initialValue: age,
                 onSave: (v) async {
@@ -388,6 +413,7 @@ void initState() {
               text: city,
               icon: Icons.location_on,
               onEdit: () => _editField(
+                context: context,
                 title: 'Editar ciudad',
                 initialValue: city,
                 onSave: (v) async {

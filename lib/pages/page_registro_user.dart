@@ -7,7 +7,7 @@ import 'page_terminos_y_condiciones.dart';
 import 'page_carga.dart';
 import 'package:alertme/database/database_helper.dart';
 import 'package:image_picker/image_picker.dart';
- 
+import 'package:bcrypt/bcrypt.dart';
 class RegisterUser extends StatefulWidget {
   const RegisterUser({super.key});
 
@@ -54,6 +54,9 @@ final ImagePicker _picker = ImagePicker();
   Future<void> _pickImage() async {
   final XFile? image = await _picker.pickImage(
     source: ImageSource.gallery,
+    maxWidth: 600,       // ancho máximo
+    maxHeight: 600,      // alto máximo
+    imageQuality: 85,    // calidad de compresión (0-100)
   );
 
   if (image != null) {
@@ -61,7 +64,8 @@ final ImagePicker _picker = ImagePicker();
       _profileImage = File(image.path);
     });
   }
-}           
+}
+          
 
   @override
   Widget build(BuildContext context) {
@@ -117,37 +121,40 @@ final ImagePicker _picker = ImagePicker();
 
                   const SizedBox(height: 40),
                    // FOTO DE PERFIL
-            Stack(
-  alignment: Alignment.bottomRight,
-  children: [
-    CircleAvatar(
-      radius: 60,
-      backgroundColor: const Color.fromARGB(136, 255, 182, 98),
-      backgroundImage: _profileImage != null
-      ? FileImage(_profileImage!)
-      : const AssetImage('assets/avatar.png') as ImageProvider,
-    ),
-
-    GestureDetector(
-      onTap: () {
-         _pickImage();
-        print('Editar foto');
-      },
-      child: Container(
-        padding: const EdgeInsets.all(6),
-        decoration: const BoxDecoration(
-          color: Colors.deepPurple,
-          shape: BoxShape.circle,
-        ),
-        child: const Icon(
-          Icons.edit,
-          size: 18,
-          color: Colors.white,
+            // FOTO DE PERFIL
+Center(
+  child: Stack(
+    alignment: Alignment.bottomRight,
+    children: [
+      CircleAvatar(
+        radius: 60,
+        backgroundColor: const Color.fromARGB(136, 255, 182, 98),
+        backgroundImage: _profileImage != null
+            ? FileImage(_profileImage!)
+            : const AssetImage('assets/avatar.png') as ImageProvider,
+      ),
+      GestureDetector(
+        onTap: () {
+          _pickImage();
+          print('Editar foto');
+        },
+        child: Container(
+          padding: const EdgeInsets.all(6),
+          decoration: const BoxDecoration(
+            color: Colors.deepPurple,
+            shape: BoxShape.circle,
+          ),
+          child: const Icon(
+            Icons.edit,
+            size: 18,
+            color: Colors.white,
+          ),
         ),
       ),
-    ),
-  ],
+    ],
+  ),
 ),
+
                     const SizedBox(height: 30),
                     Form(
                       key: _formKey,
@@ -256,7 +263,7 @@ final ImagePicker _picker = ImagePicker();
                             },
                           ),
 
-                          const SizedBox(height: 20),
+                          const SizedBox(height: 40),
 
                           Row(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -330,16 +337,22 @@ final ImagePicker _picker = ImagePicker();
     
 
     try {
-
+      final fotoPath = _profileImage?.path ?? 'assets/avatar.png';
       // 🔹 GUARDAR USUARIO EN SQLITE
+      String hashedPassword = BCrypt.hashpw(
+  passwordController.text,
+  BCrypt.gensalt(),
+);
+
+
       final userId = await DatabaseHelper.instance.insertUsuario({
         'nombre': nomController.text,
         'edad': int.parse(edadController.text),
         'direccion': dirController.text,
         'telefono': telController.text,
         'email': emailController.text,
-        'password': passwordController.text,
-        'foto': _profileImage!.path, // <- agregar esta línea
+        'password': hashedPassword,
+        'foto': fotoPath, // nunca será null
       });
 
       await showLoading(context, seconds: 2);

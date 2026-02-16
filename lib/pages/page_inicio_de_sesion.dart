@@ -39,11 +39,11 @@ class InicioDeSesionState extends State<InicioDeSesion> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      resizeToAvoidBottomInset: false,
+      resizeToAvoidBottomInset: true,
       backgroundColor: const Color(0xFFE6F0D5),
-
       body: SafeArea(
         child: SingleChildScrollView(
+        padding: const EdgeInsets.symmetric(horizontal: 20),
         child: Column(
           children: [
            const SizedBox(height: 20),
@@ -65,10 +65,9 @@ class InicioDeSesionState extends State<InicioDeSesion> {
             const SizedBox(height: 20),
 
            // CARD PRINCIPAL
- Container(
-                margin: const EdgeInsets.symmetric(horizontal: 20),
+                Container(
                 padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
+                  decoration: BoxDecoration(
                   color: const Color(0xFFFFF6E3),
                   borderRadius: BorderRadius.circular(30),
                 ),

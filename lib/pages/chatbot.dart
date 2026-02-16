@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'page_menu.dart';
 
 void main() {
   runApp(const ChatBotApp());
@@ -15,17 +16,21 @@ class ChatBotApp extends StatelessWidget {
       theme: ThemeData(
         scaffoldBackgroundColor: const Color(0xFFE1EAED),
       ),
-      home: const ChatScreen(),
+      home: ChatScreen(usuarioId: 1), // ✅ ya no const porque es dinámico
     );
   }
 }
 
+
 class ChatScreen extends StatefulWidget {
-  const ChatScreen({super.key});
+  final int usuarioId; // ⬅️ final, debe inicializarse
+
+  const ChatScreen({super.key, required this.usuarioId}); // ⬅️ required
 
   @override
   State<ChatScreen> createState() => _ChatScreenState();
 }
+
 
 class _ChatScreenState extends State<ChatScreen> {
   final TextEditingController _controller = TextEditingController();
@@ -238,6 +243,7 @@ Busca ayuda con adultos responsables o instituciones de protección infantil."""
           ),
           _sugerencias(),
           _inputArea(),
+          const SizedBox(height: 40),
         ],
       ),
     );

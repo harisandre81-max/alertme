@@ -128,6 +128,9 @@ final ImagePicker _picker = ImagePicker();
   Future<void> _pickImage() async {
   final XFile? image = await _picker.pickImage(
     source: ImageSource.gallery,
+    maxWidth: 600,       // ancho máximo
+    maxHeight: 600,      // alto máximo
+    imageQuality: 85,    // calidad de compresión (0-100)
   );
 
   if (image != null) {
@@ -136,6 +139,7 @@ final ImagePicker _picker = ImagePicker();
     });
   }
 }
+
   @override
     void dispose() {
       nomController.dispose();
@@ -148,10 +152,11 @@ final ImagePicker _picker = ImagePicker();
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      resizeToAvoidBottomInset: false,
+      resizeToAvoidBottomInset: true,
       backgroundColor: const Color(0xFFE6F0D5),
-
       body: SafeArea(
+        child: SingleChildScrollView(
+        padding: const EdgeInsets.symmetric(horizontal: 20),
         child: Column(
           children: [
             // LOGO / ESCUDO (PLACEHOLDER)
@@ -171,11 +176,9 @@ final ImagePicker _picker = ImagePicker();
             const SizedBox(height: 20),
 
             // CARD PRINCIPAL
-            Expanded(
-              child: Container(
-                margin: const EdgeInsets.symmetric(horizontal: 20),
+            Container(
                 padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
+                  decoration: BoxDecoration(
                   color: const Color(0xFFFFF6E3),
                   borderRadius: BorderRadius.circular(30),
                 ),
@@ -189,7 +192,7 @@ final ImagePicker _picker = ImagePicker();
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: const [
                          Padding(
-                        padding: EdgeInsets.only(left: 30),
+                        padding: EdgeInsets.only(left: 20),
                         child: Text(
                           'REGISTRO DE CONTACTOS',
                           style: TextStyle(
@@ -214,37 +217,40 @@ final ImagePicker _picker = ImagePicker();
                     ),
                   const SizedBox(height: 40),
                   // FOTO DE PERFIL
-            Stack(
-  alignment: Alignment.bottomRight,
-  children: [
-    CircleAvatar(
-      radius: 60,
-      backgroundColor: const Color.fromARGB(136, 255, 182, 98),
-      backgroundImage: _profileImage != null
-      ? FileImage(_profileImage!)
-      : const AssetImage('assets/avatar.png') as ImageProvider,
-    ),
-
-    GestureDetector(
-      onTap: () {
-         _pickImage();
-        print('Editar foto');
-      },
-      child: Container(
-        padding: const EdgeInsets.all(6),
-        decoration: const BoxDecoration(
-          color: Colors.deepPurple,
-          shape: BoxShape.circle,
-        ),
-        child: const Icon(
-          Icons.edit,
-          size: 18,
-          color: Colors.white,
+            // FOTO DE PERFIL
+Center(
+  child: Stack(
+    alignment: Alignment.bottomRight,
+    children: [
+      CircleAvatar(
+        radius: 60,
+        backgroundColor: const Color.fromARGB(136, 255, 182, 98),
+        backgroundImage: _profileImage != null
+            ? FileImage(_profileImage!)
+            : const AssetImage('assets/avatar.png') as ImageProvider,
+      ),
+      GestureDetector(
+        onTap: () {
+          _pickImage();
+          print('Editar foto');
+        },
+        child: Container(
+          padding: const EdgeInsets.all(6),
+          decoration: const BoxDecoration(
+            color: Colors.deepPurple,
+            shape: BoxShape.circle,
+          ),
+          child: const Icon(
+            Icons.edit,
+            size: 18,
+            color: Colors.white,
+          ),
         ),
       ),
-    ),
-  ],
+    ],
+  ),
 ),
+
 const SizedBox(height: 30),
                     Form(
                       key: _formKey,
@@ -422,12 +428,14 @@ const SizedBox(height: 30),
   if (_formKey.currentState!.validate()) {
 
     await DatabaseHelper.instance.insertContactoLimitado({
-      'usuario_id': widget.usuarioId,  // 👈 AQUÍ SE USA
-      'nombre': nomController.text,
-      'edad': int.parse(edadController.text),
-      'telefono': telController.text,
-      'parentesco': parentescoSeleccionado,
-    });
+  'usuario_id': widget.usuarioId,
+  'nombre': nomController.text,
+  'edad': int.parse(edadController.text),
+  'telefono': telController.text,
+  'parentesco': parentescoSeleccionado,
+  'foto': _profileImage?.path,
+});
+
 
     await showLoading(context, seconds: 3);
 
@@ -474,10 +482,10 @@ const SizedBox(height: 30),
                   ],
                 ),
               ),
-            ),
             const SizedBox(height: 20),
           ],
         ),
+      ),
       ),
     );
   }

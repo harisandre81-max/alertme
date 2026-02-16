@@ -55,7 +55,8 @@ class DatabaseHelper {
         direccion TEXT NOT NULL,
         telefono TEXT NOT NULL,
         email TEXT NOT NULL UNIQUE,
-        password TEXT NOT NULL
+        password TEXT NOT NULL,
+        foto TEXT DEFAULT 'assets/avatar.png'
       )
     ''');
 
@@ -67,6 +68,7 @@ class DatabaseHelper {
         edad INTEGER NOT NULL,
         telefono TEXT NOT NULL,
         parentesco TEXT NOT NULL,
+        foto TEXT DEFAULT 'assets/avatar_contact.png',
         FOREIGN KEY(usuario_id) REFERENCES usuarios(id) ON DELETE CASCADE
       )
     ''');
