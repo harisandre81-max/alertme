@@ -35,10 +35,9 @@ class ChatScreen extends StatefulWidget {
 
 class _ChatScreenState extends State<ChatScreen> {
   final TextEditingController _controller = TextEditingController();
-  final List<Message> _messages = [];
   final ScrollController _scrollController = ScrollController();
-final TextEditingController _controller = TextEditingController();
   final List<String> _mensajes = [];
+  
 
   // ================= AUDIO =================
   final AudioPlayer _audioPlayer = AudioPlayer();
@@ -217,8 +216,7 @@ if (contiene(input, ["hola", "buenas", "buen día", "buenas tardes", "buenas noc
 ),
           Expanded(
             child: ListView.builder(
-              controller: _scrollController,
-              itemCount: _messages.length,
+              itemCount: _mensajes.length,
               itemBuilder: (context, index) {
                 return Padding(
                   padding: const EdgeInsets.all(8.0),
@@ -227,6 +225,7 @@ if (contiene(input, ["hola", "buenas", "buen día", "buenas tardes", "buenas noc
               },
             ),
           ),
+
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: Row(
