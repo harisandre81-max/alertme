@@ -134,5 +134,15 @@ Future<int> updateUsuario(int id, Map<String, dynamic> row) async {
     whereArgs: [id],
   );
 }
+// 🔹 Actualizar contacto por ID
+Future<int> updateContact(int id, Map<String, dynamic> values) async {
+    final db = await database;
+    return await db.update(
+      'contactos',
+      values,
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+  }
 
 }

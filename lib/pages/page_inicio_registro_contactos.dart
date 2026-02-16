@@ -257,7 +257,7 @@ const SizedBox(height: 30),
                       child: Column(
                         children: [
                           _InputBox(
-                            text: 'Nombre',
+                            text: 'Nombre completo',
                             controller: nomController,
                             validator: (value) {
                               if (value == null || value.isEmpty) {

@@ -8,7 +8,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:location/location.dart';
 import 'package:telephony/telephony.dart';
 import 'package:alertme/database/database_helper.dart';
-
+import 'package:image_picker/image_picker.dart';
  final Telephony telephony = Telephony.instance;
  Location location = Location();
 
@@ -538,9 +538,20 @@ class _ContactCardState extends State<ContactCard> {
                         ),
                       ),
                       IconButton(
-                        icon: const Icon(Icons.edit, size: 20, color: Color(0xFF5E3AA1)),
-                        onPressed: _editCard,
-                      ),
+  icon: const Icon(Icons.edit, size: 20, color: Color(0xFF5E3AA1)),
+  onPressed: () {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => EditContactPage(
+          contactId: widget.contacto['id'],       // ✅ Corregido
+          contactData: widget.contacto,           // ✅ Corregido
+        ),
+      ),
+    );
+  },
+),
+
                     ],
                   ),
                   const SizedBox(height: 8),
@@ -552,56 +563,6 @@ class _ContactCardState extends State<ContactCard> {
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  void _editCard() {
-    final nameCtrl = TextEditingController(text: nombre);
-    final ageCtrl = TextEditingController(text: edad);
-    final relationCtrl = TextEditingController(text: parentesco);
-    final phoneCtrl = TextEditingController(text: telefono);
-
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (_) => Align(
-        alignment: Alignment.topCenter,
-        child: Container(
-          margin: const EdgeInsets.only(top: 150),
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16)),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(controller: nameCtrl, decoration: const InputDecoration(labelText: 'Nombre')),
-              TextField(controller: ageCtrl, decoration: const InputDecoration(labelText: 'Edad')),
-              TextField(controller: relationCtrl, decoration: const InputDecoration(labelText: 'Parentesco')),
-              TextField(controller: phoneCtrl, decoration: const InputDecoration(labelText: 'Teléfono')),
-              const SizedBox(height: 16),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancelar')),
-                  const SizedBox(width: 8),
-                  ElevatedButton(
-                    onPressed: () {
-                      setState(() {
-                        nombre = nameCtrl.text;
-                        edad = ageCtrl.text;
-                        parentesco = relationCtrl.text;
-                        telefono = phoneCtrl.text;
-                      });
-                      Navigator.pop(context);
-                    },
-                    child: const Text('Guardar'),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
       ),
     );
   }
@@ -1336,6 +1297,178 @@ class MiniCard extends StatelessWidget {
   ],
 ),
 
+      ),
+    );
+  }
+}
+
+class EditContactPage extends StatefulWidget {
+  final int contactId; // id del contacto en la base de datos
+  final Map<String, dynamic> contactData; // datos actuales
+
+  const EditContactPage({
+    super.key,
+    required this.contactId,
+    required this.contactData,
+  });
+
+  @override
+  State<EditContactPage> createState() => _EditContactPageState();
+}
+
+class _EditContactPageState extends State<EditContactPage> {
+  late TextEditingController nomController;
+  late TextEditingController telController;
+  File? _profileImage;
+  final ImagePicker _picker = ImagePicker();
+
+  @override
+  void initState() {
+    super.initState();
+    nomController = TextEditingController(text: widget.contactData['nombre']);
+    telController = TextEditingController(text: widget.contactData['telefono']);
+
+    // si tiene foto guardada, cargamos el archivo
+    if (widget.contactData['foto'] != null &&
+        widget.contactData['foto'] != 'assets/avatar.png') {
+      _profileImage = File(widget.contactData['foto']);
+    }
+  }
+
+  @override
+  void dispose() {
+    nomController.dispose();
+    telController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _pickImage() async {
+    final XFile? image = await _picker.pickImage(
+      source: ImageSource.gallery,
+      maxWidth: 600,
+      maxHeight: 600,
+      imageQuality: 85,
+    );
+
+    if (image != null) {
+      setState(() {
+        _profileImage = File(image.path);
+      });
+    }
+  }
+
+  Future<void> _updateContact() async {
+    final fotoPath = _profileImage?.path ?? 'assets/avatar.png';
+
+    await DatabaseHelper.instance.updateContact(widget.contactId, {
+      'nombre': nomController.text,
+      'telefono': telController.text,
+      'foto': fotoPath,
+    });
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Contacto actualizado correctamente')),
+    );
+
+    Navigator.pop(context); // volver atrás
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Editar Contacto'),
+        backgroundColor: Colors.deepPurple,
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          children: [
+            // FOTO
+            Center(
+              child: Stack(
+                alignment: Alignment.bottomRight,
+                children: [
+                  CircleAvatar(
+                    radius: 60,
+                    backgroundColor: Colors.orange.withOpacity(0.5),
+                    backgroundImage: _profileImage != null
+                        ? FileImage(_profileImage!)
+                        : const AssetImage('assets/avatar.png') as ImageProvider,
+                  ),
+                  GestureDetector(
+                    onTap: _pickImage,
+                    child: Container(
+                      padding: const EdgeInsets.all(6),
+                      decoration: const BoxDecoration(
+                        color: Colors.deepPurple,
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.edit,
+                        size: 18,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 30),
+
+            // NOMBRE
+            TextFormField(
+              controller: nomController,
+              decoration: InputDecoration(
+                labelText: 'Nombre',
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 20),
+
+            // TELÉFONO
+            TextFormField(
+              controller: telController,
+              keyboardType: TextInputType.phone,
+              decoration: InputDecoration(
+                labelText: 'Teléfono',
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 30),
+
+            ElevatedButton(
+  onPressed: _updateContact,
+  style: ElevatedButton.styleFrom(
+    backgroundColor: Colors.deepPurple,
+    minimumSize: const Size.fromHeight(50),
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(30),
+    ),
+  ),
+  child: Row(
+    mainAxisAlignment: MainAxisAlignment.center,
+    children: const [
+      Text(
+        'Guardar Cambios',
+        style: TextStyle(fontSize: 18),
+      ),
+      SizedBox(width: 8),
+      Icon(Icons.save, size: 24, color: Colors.white),
+    ],
+  ),
+),
+
+
+          ],
+        ),
       ),
     );
   }
