@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'page_menu.dart';
+import 'package:audioplayers/audioplayers.dart';
 
 void main() {
   runApp(const ChatBotApp());
@@ -36,157 +37,139 @@ class _ChatScreenState extends State<ChatScreen> {
   final TextEditingController _controller = TextEditingController();
   final List<Message> _messages = [];
   final ScrollController _scrollController = ScrollController();
+final TextEditingController _controller = TextEditingController();
+  final List<String> _mensajes = [];
 
-  bool _yaSaludo = false;
+  // ================= AUDIO =================
+  final AudioPlayer _audioPlayer = AudioPlayer();
+  bool _reproduciendo = false;
 
-  final List<String> _respuestasSugeridas = [
-    "Me siento mal",
-    "Me pegan",
-    "Me insultan",
-    "Me molestan en la escuela",
-    "Pasa en mi casa",
-    "Tengo miedo"
-  ];
-
-  @override
-  void initState() {
-    super.initState();
-    _messages.add(
-      Message(
-        text:
-            "Bienvenido a AlertMe.\nSoy Lumi y estoy aquí para escucharte y orientarte.",
-        isUser: false,
-      ),
-    );
-  }
-
-  void _sendMessage(String text) {
-    if (text.trim().isEmpty) return;
-
-    setState(() {
-      _messages.add(Message(text: text, isUser: true));
-    });
-
-    _controller.clear();
-    _scrollToBottom();
-
-    Future.delayed(const Duration(milliseconds: 300), () {
-      final reply = chatbotResponse(text);
-      setState(() {
-        _messages.add(Message(text: reply, isUser: false));
-      });
-      _scrollToBottom();
-    });
-  }
-
-  void _scrollToBottom() {
-    Future.delayed(const Duration(milliseconds: 100), () {
-      if (_scrollController.hasClients) {
-        _scrollController.animateTo(
-          _scrollController.position.maxScrollExtent,
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeOut,
-        );
-      }
-    });
-  }
-
-  String chatbotResponse(String input) {
-    input = input.toLowerCase().trim();
-
-    if (!_yaSaludo) {
-      _yaSaludo = true;
-      return "Hola. Cuéntame qué está pasando.";
-    }
-
-    // VIOLENCIA FÍSICA
-    if (_contains(input, [
-      "me golpean",
-      "me pegan",
-      "me empujan",
-      "me pegaron",
-      "me golpearon"
-    ])) {
-      return """Tipo de violencia identificado: Violencia física.
-
-Nadie tiene derecho a hacerte daño.
-Busca ayuda inmediata con un adulto de confianza o autoridades.""";
-    }
-
-    // VIOLENCIA PSICOLÓGICA
-    if (_contains(input, [
-      "me insultan",
-      "me gritan",
-      "me humillan",
-      "me ofenden"
-    ])) {
-      return """Tipo de violencia identificado: Violencia psicológica.
-
-Las palabras también causan daño.
-Habla con alguien de confianza o un orientador.""";
-    }
-
-    // VIOLENCIA SEXUAL
-    if (_contains(input, [
-      "abuso",
-      "me tocaron",
-      "me obligaron",
-      "violaron"
-    ])) {
-      return """Tipo de violencia identificado: Violencia sexual.
-
-Esto es grave y no es tu culpa.
-Busca ayuda inmediata con autoridades o personal especializado.""";
-    }
-
-    // VIOLENCIA DOMÉSTICA
-    if (_contains(input, [
-      "en mi casa",
-      "mi papá",
-      "mi mamá",
-      "mi padrastro",
-      "mi familia"
-    ])) {
-      return """Tipo de violencia identificado: Violencia doméstica.
-
-La violencia en el hogar no es normal.
-Busca apoyo con familiares, maestros o instituciones.""";
-    }
-
-    // VIOLENCIA ESCOLAR
-    if (_contains(input, [
-      "escuela",
-      "bullying",
-      "me molestan"
-    ])) {
-      return """Tipo de violencia identificado: Violencia escolar.
-
-No estás solo.
-Informa a un maestro u orientador escolar.""";
-    }
-
-    // VIOLENCIA CONTRA NIÑOS
-    if (_contains(input, [
-      "soy niño",
-      "soy niña",
-      "menor"
-    ])) {
-      return """Tipo de violencia identificado: Violencia contra niños y niñas.
-
-Ningún tipo de violencia está justificado.
-Busca ayuda con adultos responsables o instituciones de protección infantil.""";
-    }
-
-    return "Te escucho. Puedes contarme un poco más.";
-  }
-
-  bool _contains(String input, List<String> words) {
-    for (final word in words) {
-      if (input.contains(word)) return true;
+  // ================= FUNCIONES =================
+  bool contiene(String input, List<String> palabras) {
+    input = input.toLowerCase();
+    for (var palabra in palabras) {
+      if (input.contains(palabra)) return true;
     }
     return false;
   }
 
+  Future<void> _toggleCalma() async {
+    if (_reproduciendo) {
+      await _audioPlayer.stop();
+    } else {
+      await _audioPlayer.play(
+        AssetSource('audio/Respiracion.mp3'),
+      );
+    }
+
+    setState(() {
+      _reproduciendo = !_reproduciendo;
+    });
+  }
+
+  void _enviarMensaje() {
+    String input = _controller.text.trim();
+    if (input.isEmpty) return;
+
+    setState(() {
+      _mensajes.add("Tú: $input");
+    });
+
+    String respuesta = generarRespuesta(input);
+
+    setState(() {
+      _mensajes.add("Lumi: $respuesta");
+    });
+
+    _controller.clear();
+  }
+
+  // ================= RESPUESTAS =================
+  String generarRespuesta(String input) {
+    input = input.toLowerCase();
+//==================== SALUDO =====================
+// ================= SALUDO =================
+if (contiene(input, ["hola", "buenas", "buen día", "buenas tardes", "buenas noches"])) {
+  return "¡Hola! 😊 ¿Cómo te sientes hoy?";
+}
+
+    // ================= VIOLENCIA SEXUAL =================
+    if (contiene(input, [
+      "violencia sexual",
+      "abuso sexual",
+      "abuso",
+      "me abusaron",
+      "abusaron de mi",
+      "me tocaron",
+      "me tocaron sin permiso",
+      "me tocaron donde no debian",
+      "me tocaron partes privadas",
+      "me obligaron",
+      "me forzaron",
+      "me violaron",
+      "intento de violacion",
+      "me acosaron sexualmente",
+      "me manosearon",
+      "me besaron sin permiso",
+      "no fue consensuado",
+      "no di permiso",
+      "me senti asustado",
+      "me senti culpable",
+      "me senti avergonzado"
+    ])) {
+      return "Lamento mucho que estés pasando por algo tan difícil. No es tu culpa. Estoy aquí contigo y podemos buscar ayuda juntos. ";
+    }
+
+    // ================= VIOLENCIA FÍSICA =================
+    if (contiene(input, [
+      "me pegan",
+      "me golpean",
+      "me empujan",
+      "me madrearon",
+      "me chingaron",
+      "me fregaron"
+    ])) {
+      return "Siento mucho que estés viviendo esto. Nadie tiene derecho a lastimarte. Tu bienestar es importante. ";
+    }
+
+    // ================= BULLYING =================
+    if (contiene(input, [
+      "bullying",
+      "me hacen bullying",
+      "me molestan",
+      "me traen carrilla",
+      "se burlan de mi",
+      "me humillan"
+    ])) {
+      return "Eso que estás viviendo duele y no está bien. No estás solo, mereces respeto. ";
+    }
+
+    // ================= VIOLENCIA EN CASA =================
+    if (contiene(input, [
+      "en mi casa",
+      "mi papá me pega",
+      "mi mamá me pega",
+      "mi padrastro",
+      "hay violencia en mi casa"
+    ])) {
+      return "Gracias por confiar en mí. Lo que pasa en casa también importa y mereces estar a salvo. 🤍";
+    }
+
+    // ================= MIEDO =================
+    if (contiene(input, [
+      "tengo miedo",
+      "me da miedo",
+      "estoy asustado",
+      "ando asustado"
+    ])) {
+      return "Es normal sentir miedo después de algo difícil. Respira conmigo, estoy aquí contigo. ";
+    }
+
+    // ================= DEFAULT =================
+    return "Gracias por contarme cómo te sientes. Estoy aquí para escucharte. ";
+  }
+
+  // ================= UI =================
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -210,7 +193,7 @@ Busca ayuda con adultos responsables o instituciones de protección infantil."""
   ),
 
   title: const Text(
-    'Chatbot Lumi',
+    'Chatbot Lumi 💬',
     style: TextStyle(
       color: Colors.deepPurple,
       fontWeight: FontWeight.w600,
@@ -237,101 +220,59 @@ Busca ayuda con adultos responsables o instituciones de protección infantil."""
               controller: _scrollController,
               itemCount: _messages.length,
               itemBuilder: (context, index) {
-                return ChatBubble(message: _messages[index]);
+                return Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Text(_mensajes[index]),
+                );
               },
             ),
           ),
-          _sugerencias(),
-          _inputArea(),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _controller,
+                    decoration: const InputDecoration(
+                      hintText: "Escribe aquí...",
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                IconButton(
+                  icon: const Icon(Icons.send),
+                  onPressed: _enviarMensaje,
+                ),
+              ],
+            ),
+          ),
+
+          const SizedBox(height: 20),
+
+          // ===== BOTÓN CALMARME =====
+          ElevatedButton.icon(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFFDC67F),
+              foregroundColor: Colors.black,
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(30),
+              ),
+            ),
+            icon: Icon(
+              _reproduciendo ? Icons.stop : Icons.play_arrow,
+              size: 28,
+            ),
+            label: Text(
+              _reproduciendo ? "Detener" : "Calmarme",
+              style: const TextStyle(fontSize: 18),
+            ),
+            onPressed: _toggleCalma,
+          ),
           const SizedBox(height: 40),
         ],
-      ),
-    );
-  }
-
-  Widget _sugerencias() {
-    return SizedBox(
-      height: 50,
-      child: ListView.builder(
-        scrollDirection: Axis.horizontal,
-        itemCount: _respuestasSugeridas.length,
-        itemBuilder: (context, index) {
-          return Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 6),
-            child: ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFFDC67F),
-                foregroundColor: Colors.black,
-              ),
-              onPressed: () =>
-                  _sendMessage(_respuestasSugeridas[index]),
-              child: Text(_respuestasSugeridas[index]),
-            ),
-          );
-        },
-      ),
-    );
-  }
-
-  Widget _inputArea() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-      color: const Color(0xFFF9F6E6),
-      child: Row(
-        children: [
-          Expanded(
-            child: TextField(
-              controller: _controller,
-              decoration: const InputDecoration(
-                hintText: "Escribe un mensaje...",
-                border: InputBorder.none,
-              ),
-              onSubmitted: (value) => _sendMessage(value),
-            ),
-          ),
-          IconButton(
-            icon: const Icon(Icons.send),
-            color: const Color(0xFF8D77AB),
-            onPressed: () => _sendMessage(_controller.text),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class Message {
-  final String text;
-  final bool isUser;
-
-  Message({required this.text, required this.isUser});
-}
-
-class ChatBubble extends StatelessWidget {
-  final Message message;
-
-  const ChatBubble({super.key, required this.message});
-
-  @override
-  Widget build(BuildContext context) {
-    return Align(
-      alignment:
-          message.isUser ? Alignment.centerRight : Alignment.centerLeft,
-      child: Container(
-        margin: const EdgeInsets.all(6),
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          color: message.isUser
-              ? const Color(0xFF8D77AB)
-              : const Color(0xFFFDC67F),
-          borderRadius: BorderRadius.circular(18),
-        ),
-        child: Text(
-          message.text,
-          style: TextStyle(
-            color: message.isUser ? Colors.white : Colors.black,
-          ),
-        ),
       ),
     );
   }

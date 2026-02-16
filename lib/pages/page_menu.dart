@@ -436,7 +436,7 @@ const SizedBox(height: 15),
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => const ChatBotApp(),
+               builder: (context) => ChatScreen(usuarioId: widget.usuarioId),
             ),
           );
         },
