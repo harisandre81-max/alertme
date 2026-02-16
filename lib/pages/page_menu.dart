@@ -1340,4 +1340,3 @@ class MiniCard extends StatelessWidget {
     );
   }
 }
-

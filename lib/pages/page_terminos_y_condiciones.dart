@@ -36,7 +36,9 @@ class TerminosUIPage extends StatelessWidget {
   ),
 ),
 
-body: ListView(
+body: Stack(
+  children: [ 
+ListView(
   padding: const EdgeInsets.all(20),
   children: [
      Align(
@@ -191,7 +193,23 @@ _buildBloqueCorreo("12. CONTACTO"),
     const SizedBox(height: 40),
   ],
 ),
-
+Positioned(
+      top: 20, // distancia desde arriba
+      left: 10, // distancia desde la izquierda
+      child: FloatingActionButton(
+        backgroundColor: Colors.deepPurple,
+        mini: true, // más pequeño
+        onPressed: () {
+          Navigator.pop(context);
+        },
+        child: const Icon(
+          Icons.arrow_back,
+          color: Colors.white,
+        ),
+      ),
+    ),
+  ],
+),
     );
   }
 }
