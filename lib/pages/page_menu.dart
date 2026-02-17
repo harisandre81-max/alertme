@@ -6,53 +6,8 @@ import 'dart:async';
 import 'dart:io';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:location/location.dart';
-import 'package:telephony/telephony.dart';
 import 'package:alertme/database/database_helper.dart';
 import 'package:image_picker/image_picker.dart';
- final Telephony telephony = Telephony.instance;
- Location location = Location();
-
-//Fin del codigo de verificacion de permisos de ubicacion
-
-//Inicio de la funcion de mensaje y ubicacion
-void mostrarubicacion(int usuarioId) async {
-  // 1️⃣ Verificar permisos y obtener ubicación
-  Location location = Location();
-  bool serviceEnabled = await location.serviceEnabled();
-  if (!serviceEnabled) serviceEnabled = await location.requestService();
-  if (!serviceEnabled) return;
-
-  PermissionStatus permissionGranted = await location.hasPermission();
-  if (permissionGranted == PermissionStatus.denied) {
-    permissionGranted = await location.requestPermission();
-    if (permissionGranted != PermissionStatus.granted) return;
-  }
-
-  LocationData datos = await location.getLocation();
-  String ubicacion = "https://maps.google.com/?q=${datos.latitude},${datos.longitude}";
-
-  // 2️⃣ Obtener contactos del usuario
-  List<Map<String, dynamic>> contactos =
-      await DatabaseHelper.instance.getContactos(usuarioId);
-
-  if (contactos.isEmpty) {
-    print("No hay contactos registrados para enviar el SOS.");
-    return;
-  }
-
-  // 3️⃣ Enviar SMS a todos los contactos
-  final Telephony telephony = Telephony.instance;
-  for (var contacto in contactos) {
-    String telefono = contacto['telefono'];
-    await telephony.sendSms(
-      to: telefono,
-      message: '¡Ayuda! Estoy en peligro.\nMi ubicación es: $ubicacion',
-    );
-  }
-
-  print("SOS enviado a ${contactos.length} contactos.");
-}
-
 
 class MenuUI extends StatefulWidget {
   final int usuarioId;
@@ -101,8 +56,7 @@ class SectionHeader extends StatelessWidget {
 
 class _MenuUIState extends State<MenuUI> {
 
-  final ScrollController _scrollController = ScrollController();
-
+//==================PANTALLA DE CARGA============
   Future<void> showLoading(BuildContext context, {int seconds = 3}) async {
   showDialog(
     context: context,
@@ -113,6 +67,41 @@ class _MenuUIState extends State<MenuUI> {
   await Future.delayed(Duration(seconds: seconds));
   Navigator.of(context).pop();
   }
+
+
+//==================FUNCION PARA MOSTRAR LA UBICACION DEL USUARIO============
+final Location location = Location();
+
+Future<void> mostrarubicacion() async {
+  if (!await checkLocation()) return;
+
+  LocationData datos = await location.getLocation();
+
+  String ubicacion =
+      "https://maps.google.com/?q=${datos.latitude},${datos.longitude}";
+
+  List<Map<String, dynamic>> contactos =
+      await DatabaseHelper.instance.getContactos(widget.usuarioId);
+
+  if (contactos.isEmpty) return;
+
+  String mensaje =
+      "🚨 ¡Ayuda! Estoy en peligro.\n📍Mi ubicación es: $ubicacion";
+
+  String numeros = contactos.map((c) => c['telefono']).join(','); //sino funciona se pone el .join(';');
+
+  final Uri smsUri = Uri(
+    scheme: 'sms',
+    path: numeros,
+    queryParameters: {'body': mensaje},
+  );
+
+  await launchUrl(
+    smsUri,
+    mode: LaunchMode.externalApplication,
+  );
+}
+
 
   Future<bool> checkLocation() async {
   bool serviceEnabled;
@@ -138,7 +127,8 @@ class _MenuUIState extends State<MenuUI> {
   return await location.getLocation();
 
  }
-  
+
+//==================UI================
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -148,7 +138,7 @@ class _MenuUIState extends State<MenuUI> {
       appBar: AppBar(
         toolbarHeight: 110,
         elevation: 0,
-  leadingWidth: 80,
+        leadingWidth: 80,
         backgroundColor: const Color(0xFFE6F0D5),
         leading: Padding(
           padding: const EdgeInsets.all(5.0),
@@ -186,15 +176,12 @@ class _MenuUIState extends State<MenuUI> {
 
       body: Stack(
   children: [
-
     // ===============================
-    // CONTENIDO NORMAL (CON SCROLL)
+    // CONTENIDO NORMAL (CON SCROLL)----CONTACTOS WIDGET
     // ===============================
     Column(
       children: [
-
         const SizedBox(height: 20),
-
         Expanded(
           child: SingleChildScrollView(
             child: Column(
@@ -202,273 +189,266 @@ class _MenuUIState extends State<MenuUI> {
               const SizedBox(height: 20),
                 // TU CONTENEDOR HORIZONTAL
                 Column(
-  crossAxisAlignment: CrossAxisAlignment.start,
-  children: [
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+//==================DATOS DE LOS CONTACTOS DE EMERGENCIA=========
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      child: Row(
+                        children: const [
+                          Icon(Icons.contact_page, 
+                              color: Colors.deepPurple, size: 24),
+                          SizedBox(width: 8),
+                          Text(
+                            "Contactos de emergencia",
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.deepPurple,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
 
-    // HEADER estilo "Reels"
-    Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: Row(
-        children: const [
-          Icon(Icons.contact_page, 
-              color: Colors.deepPurple, size: 24),
-          SizedBox(width: 8),
-          Text(
-            "Contactos de emergencia",
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: Colors.deepPurple,
-            ),
-          ),
-        ],
-      ),
-    ),
+                    const SizedBox(height: 15),
 
-    const SizedBox(height: 15),
-
-    Center(
-      child: ContactSlider(usuarioId: widget.usuarioId), // 👈 Nuevo widget
-    ),
-  ],
-),
-
+                    Center(
+                      child: ContactSlider(usuarioId: widget.usuarioId), // 👈 Nuevo widget
+                    ),
+                  ],
+                ),
+//==================INFOGRAFIAS=========
                 const SizedBox(height: 40),
-
-const SectionHeader(
-  title: "Infografías",
-  icon: Icons.menu_book,
-),
-
-const SizedBox(height: 15),
-
-                const HorizontalButtonSlider(),
-                
-                const SizedBox(height: 40),
-
                 const SectionHeader(
-               title: "Instituciones de apoyo",
-               icon: Icons.local_hospital,
-               ),  
+                  title: "Infografías",
+                  icon: Icons.menu_book,
+                ),
+
+                const SizedBox(height: 15),
+                  const HorizontalButtonSlider(),//INFOGRAFIAS WIDGET
+                const SizedBox(height: 40),
+
+//==================DATOS DE LAS INSTITUCIONES=========
+                const SectionHeader(
+                title: "Instituciones de apoyo",
+                icon: Icons.local_hospital,
+                ),  
                 const SizedBox(height: 15), 
                 Column(
-  children: [
-    _VerticalBox(
-  text: 'DIF',
-  image: 'assets/img_institu/dif.png',
-  onTap: () {
-    showDetailCard(
-      context,
-      InstitucionInfo(
-        name: 'Sistema DIF',
-        phone: '911',
-        address: 'Zona Centro',
-        description: 'Institución pública...',
-        image: 'assets/img_institu/dif.png',
-      ),
-    );
-  },
+                      children: [
+                        _VerticalBox(
+                      text: 'DIF',
+                      image: 'assets/img_institu/dif.png',
+                      onTap: () {
+                        showDetailCard(
+                          context,
+                          InstitucionInfo(
+                            name: 'Sistema DIF',
+                            phone: '911',
+                            address: 'Zona Centro',
+                            description: 'Institución pública...',
+                            image: 'assets/img_institu/dif.png',
+                          ),
+                        );
+                      },
 
-  phoneNumber: '911',
+                      phoneNumber: '911',
 
-  onPhoneTap: () async {
-    final uri = Uri.parse('tel:911');
-    await launchUrl(uri, mode: LaunchMode.externalApplication);
-  },
-),
-    const SizedBox(height: 20),
-    _VerticalBox(
-      text: '911',
-      image: 'assets/img_institu/911-logo.png',
-      onTap: () {
-    showDetailCard(
-      context,
-      InstitucionInfo(
-        name: 'Fechter',
-        phone: '+88 01828 9457 20',
-        address: 'Ciudad de México',
-        description: 'Contacto de confianza para emergencias.',
-        image: 'assets/img_institu/911-logo.png',
-      ),
-    );
-  },
-  phoneNumber: '911',
+                        onPhoneTap: () async {
+                          final uri = Uri.parse('tel:911');
+                          await launchUrl(uri, mode: LaunchMode.externalApplication);
+                        },
+                    ),
+                    const SizedBox(height: 20),
+                    _VerticalBox(
+                      text: '911',
+                      image: 'assets/img_institu/911-logo.png',
+                      onTap: () {
+                        showDetailCard(
+                          context,
+                          InstitucionInfo(
+                            name: 'Fechter',
+                            phone: '+88 01828 9457 20',
+                            address: 'Ciudad de México',
+                            description: 'Contacto de confianza para emergencias.',
+                            image: 'assets/img_institu/911-logo.png',
+                          ),
+                        );
+                      },
+                        phoneNumber: '911',
+                          onPhoneTap: () async {
+                            final uri = Uri.parse('tel:911');
+                            await launchUrl(uri, mode: LaunchMode.externalApplication);
+                          },
+                        ),
+                        const SizedBox(height: 20),
 
-  onPhoneTap: () async {
-    final uri = Uri.parse('tel:911');
-    await launchUrl(uri, mode: LaunchMode.externalApplication);
-  },
-    ),
-    const SizedBox(height: 20),
-
-    _VerticalBox(
-      text: 'Proteción civil',
-      image: 'assets/img_institu/proteccion_civil.png',
-      onTap: () {
-    showDetailCard(
-      context,
-      InstitucionInfo(
-        name: 'Josh Fer',
-        phone: '+88 01828 9457 20',
-        address: 'Ciudad de México',
-        description: 'Contacto de confianza para emergencias.',
-        image: 'assets/img_institu/proteccion_civil.png',
-      ),
-    );
-  },
-  phoneNumber: '911',
-
-  onPhoneTap: () async {
-    final uri = Uri.parse('tel:911');
-    await launchUrl(uri, mode: LaunchMode.externalApplication);
-  },
-    ),
-  ],
-),
+                        _VerticalBox(
+                          text: 'Proteción civil',
+                          image: 'assets/img_institu/proteccion_civil.png',
+                          onTap: () {
+                        showDetailCard(
+                          context,
+                          InstitucionInfo(
+                            name: 'Josh Fer',
+                            phone: '+88 01828 9457 20',
+                            address: 'Ciudad de México',
+                            description: 'Contacto de confianza para emergencias.',
+                            image: 'assets/img_institu/proteccion_civil.png',
+                          ),
+                        );
+                      },
+                         phoneNumber: '911',
+                          onPhoneTap: () async {
+                            final uri = Uri.parse('tel:911');
+                            await launchUrl(uri, mode: LaunchMode.externalApplication);
+                          },
+                    ),
+                  ],
+                ),
 
                 const SizedBox(height: 100), // espacio para el menú inferior
               ],
             ),
           ),
         ),
-
         
-    // ===============================
-    // SUB MENÚ INFERIOR (FIJO)
-    // ===============================
-    Container(
-      height: 100,
-      width: double.infinity,
-      decoration: const BoxDecoration(
-        color: Color(0xFFE6F0D5),
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(40),
-          topRight: Radius.circular(40),
-        ),
-      ),
-      
-      child: Center(
-  child: SizedBox(
-    width: 120,
-    height: 100,
-    child: ElevatedButton(
-      onPressed: () async {
-  final contactos = await DatabaseHelper.instance
-      .getContactos(widget.usuarioId);
-
-  if (contactos.isEmpty) {
-    showDialog(
-      context: context,
-      builder: (_) => AlertDialog(
-        backgroundColor: const Color.fromARGB(255, 255, 229, 233), 
-        title: Row(
-  children: const [
-    Icon(
-      Icons.warning_amber_rounded,
-      color: Colors.red,
-    ),
-    SizedBox(width: 8),
-    Text("Contacto necesario"),
-  ],
-),
-        content: const Text(
-          "Para usar el botón SOS necesitas registrar al menos un contacto de emergencia.",
-        ),
-        actions: [
-          TextButton.icon(
-  onPressed: () => Navigator.pop(context),
-  icon: const Icon(Icons.schedule),
-  label: const Text("Más tarde"),
-),
-          ElevatedButton.icon(
-  onPressed: () {
-    Navigator.pop(context);
-    Navigator.pushNamed(
-      context,
-      '/contact1',
-      arguments: widget.usuarioId,
-    );
-  },
-  icon: const Icon(Icons.person_add),
-  label: const Text("Registrar ahora"),
-),
-        ],
-      ),
-    );
-    return;
-  }
-
-  // ✅ Si sí tiene contactos
-  mostrarubicacion(widget.usuarioId);
-},
-
-      style: ElevatedButton.styleFrom(
-        backgroundColor: const Color.fromARGB(255, 255, 98, 98),
-        shape: const CircleBorder(),
-        elevation: 8,
-      ),
-      child: const Text(
-  "SOS",
-  style: TextStyle(
-    color: Colors.white,
-    fontSize: 29,
-    fontWeight: FontWeight.bold,
-    letterSpacing: 2,
-  ),
-),
-    ),
-  ),
-),
-
-    ),
-      ],
-    ),
-
-    // ===============================
-    // BOTÓN FLOTANTE FIJO
-    // ===============================
-    Positioned(
-      right: 20,
-      top: MediaQuery.of(context).size.height / 2 + 110,
-      child: GestureDetector(
-        onTap: () async {
-          await showLoading(context, seconds: 3);
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-               builder: (context) => ChatScreen(usuarioId: widget.usuarioId),
+        // ===============================
+        // SUB MENÚ INFERIOR (FIJO)
+        // ===============================
+        Container(
+          height: 100,
+          width: double.infinity,
+          decoration: const BoxDecoration(
+            color: Color(0xFFE6F0D5),
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(40),
+              topRight: Radius.circular(40),
             ),
-          );
-        },
-        child: Container(
-          width: 50,
-          height: 50,
-          decoration: BoxDecoration(
-            color: const Color.fromARGB(255, 230, 212, 255), // morado que ya usas
-            shape: BoxShape.circle,
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black26,
-                blurRadius: 6,
-                offset: Offset(0, 3),
+          ),
+          // ===============================
+          // BOTÓN SOS
+          // ===============================
+          child: Center(
+          child: SizedBox(
+            width: 120,
+            height: 100,
+            child: ElevatedButton(
+              onPressed: () async {
+                final contactos = await DatabaseHelper.instance
+                .getContactos(widget.usuarioId);
+                if (contactos.isEmpty) {
+                showDialog(
+                  context: context,
+                  builder: (_) => AlertDialog(
+                    backgroundColor: const Color.fromARGB(255, 255, 229, 233), 
+                    title: Row(
+                      children: const [
+                        Icon(
+                          Icons.warning_amber_rounded,
+                          color: Colors.red,
+                        ),
+                        SizedBox(width: 8),
+                        Text("Contacto necesario"),
+                      ],
+                    ),
+                    content: const Text(
+                      "Para usar el botón SOS necesitas registrar al menos un contacto de emergencia.",
+                    ),
+                    actions: [
+                      TextButton.icon(
+                        onPressed: () => Navigator.pop(context),
+                        icon: const Icon(Icons.schedule),
+                        label: const Text("Más tarde"),
+                      ),
+                      ElevatedButton.icon(
+                        onPressed: () {
+                          Navigator.pop(context);
+                          Navigator.pushNamed(
+                            context,
+                            '/contact1',
+                            arguments: widget.usuarioId,
+                          );
+                        },
+                        icon: const Icon(Icons.person_add),
+                        label: const Text("Registrar ahora"),
+                      ),
+                              ],
+                            ),
+                          );
+                          return;
+                        }
+
+                        // ✅ Si sí tiene contactos
+                        await mostrarubicacion();
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color.fromARGB(255, 255, 98, 98),
+                        shape: const CircleBorder(),
+                        elevation: 8,
+                      ),
+                      child: const Text(
+                        "SOS",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 29,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 2,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
               ),
             ],
           ),
-           child: const Icon(
-        Icons.chat_bubble_rounded,
-        color: Colors.white,
-        size: 28,
+          // ===============================
+          // BOTÓN FLOTANTE FIJO
+          // ===============================
+          Positioned(
+            right: 20,
+            top: MediaQuery.of(context).size.height / 2 + 110,
+            child: GestureDetector(
+              onTap: () async {
+                await showLoading(context, seconds: 3);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                  builder: (context) => ChatScreen(usuarioId: widget.usuarioId),
+                  )     ,
+                  );
+                },
+                  child: Container(
+                    width: 50,
+                    height: 50,
+                    decoration: BoxDecoration(
+                      color: const Color.fromARGB(255, 230, 212, 255), // morado que ya usas
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black26,
+                          blurRadius: 6,
+                          offset: Offset(0, 3),
+                        ),
+                      ],
+                    ),
+                    child: const Icon(
+                      Icons.chat_bubble_rounded,
+                      color: Colors.white,
+                      size: 28,
+                      ),
+              ),
+            ),
+          ),
+        ],
       ),
-        ),
-      ),
-    ),
-  ],
-),
-
-
     );
   }
 }
+
+//===================================ZONA DE WIDGETS 👇👇=============
+
 
 //=============Contacto card=======================
 class ContactCard extends StatefulWidget {
@@ -510,16 +490,15 @@ class ContactCard extends StatefulWidget {
           child: Row(
             children: [
               const SizedBox(width: 16),
-              CircleAvatar(
-      radius: 45,
-      backgroundColor: const Color(0xFF5E3AA1),
-      backgroundImage: foto != null && foto!.isNotEmpty
-          ? (foto!.startsWith('assets/')
+              CircleAvatar( //Avatar de contacto
+              radius: 45,
+              backgroundColor: const Color(0xFF5E3AA1),
+              backgroundImage: foto != null && foto!.isNotEmpty
+              ? (foto!.startsWith('assets/')
               ? AssetImage(foto!) as ImageProvider
               : FileImage(File(foto!)))
-          : const AssetImage('assets/avatar.png'),
-          ),
-
+              : const AssetImage('assets/avatar.png'),
+              ),
               Expanded(
                 child: Padding(
                   padding: const EdgeInsets.only(left: 40),
@@ -597,9 +576,7 @@ class _ContactSliderState extends State<ContactSlider> {
   setState(() {
     contacts = datos;
   });
-}
-
-
+  }
   void nextPage() {
     if (currentPage < (contacts.length < 3 
         ? contacts.length 
@@ -613,35 +590,35 @@ class _ContactSliderState extends State<ContactSlider> {
       _controller.previousPage(duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
     }
   }
+  //=============redireccion para registrar los contactos=============
+      @override
+      Widget build(BuildContext context) {
+        int totalPages = contacts.length < 3
+        ? contacts.length + 1
+        : contacts.length;
 
-  @override
-  Widget build(BuildContext context) {
-    int totalPages = contacts.length < 3
-    ? contacts.length + 1
-    : contacts.length;
-
-    return Container(
-      width: 388,
-      height: 220,
-      decoration: BoxDecoration(
-        color: const Color.fromARGB(255, 233, 245, 212),
-        borderRadius: BorderRadius.circular(20),
-      ),
-      padding: const EdgeInsets.all(16),
-      child: Stack(
-        children: [
-          PageView.builder(
-          controller: _controller,
-          physics: const NeverScrollableScrollPhysics(),
-          itemCount: totalPages,
-          onPageChanged: (index) {
-            setState(() => currentPage = index);
-          },
-          itemBuilder: (context, index) {
-          if (index < contacts.length) {
-            return ContactCard(contacto: contacts[index]);
-          } else {
-            return GestureDetector(
+        return Container(
+          width: 388,
+          height: 220,
+          decoration: BoxDecoration(
+            color: const Color.fromARGB(255, 233, 245, 212),
+            borderRadius: BorderRadius.circular(20),
+          ),
+          padding: const EdgeInsets.all(16),
+          child: Stack(
+            children: [
+              PageView.builder(
+              controller: _controller,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: totalPages,
+              onPageChanged: (index) {
+                setState(() => currentPage = index);
+              },
+              itemBuilder: (context, index) {
+              if (index < contacts.length) {
+                return ContactCard(contacto: contacts[index]);
+              } else {
+                return GestureDetector(
               onTap: () {
                 String route = '';
                 if (contacts.length == 0) route = '/contact1';
@@ -683,36 +660,37 @@ class _ContactSliderState extends State<ContactSlider> {
                 ],
               ),
             ),
-        ),
-      );
-    }
-  },
-),
-
+          ),
+        );
+      }
+    },
+  ),
+          //BOTONES DE CARD CONTACT < Y >
           if (currentPage > 0)
-  Positioned(
-    left: -20,
-    top: 70,
-    child: IconButton(
-      icon: const Icon(Icons.chevron_left, size: 36),
-      onPressed: previousPage,
-    ),
-  ),
+            Positioned(
+              left: -20,
+              top: 70,
+              child: IconButton(
+                icon: const Icon(Icons.chevron_left, size: 36),
+                onPressed: previousPage,
+              ),
+            ),
 
-if (currentPage < totalPages - 1)
-  Positioned(
-    right: -20,
-    top: 70,
-    child: IconButton(
-      icon: const Icon(Icons.chevron_right, size: 36),
-      onPressed: nextPage,
-    ),
-  ),
+          if (currentPage < totalPages - 1)
+            Positioned(
+              right: -20,
+              top: 70,
+              child: IconButton(
+                icon: const Icon(Icons.chevron_right, size: 36),
+                onPressed: nextPage,
+              ),
+            ),
         ],
       ),
     );
   }
 }
+
 //=============Widget para editar el contacto=============
 class EditContactPage extends StatefulWidget {
   final int contactId; // id del contacto en la base de datos

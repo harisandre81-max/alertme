@@ -8,6 +8,7 @@ import 'package:alertme/database/database_helper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:bcrypt/bcrypt.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:location/location.dart';
 
 class RegisterUser extends StatefulWidget {
   const RegisterUser({super.key});
@@ -26,6 +27,25 @@ class _RegisterUserState extends State<RegisterUser> {
     final _formKey = GlobalKey<FormState>();
     bool acceptTerms = false;
 
+//==================FUNCION PARA PEDIR PERMISOS================
+Future<void> _requestInitialPermissions() async {
+  final Location location = Location();
+
+  // 📍 UBICACIÓN
+  bool serviceEnabled = await location.serviceEnabled();
+  if (!serviceEnabled) {
+    serviceEnabled = await location.requestService();
+  }
+
+  PermissionStatus permissionGranted = await location.hasPermission();
+  if (permissionGranted == PermissionStatus.denied) {
+    await location.requestPermission();
+  }
+
+  print("Permisos solicitados al registrarse");
+}
+
+//==================PANTALLA DE CARGA================
     Future<void> showLoading(BuildContext context, {int seconds = 3}) async {
     showDialog(
     context: context,
@@ -49,6 +69,7 @@ class _RegisterUserState extends State<RegisterUser> {
       dirController.dispose();
       super.dispose();
     }
+    //==================CONVERTIDOR DE IMAGENES A UN FORMATO MENOS PESADO================
   File? _profileImage;
 final ImagePicker _picker = ImagePicker();
 
@@ -122,39 +143,39 @@ final ImagePicker _picker = ImagePicker();
 
                   const SizedBox(height: 40),
                    // FOTO DE PERFIL
-            // FOTO DE PERFIL
-Center(
-  child: Stack(
-    alignment: Alignment.bottomRight,
-    children: [
-      CircleAvatar(
-        radius: 60,
-        backgroundColor: const Color.fromARGB(136, 255, 182, 98),
-        backgroundImage: _profileImage != null
-            ? FileImage(_profileImage!)
-            : const AssetImage('assets/avatar.png') as ImageProvider,
-      ),
-      GestureDetector(
-        onTap: () {
-          _pickImage();
-          print('Editar foto');
-        },
-        child: Container(
-          padding: const EdgeInsets.all(6),
-          decoration: const BoxDecoration(
-            color: Colors.deepPurple,
-            shape: BoxShape.circle,
-          ),
-          child: const Icon(
-            Icons.edit,
-            size: 18,
-            color: Colors.white,
-          ),
-        ),
-      ),
-    ],
-  ),
-),
+                  // FOTO DE PERFIL
+                    Center(
+                      child: Stack(
+                        alignment: Alignment.bottomRight,
+                        children: [
+                          CircleAvatar(
+                            radius: 60,
+                            backgroundColor: const Color.fromARGB(136, 255, 182, 98),
+                            backgroundImage: _profileImage != null
+                                ? FileImage(_profileImage!)
+                                : const AssetImage('assets/avatar.png') as ImageProvider,
+                          ),
+                          GestureDetector(
+                            onTap: () {
+                              _pickImage();
+                              print('Editar foto');
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.all(6),
+                              decoration: const BoxDecoration(
+                                color: Colors.deepPurple,
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(
+                                Icons.edit,
+                                size: 18,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
 
                     const SizedBox(height: 30),
                     Form(
@@ -350,6 +371,9 @@ Center(
                                   'password': hashedPassword,
                                   'foto': fotoPath, // nunca será null
                                 });
+
+                                // 👇 PEDIR PERMISOS AQUÍ
+                                await _requestInitialPermissions();
 
                                 // 🔹 GUARDAR SESIÓN AUTOMÁTICAMENTE
                                 final prefs = await SharedPreferences.getInstance();
