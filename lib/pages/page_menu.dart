@@ -364,16 +364,16 @@ Future<void> mostrarubicacion(int usuarioId) async {
                           context,
                           InstitucionInfo(
                             name: 'Centro de Justicia para Niñas, Niños y Adolescentes Durango',
-                            phone: '+88 01828 9457 20',
-                            address: 'Ciudad de México',
+                            phone: '618 137 3562',
+                            address: 'Boulevard José María Patoni Manzana 105 • Predio Rústico La Tinaja y Los Lugos , Durango, Mexico, 34217',
                             description: 'Contacto de confianza para emergencias.',
                             image: 'assets/img_institu/proteccion_civil.png',
                           ),
                         );
                       },
-                         phoneNumber: '911',
+                         phoneNumber: '618 137 3562',
                           onPhoneTap: () async {
-                            final uri = Uri.parse('tel:911');
+                            final uri = Uri.parse('tel:618 137 3562');
                             await launchUrl(uri, mode: LaunchMode.externalApplication);
                           },
                     ),
