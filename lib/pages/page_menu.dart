@@ -72,33 +72,35 @@ class _MenuUIState extends State<MenuUI> {
 //==================FUNCION PARA MOSTRAR LA UBICACION DEL USUARIO============
 final Location location = Location();
 
-Future<void> mostrarubicacion() async {
+Future<void> mostrarubicacion(int usuarioId) async {
   if (!await checkLocation()) return;
-
   LocationData datos = await location.getLocation();
-
   String ubicacion =
       "https://maps.google.com/?q=${datos.latitude},${datos.longitude}";
 
   List<Map<String, dynamic>> contactos =
-      await DatabaseHelper.instance.getContactos(widget.usuarioId);
+      await DatabaseHelper.instance.getContactos(usuarioId);
 
-  if (contactos.isEmpty) return;
+  if (contactos.isEmpty) {
+    print("No hay contactos registrados.");
+    return;
+  }
 
   String mensaje = "Ayuda Estoy en peligro. Mi ubicacion es: https://maps.google.com/?q=23.8014156,-104.0594377";
 
-  String numeros = contactos.map((c) => c['telefono']).join(','); //sino funciona se pone el .join(';');
+  for (var contacto in contactos) {
+    String telefono = contacto['telefono'];
 
-  final Uri smsUri = Uri(
-    scheme: 'sms',
-    path: numeros,
-    queryParameters: {'body': mensaje},
-  );
+    final Uri smsUri = Uri(
+      scheme: 'sms',
+      path: telefono,
+      queryParameters: {
+        'body': mensaje,
+      },
+    );
 
-  await launchUrl(
-    smsUri,
-    mode: LaunchMode.externalApplication,
-  );
+    await launchUrl(smsUri, mode: LaunchMode.externalApplication);
+  }
 }
 
 
@@ -380,7 +382,7 @@ Future<void> mostrarubicacion() async {
                         }
 
                         // ✅ Si sí tiene contactos
-                        await mostrarubicacion();
+                        await mostrarubicacion(widget.usuarioId);
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color.fromARGB(255, 255, 98, 98),
