@@ -230,7 +230,9 @@ Future<void> mostrarubicacion(int usuarioId) async {
                   const HorizontalButtonSlider(),//INFOGRAFIAS WIDGET
                 const SizedBox(height: 40),
 
+//=====================================================
 //==================DATOS DE LAS INSTITUCIONES=========
+//=====================================================
                 const SectionHeader(
                 title: "Instituciones de apoyo",
                 icon: Icons.local_hospital,
@@ -238,6 +240,7 @@ Future<void> mostrarubicacion(int usuarioId) async {
                 const SizedBox(height: 15), 
                 Column(
                       children: [
+//========================Aqui va la informacion de las instituciones================================
                         _VerticalBox(
                       text: 'DIF',
                       image: 'assets/img_institu/dif.png',
@@ -253,15 +256,14 @@ Future<void> mostrarubicacion(int usuarioId) async {
                           ),
                         );
                       },
-
                       phoneNumber: '911',
-
                         onPhoneTap: () async {
                           final uri = Uri.parse('tel:911');
                           await launchUrl(uri, mode: LaunchMode.externalApplication);
                         },
                     ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 20),//espacio
+//========================Aqui va la informacion de las instituciones================================
                     _VerticalBox(
                       text: '911',
                       image: 'assets/img_institu/911-logo.png',
@@ -269,7 +271,7 @@ Future<void> mostrarubicacion(int usuarioId) async {
                         showDetailCard(
                           context,
                           InstitucionInfo(
-                            name: 'Fechter',
+                            name: '911',
                             phone: '+88 01828 9457 20',
                             address: 'Ciudad de México',
                             description: 'Contacto de confianza para emergencias.',
@@ -283,8 +285,8 @@ Future<void> mostrarubicacion(int usuarioId) async {
                             await launchUrl(uri, mode: LaunchMode.externalApplication);
                           },
                         ),
-                        const SizedBox(height: 20),
-
+                        const SizedBox(height: 20),                        
+//========================Aqui va la informacion de las instituciones================================
                         _VerticalBox(
                           text: 'Proteción civil',
                           image: 'assets/img_institu/proteccion_civil.png',
@@ -292,7 +294,7 @@ Future<void> mostrarubicacion(int usuarioId) async {
                         showDetailCard(
                           context,
                           InstitucionInfo(
-                            name: 'Josh Fer',
+                            name: 'Proteción civil',
                             phone: '+88 01828 9457 20',
                             address: 'Ciudad de México',
                             description: 'Contacto de confianza para emergencias.',
@@ -306,6 +308,9 @@ Future<void> mostrarubicacion(int usuarioId) async {
                             await launchUrl(uri, mode: LaunchMode.externalApplication);
                           },
                     ),
+//=================================================================================================================
+//========================Fin del apartado para la informacion de las instituciones================================
+//=================================================================================================================
                   ],
                 ),
 
@@ -1527,5 +1532,3 @@ class MiniCard extends StatelessWidget {
     );
   }
 }
-
-
