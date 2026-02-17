@@ -85,8 +85,7 @@ Future<void> mostrarubicacion() async {
 
   if (contactos.isEmpty) return;
 
-  String mensaje =
-      "🚨 ¡Ayuda! Estoy en peligro.\n📍Mi ubicación es: $ubicacion";
+  String mensaje = "Ayuda Estoy en peligro. Mi ubicacion es: https://maps.google.com/?q=23.8014156,-104.0594377";
 
   String numeros = contactos.map((c) => c['telefono']).join(','); //sino funciona se pone el .join(';');
 
@@ -451,99 +450,93 @@ Future<void> mostrarubicacion() async {
 
 
 //=============Contacto card=======================
-class ContactCard extends StatefulWidget {
+class ContactCard extends StatelessWidget {
   final Map<String, dynamic> contacto;
 
   const ContactCard({super.key, required this.contacto});
 
   @override
-  State<ContactCard> createState() => _ContactCardState();
-  }
+  Widget build(BuildContext context) {
+    final nombre = contacto['nombre'];
+    final edad = contacto['edad'].toString();
+    final parentesco = contacto['parentesco'];
+    final telefono = contacto['telefono'];
+    final foto = contacto['foto'];
 
-    class _ContactCardState extends State<ContactCard> {
-      late String nombre;
-      late String edad;
-      late String parentesco;
-      late String telefono;
-      late String? foto;
-
-      @override
-      void initState() {
-        super.initState();
-        nombre = widget.contacto['nombre'];
-        edad = widget.contacto['edad'].toString();
-        parentesco = widget.contacto['parentesco'];
-        telefono = widget.contacto['telefono'];
-        foto = widget.contacto['foto'];
-      }
-
-      @override
-      Widget build(BuildContext context) {
-        return Container(
-          width: 360,
-          height: 180,
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: const Color.fromARGB(255, 255, 254, 251),
-            borderRadius: BorderRadius.circular(16),
+      return Container(
+      width: 360,
+      height: 180,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color.fromARGB(255, 255, 254, 251),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Row(
+        children: [
+          const SizedBox(width: 16),
+          CircleAvatar(
+            radius: 45,
+            backgroundColor: const Color(0xFF5E3AA1),
+            backgroundImage: foto != null && foto.toString().isNotEmpty
+                ? (foto.toString().startsWith('assets/')
+                    ? AssetImage(foto)
+                    : FileImage(File(foto)))
+                : const AssetImage('assets/avatar.png') as ImageProvider,
           ),
-          child: Row(
-            children: [
-              const SizedBox(width: 16),
-              CircleAvatar( //Avatar de contacto
-              radius: 45,
-              backgroundColor: const Color(0xFF5E3AA1),
-              backgroundImage: foto != null && foto!.isNotEmpty
-              ? (foto!.startsWith('assets/')
-              ? AssetImage(foto!) as ImageProvider
-              : FileImage(File(foto!)))
-              : const AssetImage('assets/avatar.png'),
-              ),
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.only(left: 40),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.only(left: 40),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
                     children: [
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Text(
-                              nombre,
-                              style: const TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
-                                color: Color(0xFF5E3AA1),
-                              ),
-                            ),
+                      Expanded(
+                        child: Text(
+                          nombre,
+                          style: const TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF5E3AA1),
                           ),
-                          IconButton(
-                            icon: const Icon(Icons.edit, size: 20, color: Color(0xFF5E3AA1)),
-                            onPressed: () {
-                              Navigator.push(
+                        ),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.edit,
+                            size: 20, color: Color(0xFF5E3AA1)),
+                        onPressed: () {
+                          Navigator.push(
                             context,
                             MaterialPageRoute(
                               builder: (_) => EditContactPage(
-                                contactId: widget.contacto['id'],
-                                contactData: widget.contacto,
+                                contactId: contacto['id'],
+                                contactData: contacto,
                               ),
                             ),
-                          ).then((_) {
-                            setState(() {});
-                          });
-
-                            },
-                          ),
-
-                        ],
+                          );
+                        },
                       ),
-                      const SizedBox(height: 8),
-                      Text('Edad: $edad', style: const TextStyle(color: Color(0xFF5E3AA1), fontSize: 20, fontWeight: FontWeight.w500)),
-                      Text('Parentesco: $parentesco', style: const TextStyle(color: Color(0xFF5E3AA1), fontSize: 20, fontWeight: FontWeight.w500)),
-                      Text('Teléfono: $telefono', style: const TextStyle(color: Color(0xFF5E3AA1), fontSize: 20, fontWeight: FontWeight.w500)),
-                 ],
-               ),
-             ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Text('Edad: $edad',
+                      style: const TextStyle(
+                          color: Color(0xFF5E3AA1),
+                          fontSize: 20,
+                          fontWeight: FontWeight.w500)),
+                  Text('Parentesco: $parentesco',
+                      style: const TextStyle(
+                          color: Color(0xFF5E3AA1),
+                          fontSize: 20,
+                          fontWeight: FontWeight.w500)),
+                  Text('Teléfono: $telefono',
+                      style: const TextStyle(
+                          color: Color(0xFF5E3AA1),
+                          fontSize: 20,
+                          fontWeight: FontWeight.w500)),
+                ],
+              ),
+            ),
           ),
         ],
       ),

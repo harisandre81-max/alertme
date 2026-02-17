@@ -90,7 +90,7 @@ Future _createDB(Database db, int version) async {
     'edad': 14,
     'direccion': 'Villa Union',
     'telefono': '555555555',
-    'email': 'admin12@gmail.com',
+    'email': 'admin81@gmail.com',
     'password': hashedPassword,
   });
 
