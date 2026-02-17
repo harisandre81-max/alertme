@@ -308,6 +308,75 @@ Future<void> mostrarubicacion(int usuarioId) async {
                             await launchUrl(uri, mode: LaunchMode.externalApplication);
                           },
                     ),
+                    const SizedBox(height: 20),                        
+//========================Aqui va la informacion de las instituciones================================
+                        _VerticalBox(
+                          text: 'Instituto de la mujer',
+                          image: 'assets/img_institu/proteccion_civil.png',
+                          onTap: () {
+                        showDetailCard(
+                          context,
+                          InstitucionInfo(
+                            name: 'Instituto de la mujer',
+                            phone: '+88 01828 9457 20',
+                            address: 'Ciudad de México',
+                            description: 'Contacto de confianza para emergencias.',
+                            image: 'assets/img_institu/proteccion_civil.png',
+                          ),
+                        );
+                      },
+                         phoneNumber: '911',
+                          onPhoneTap: () async {
+                            final uri = Uri.parse('tel:911');
+                            await launchUrl(uri, mode: LaunchMode.externalApplication);
+                          },
+                    ),
+                    const SizedBox(height: 20),                        
+//========================Aqui va la informacion de las instituciones================================
+                        _VerticalBox(
+                          text: 'Seguridad publica',
+                          image: 'assets/img_institu/proteccion_civil.png',
+                          onTap: () {
+                        showDetailCard(
+                          context,
+                          InstitucionInfo(
+                            name: 'Seguridad publica',
+                            phone: '+88 01828 9457 20',
+                            address: 'Ciudad de México',
+                            description: 'Contacto de confianza para emergencias.',
+                            image: 'assets/img_institu/proteccion_civil.png',
+                          ),
+                        );
+                      },
+                         phoneNumber: '911',
+                          onPhoneTap: () async {
+                            final uri = Uri.parse('tel:911');
+                            await launchUrl(uri, mode: LaunchMode.externalApplication);
+                          },
+                    ),
+                    const SizedBox(height: 20),                        
+//========================Aqui va la informacion de las instituciones================================
+                        _VerticalBox(
+                          text: 'Centro de Justicia para Niñas, Niños y Adolescentes Durango',
+                          image: 'assets/img_institu/proteccion_civil.png',
+                          onTap: () {
+                        showDetailCard(
+                          context,
+                          InstitucionInfo(
+                            name: 'Centro de Justicia para Niñas, Niños y Adolescentes Durango',
+                            phone: '+88 01828 9457 20',
+                            address: 'Ciudad de México',
+                            description: 'Contacto de confianza para emergencias.',
+                            image: 'assets/img_institu/proteccion_civil.png',
+                          ),
+                        );
+                      },
+                         phoneNumber: '911',
+                          onPhoneTap: () async {
+                            final uri = Uri.parse('tel:911');
+                            await launchUrl(uri, mode: LaunchMode.externalApplication);
+                          },
+                    ),
 //=================================================================================================================
 //========================Fin del apartado para la informacion de las instituciones================================
 //=================================================================================================================
