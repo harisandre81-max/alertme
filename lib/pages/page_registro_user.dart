@@ -1,13 +1,14 @@
 import 'dart:io';
 import 'package:alertme/pages/page_inicio_de_sesion.dart';
 import 'package:flutter/material.dart';
-import 'page_menu.dart';
 import 'page_inicio_registro_contactos.dart';
 import 'page_terminos_y_condiciones.dart';
 import 'page_carga.dart';
 import 'package:alertme/database/database_helper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:bcrypt/bcrypt.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
 class RegisterUser extends StatefulWidget {
   const RegisterUser({super.key});
 
@@ -215,26 +216,22 @@ Center(
                           const SizedBox(height: 20),
 
                           _InputBox(
-  text: 'Correo electrónico',
-  controller: emailController,
-  keyboardType: TextInputType.emailAddress,
-  validator: (value) {
-    if (value == null || value.isEmpty) {
-      return 'Campo obligatorio';
-    }
-
-    final emailRegex = RegExp(
-      r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
-    );
-
-    if (!emailRegex.hasMatch(value)) {
-      return 'Ingresa un correo válido';
-    }
-
-    return null;
-  },
-),
-
+                            text: 'Correo electrónico',
+                            controller: emailController,
+                            keyboardType: TextInputType.emailAddress,
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Campo obligatorio';
+                              }
+                              final emailRegex = RegExp(
+                                r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
+                              );
+                              if (!emailRegex.hasMatch(value)) {
+                                return 'Ingresa un correo válido';
+                              }
+                              return null;
+                            },
+                          ),
 
                           const SizedBox(height: 20),
 
@@ -324,56 +321,60 @@ Center(
                     // SIGUIENTE
                           GestureDetector(
                             onTap: () async {
-  if (_formKey.currentState!.validate()) {
+                            if (_formKey.currentState!.validate()) {
 
-    if (!acceptTerms) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Debes aceptar los términos y condiciones'),
-        ),
-      );
-      return;
-    }
+                              if (!acceptTerms) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text('Debes aceptar los términos y condiciones'),
+                                  ),
+                                );
+                                return;
+                              }
     
 
-    try {
-      final fotoPath = _profileImage?.path ?? 'assets/avatar.png';
-      // 🔹 GUARDAR USUARIO EN SQLITE
-      String hashedPassword = BCrypt.hashpw(
-  passwordController.text,
-  BCrypt.gensalt(),
-);
+                              try {
+                                final fotoPath = _profileImage?.path ?? 'assets/avatar.png';
+                                // 🔹 GUARDAR USUARIO EN SQLITE
+                                String hashedPassword = BCrypt.hashpw(
+                                passwordController.text,
+                                BCrypt.gensalt(),
+                              );
 
+                                final userId = await DatabaseHelper.instance.insertUsuario({
+                                  'nombre': nomController.text,
+                                  'edad': int.parse(edadController.text),
+                                  'direccion': dirController.text,
+                                  'telefono': telController.text,
+                                  'email': emailController.text,
+                                  'password': hashedPassword,
+                                  'foto': fotoPath, // nunca será null
+                                });
 
-      final userId = await DatabaseHelper.instance.insertUsuario({
-        'nombre': nomController.text,
-        'edad': int.parse(edadController.text),
-        'direccion': dirController.text,
-        'telefono': telController.text,
-        'email': emailController.text,
-        'password': hashedPassword,
-        'foto': fotoPath, // nunca será null
-      });
+                                // 🔹 GUARDAR SESIÓN AUTOMÁTICAMENTE
+                                final prefs = await SharedPreferences.getInstance();
+                                await prefs.setInt('userId', userId);
 
-      await showLoading(context, seconds: 2);
+                                await showLoading(context, seconds: 2); //pantalla de carga
 
-      // 🔹 PASAR EL ID AL REGISTRO DE CONTACTO
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (_) => Contact(usuarioId: userId),
-        ),
-      );
+                                // 🔹 PASAR EL ID AL REGISTRO DE CONTACTO
+                                Navigator.pushAndRemoveUntil(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => Contact(usuarioId: userId),
+                                  ),
+                                  (route) => false,
+                                );
 
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error al registrar usuario: $e'),
-        ),
-      );
-    }
-  }
-},
+                              } catch (e) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text('Error al registrar usuario: $e'),
+                                  ),
+                                );
+                              }
+                            }
+                          },
                             child: Container(
                               height: 56, 
                               width: double.infinity,
@@ -405,7 +406,7 @@ Center(
                             ),
                           ),
                           const SizedBox(height: 40),
-                         Center( 
+                          Center( 
                             child: GestureDetector(
                             onTap: () async {
                               await showLoading(context, seconds: 3);
@@ -432,8 +433,8 @@ Center(
                   ],
                 ),
               ),
-  ],
-  ),
+            ],
+         ),
         ),
       ),
     );
@@ -502,13 +503,13 @@ Widget build(BuildContext context) {
           contentPadding: const EdgeInsets.symmetric(horizontal: 20),
           
            // 👇 ICONO DE OJITO
-    suffixIcon: widget.isPassword
-        ? IconButton(
+          suffixIcon: widget.isPassword
+          ? IconButton(
             icon: Icon(
               _obscure
                   ? Icons.visibility_off
                   : Icons.visibility,
-              color: Colors.deepPurple,
+                color: Colors.deepPurple,
             ),
             onPressed: () {
               setState(() {
@@ -516,15 +517,15 @@ Widget build(BuildContext context) {
               });
             },
           )
-        : null,
+          : null,
 
-           helperText: ' ', // 👈 RESERVA ESPACIO
-  helperStyle: const TextStyle(height: 0.8),
+          helperText: ' ', // 👈 RESERVA ESPACIO
+          helperStyle: const TextStyle(height: 0.8),
 
-  errorStyle: const TextStyle(
-    height: 1,
-    fontSize: 14,
-  ),
+          errorStyle: const TextStyle(
+            height: 1,
+            fontSize: 14,
+          ),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(20),
             borderSide: BorderSide.none,

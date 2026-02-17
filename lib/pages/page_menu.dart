@@ -470,6 +470,7 @@ const SizedBox(height: 15),
   }
 }
 
+//=============Contacto card=======================
 class ContactCard extends StatefulWidget {
   final Map<String, dynamic> contacto;
 
@@ -477,90 +478,93 @@ class ContactCard extends StatefulWidget {
 
   @override
   State<ContactCard> createState() => _ContactCardState();
-}
-
-class _ContactCardState extends State<ContactCard> {
-  late String nombre;
-  late String edad;
-  late String parentesco;
-  late String telefono;
-  late String? foto;
-
-  @override
-  void initState() {
-    super.initState();
-    nombre = widget.contacto['nombre'];
-    edad = widget.contacto['edad'].toString();
-    parentesco = widget.contacto['parentesco'];
-    telefono = widget.contacto['telefono'];
-    foto = widget.contacto['foto'];
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 360,
-      height: 180,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: const Color.fromARGB(255, 255, 254, 251),
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Row(
-        children: [
-          const SizedBox(width: 16),
-          CircleAvatar(
-  radius: 45,
-  backgroundColor: const Color(0xFF5E3AA1),
-  backgroundImage: foto != null && foto!.isNotEmpty
-      ? (foto!.startsWith('assets/')
-          ? AssetImage(foto!) as ImageProvider
-          : FileImage(File(foto!)))
-      : const AssetImage('assets/avatar.png'),
-),
+    class _ContactCardState extends State<ContactCard> {
+      late String nombre;
+      late String edad;
+      late String parentesco;
+      late String telefono;
+      late String? foto;
 
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.only(left: 40),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
+      @override
+      void initState() {
+        super.initState();
+        nombre = widget.contacto['nombre'];
+        edad = widget.contacto['edad'].toString();
+        parentesco = widget.contacto['parentesco'];
+        telefono = widget.contacto['telefono'];
+        foto = widget.contacto['foto'];
+      }
+
+      @override
+      Widget build(BuildContext context) {
+        return Container(
+          width: 360,
+          height: 180,
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: const Color.fromARGB(255, 255, 254, 251),
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Row(
+            children: [
+              const SizedBox(width: 16),
+              CircleAvatar(
+      radius: 45,
+      backgroundColor: const Color(0xFF5E3AA1),
+      backgroundImage: foto != null && foto!.isNotEmpty
+          ? (foto!.startsWith('assets/')
+              ? AssetImage(foto!) as ImageProvider
+              : FileImage(File(foto!)))
+          : const AssetImage('assets/avatar.png'),
+          ),
+
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.only(left: 40),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Expanded(
-                        child: Text(
-                          nombre,
-                          style: const TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF5E3AA1),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              nombre,
+                              style: const TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF5E3AA1),
+                              ),
+                            ),
                           ),
-                        ),
-                      ),
-                      IconButton(
-  icon: const Icon(Icons.edit, size: 20, color: Color(0xFF5E3AA1)),
-  onPressed: () {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => EditContactPage(
-          contactId: widget.contacto['id'],       // ✅ Corregido
-          contactData: widget.contacto,           // ✅ Corregido
-        ),
-      ),
-    );
-  },
-),
+                          IconButton(
+                            icon: const Icon(Icons.edit, size: 20, color: Color(0xFF5E3AA1)),
+                            onPressed: () {
+                              Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => EditContactPage(
+                                contactId: widget.contacto['id'],
+                                contactData: widget.contacto,
+                              ),
+                            ),
+                          ).then((_) {
+                            setState(() {});
+                          });
 
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  Text('Edad: $edad', style: const TextStyle(color: Color(0xFF5E3AA1), fontSize: 20, fontWeight: FontWeight.w500)),
-                  Text('Parentesco: $parentesco', style: const TextStyle(color: Color(0xFF5E3AA1), fontSize: 20, fontWeight: FontWeight.w500)),
-                  Text('Teléfono: $telefono', style: const TextStyle(color: Color(0xFF5E3AA1), fontSize: 20, fontWeight: FontWeight.w500)),
-                ],
-              ),
-            ),
+                            },
+                          ),
+
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      Text('Edad: $edad', style: const TextStyle(color: Color(0xFF5E3AA1), fontSize: 20, fontWeight: FontWeight.w500)),
+                      Text('Parentesco: $parentesco', style: const TextStyle(color: Color(0xFF5E3AA1), fontSize: 20, fontWeight: FontWeight.w500)),
+                      Text('Teléfono: $telefono', style: const TextStyle(color: Color(0xFF5E3AA1), fontSize: 20, fontWeight: FontWeight.w500)),
+                 ],
+               ),
+             ),
           ),
         ],
       ),
@@ -568,7 +572,7 @@ class _ContactCardState extends State<ContactCard> {
   }
 }
 
-
+//=============Movimiento del widget contacto con btn < y >, asi como la funcion para agregar contactos=======================
 class ContactSlider extends StatefulWidget {
   final int usuarioId;
   const ContactSlider({super.key, required this.usuarioId});
@@ -627,58 +631,58 @@ class _ContactSliderState extends State<ContactSlider> {
       child: Stack(
         children: [
           PageView.builder(
-  controller: _controller,
-  physics: const NeverScrollableScrollPhysics(),
-  itemCount: totalPages,
-  onPageChanged: (index) {
-    setState(() => currentPage = index);
-  },
-  itemBuilder: (context, index) {
-    if (index < contacts.length) {
-      return ContactCard(contacto: contacts[index]);
-    } else {
-      return GestureDetector(
-        onTap: () {
-          String route = '';
-          if (contacts.length == 0) route = '/contact1';
-          if (contacts.length == 1) route = '/contact2';
-          if (contacts.length == 2) route = '/contact3';
+          controller: _controller,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: totalPages,
+          onPageChanged: (index) {
+            setState(() => currentPage = index);
+          },
+          itemBuilder: (context, index) {
+          if (index < contacts.length) {
+            return ContactCard(contacto: contacts[index]);
+          } else {
+            return GestureDetector(
+              onTap: () {
+                String route = '';
+                if (contacts.length == 0) route = '/contact1';
+                if (contacts.length == 1) route = '/contact2';
+                if (contacts.length == 2) route = '/contact3';
 
-          Navigator.pushNamed(
-            context,
-            route,
-            arguments: widget.usuarioId,
-          ).then((_) => _loadContacts());
-        },
-        child: Container(
-          width: 300,
-          height: 150,
-          margin: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: Color.fromARGB(255, 255, 254, 251),
-            borderRadius: BorderRadius.circular(16),
-          ),
-          child: const Center(
-  child: Column(
-    mainAxisSize: MainAxisSize.min,
-    children: [
-      Text(
-        "Agregar otro contacto",
-        style: TextStyle(
-          fontSize: 16,
-          fontWeight: FontWeight.w600,
-          color: Color(0xFF5E3AA1),
-        ),
-      ),
-      SizedBox(height: 8),
-      Icon(
-        Icons.add,
-        size: 50,
-        color: Color(0xFF5E3AA1),
-      ),
-    ],
-  ),
-),
+                Navigator.pushNamed(
+                  context,
+                  route,
+                  arguments: widget.usuarioId,
+                ).then((_) => _loadContacts());
+              },
+              child: Container(
+                width: 300,
+                height: 150,
+                margin: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Color.fromARGB(255, 255, 254, 251),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: const Center(
+                child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    "Agregar otro contacto",
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF5E3AA1),
+                    ),
+                  ),
+                  SizedBox(height: 8),
+                  Icon(
+                    Icons.add,
+                    size: 50,
+                    color: Color(0xFF5E3AA1),
+                  ),
+                ],
+              ),
+            ),
         ),
       );
     }
@@ -709,8 +713,217 @@ if (currentPage < totalPages - 1)
     );
   }
 }
+//=============Widget para editar el contacto=============
+class EditContactPage extends StatefulWidget {
+  final int contactId; // id del contacto en la base de datos
+  final Map<String, dynamic> contactData; // datos actuales
+
+  const EditContactPage({
+    super.key,
+    required this.contactId,
+    required this.contactData,
+  });
+
+  @override
+  State<EditContactPage> createState() => _EditContactPageState();
+}
+
+class _EditContactPageState extends State<EditContactPage> {
+  late TextEditingController nomController;
+  late TextEditingController telController;
+  late TextEditingController ageController;
+  late TextEditingController parentController;
+  File? _profileImage;
+  final ImagePicker _picker = ImagePicker();
+
+  @override
+  void initState() {
+    super.initState();
+    nomController = TextEditingController(text: widget.contactData['nombre']);
+    ageController = TextEditingController(
+    text: widget.contactData['edad'].toString(),
+    );
+    telController = TextEditingController(text: widget.contactData['telefono']);
+    parentController = TextEditingController(text: widget.contactData['parentesco']);
+
+    // si tiene foto guardada, cargamos el archivo
+    if (widget.contactData['foto'] != null &&
+        widget.contactData['foto'] != 'assets/avatar.png') {
+      _profileImage = File(widget.contactData['foto']);
+    }
+  }
+
+  @override
+  void dispose() {
+    nomController.dispose();
+    telController.dispose();
+    ageController.dispose();
+    parentController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _pickImage() async {
+    final XFile? image = await _picker.pickImage(
+      source: ImageSource.gallery,
+      maxWidth: 600,
+      maxHeight: 600,
+      imageQuality: 85,
+    );
+
+    if (image != null) {
+      setState(() {
+        _profileImage = File(image.path);
+      });
+    }
+  }
+
+  Future<void> _updateContact() async {
+  final fotoPath = _profileImage?.path ?? 'assets/avatar.png';
+
+  await DatabaseHelper.instance.updateContact(widget.contactId, {
+    'nombre': nomController.text,
+    'edad': int.parse(ageController.text), // 👈 IMPORTANTE
+    'parentesco': parentController.text,
+    'telefono': telController.text,
+    'foto': fotoPath,
+  });
+
+  ScaffoldMessenger.of(context).showSnackBar(
+    const SnackBar(content: Text('Contacto actualizado correctamente')),
+  );
+
+  Navigator.pop(context);
+}
 
 
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Editar Contacto'),
+        backgroundColor: Colors.deepPurple,
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          children: [
+            // FOTO
+            Center(
+              child: Stack(
+                alignment: Alignment.bottomRight,
+                children: [
+                  CircleAvatar(
+                    radius: 60,
+                    backgroundColor: Colors.orange.withOpacity(0.5),
+                    backgroundImage: _profileImage != null
+                        ? FileImage(_profileImage!)
+                        : const AssetImage('assets/avatar.png') as ImageProvider,
+                  ),
+                  GestureDetector(
+                    onTap: _pickImage,
+                    child: Container(
+                      padding: const EdgeInsets.all(6),
+                      decoration: const BoxDecoration(
+                        color: Colors.deepPurple,
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.edit,
+                        size: 18,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 30),
+
+            // NOMBRE
+            TextFormField(
+              controller: nomController,
+              decoration: InputDecoration(
+                labelText: 'Nombre',
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 20),
+
+            // EDAD
+            TextFormField(
+              controller: ageController,
+              keyboardType: TextInputType.number,
+              decoration: InputDecoration(
+                labelText: 'Edad',
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 20),
+
+            // PARENTESCO
+            TextFormField(
+              controller: parentController,
+              decoration: InputDecoration(
+                labelText: 'Parentesco',
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 20),
+
+            // TELÉFONO
+            TextFormField(
+              controller: telController,
+              keyboardType: TextInputType.phone,
+              decoration: InputDecoration(
+                labelText: 'Teléfono',
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
+              ),
+            ),
+
+
+            const SizedBox(height: 30),
+
+            ElevatedButton(
+              onPressed: _updateContact,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.deepPurple,
+                minimumSize: const Size.fromHeight(50),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(30),
+                ),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: const [
+                  Text(
+                    'Guardar Cambios',
+                    style: TextStyle(fontSize: 18, color: Colors.white),
+                  ),
+                  SizedBox(width: 8),
+                  Icon(Icons.save, size: 24, color: Colors.white),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+//=============Widget de las instituciones=======================
 class _VerticalBox extends StatelessWidget {
   final String text;
   final VoidCallback onTap;
@@ -775,7 +988,145 @@ class _VerticalBox extends StatelessWidget {
   }
 }
 
+//=============Widget de mas info de las instituciones=======================
+class InstitucionInfo {
+  final String name;
+  final String phone;
+  final String address;
+  final String description;
+  final String image;
 
+  InstitucionInfo({
+    required this.name,
+    required this.phone,
+    required this.address,
+    required this.description,
+    required this.image,
+  });
+}
+
+  //mas info
+void showDetailCard(BuildContext context, InstitucionInfo user) {
+  showGeneralDialog(
+    context: context,
+    barrierDismissible: true,
+    barrierLabel: 'Cerrar', // 👈 OBLIGATORIO
+    barrierColor: Colors.black54,
+    transitionDuration: const Duration(milliseconds: 300),
+
+    pageBuilder: (_, __, ___) {
+      return  Align(
+    alignment: Alignment.bottomCenter, 
+    child: Padding(
+      padding: const EdgeInsets.only(bottom: 40),
+      child: Material(
+      color: Colors.transparent,
+        child: Container(
+          width: 388,
+          height: 300,
+          padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 16),
+          decoration: BoxDecoration(
+            color: Color.fromARGB(255, 255, 252, 247),
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // HEADER
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              CircleAvatar(
+                radius: 40,
+                backgroundImage: AssetImage(user.image),
+              ),
+              const SizedBox(width: 40),
+              const SizedBox(height: 26),
+              Expanded(
+                child: Text(
+                  user.name,
+                  style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.deepPurple,
+                  ),
+                ),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 16),
+
+          // INFO
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+                Text('Telefono:   ',style: const TextStyle(
+                    fontSize: 20,
+                    color: Colors.deepPurple,
+                  ),),
+                Text(
+                  user.phone,
+                  style: const TextStyle(
+                    fontSize: 20,
+                    color: Colors.deepPurple,
+                  ),
+                ), 
+                IconButton(
+                  icon: const Icon(Icons.phone, color: Colors.deepPurple),
+                  onPressed: () async {
+                    final uri = Uri.parse('tel:${user.phone}');
+                    await launchUrl(uri, mode: LaunchMode.externalApplication);
+                  },
+                ),
+              ],
+            ),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+            Text('Direccion:',style: const TextStyle(
+                fontSize: 20,
+                color: Colors.deepPurple,
+              ),),
+            const SizedBox(width: 10),
+            Text(
+              user.address,
+              textAlign: TextAlign.justify,
+              style: const TextStyle(fontSize: 20, color: Colors.deepPurple,),
+            ),
+            ],
+            ),
+            const SizedBox(height: 8),
+            Text(
+              user.description,
+              textAlign: TextAlign.justify,
+              style: const TextStyle(fontSize: 20, color: Colors.deepPurple,),
+            ),
+            ],
+          ),
+        ),
+      ),
+      ),
+      );
+    },
+    
+    transitionBuilder: (_, animation, __, child) {
+      return ScaleTransition(
+        scale: CurvedAnimation(
+          parent: animation,
+          curve: Curves.easeOutBack,
+        ),
+        child: FadeTransition(
+          opacity: animation,
+          child: child,
+        ),
+      );
+    },
+  );
+}
+
+
+//=============Mini card widget, para mostrar las infografias=======================
 class _HorizontalButton extends StatelessWidget {
   final String text;
   final String image;
@@ -849,142 +1200,7 @@ class _HorizontalButton extends StatelessWidget {
   }
 }
 
-// MODELO (siempre fuera del widget)
-class InstitucionInfo {
-  final String name;
-  final String phone;
-  final String address;
-  final String description;
-  final String image;
-
-  InstitucionInfo({
-    required this.name,
-    required this.phone,
-    required this.address,
-    required this.description,
-    required this.image,
-  });
-}
-
-  //mas info
-void showDetailCard(BuildContext context, InstitucionInfo user) {
-  showGeneralDialog(
-    context: context,
-    barrierDismissible: true,
-    barrierLabel: 'Cerrar', // 👈 OBLIGATORIO
-    barrierColor: Colors.black54,
-    transitionDuration: const Duration(milliseconds: 300),
-
-    pageBuilder: (_, __, ___) {
-      return  Align(
-    alignment: Alignment.bottomCenter, 
-    child: Padding(
-      padding: const EdgeInsets.only(bottom: 40),
-      child: Material(
-  color: Colors.transparent,
-        child: Container(
-          width: 388,
-          height: 300,
-          padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 16),
-          decoration: BoxDecoration(
-            color: Color.fromARGB(255, 255, 252, 247),
-            borderRadius: BorderRadius.circular(20),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // HEADER
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              CircleAvatar(
-                radius: 40,
-                backgroundImage: AssetImage(user.image),
-              ),
-              const SizedBox(width: 40),
-              const SizedBox(height: 26),
-              Expanded(
-                child: Text(
-                  user.name,
-                  style: const TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.deepPurple,
-                  ),
-                ),
-              ),
-            ],
-          ),
-
-          const SizedBox(height: 16),
-
-          // INFO
-          Row(
-  mainAxisSize: MainAxisSize.min,
-  children: [
-    Text('Telefono:   ',style: const TextStyle(
-        fontSize: 20,
-        color: Colors.deepPurple,
-      ),),
-    Text(
-      user.phone,
-      style: const TextStyle(
-        fontSize: 20,
-        color: Colors.deepPurple,
-      ),
-    ), 
-    IconButton(
-      icon: const Icon(Icons.phone, color: Colors.deepPurple),
-      onPressed: () async {
-        final uri = Uri.parse('tel:${user.phone}');
-        await launchUrl(uri, mode: LaunchMode.externalApplication);
-      },
-    ),
-  ],
-),
-            Row(
-  mainAxisSize: MainAxisSize.min,
-  children: [
-    Text('Direccion:',style: const TextStyle(
-        fontSize: 20,
-        color: Colors.deepPurple,
-      ),),
-      const SizedBox(width: 10),
-            Text(
-              user.address,
-              textAlign: TextAlign.justify,
-              style: const TextStyle(fontSize: 20, color: Colors.deepPurple,),
-            ),
-            ],
-),
-            const SizedBox(height: 8),
-            Text(
-              user.description,
-              textAlign: TextAlign.justify,
-              style: const TextStyle(fontSize: 20, color: Colors.deepPurple,),
-            ),
-            ],
-          ),
-        ),
-      ),
-      ),
-      );
-    },
-    
-    transitionBuilder: (_, animation, __, child) {
-      return ScaleTransition(
-        scale: CurvedAnimation(
-          parent: animation,
-          curve: Curves.easeOutBack,
-        ),
-        child: FadeTransition(
-          opacity: animation,
-          child: child,
-        ),
-      );
-    },
-  );
-}
+//=============Mini card button, funcionalidad para ver las imagenes=======================
 class MiniCardButton extends StatelessWidget {
   final String text;
   final String imagePath;
@@ -1044,87 +1260,7 @@ class MiniCardButton extends StatelessWidget {
   }
 }
 
-
-// CARD
-class InstitucionDetailCard extends StatelessWidget {
-  final InstitucionInfo data;
-  const InstitucionDetailCard({super.key, required this.data});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 388,
-      height: 300,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // HEADER
-          Row(
-            children: [
-              const SizedBox(width: 56, height: 56),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Text(
-                  data.name,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-            ],
-          ),
-
-          const SizedBox(height: 16),
-
-          _InfoRow(label: 'Dirección:', value: data.address),
-          const SizedBox(height: 8),
-          _InfoRow(label: 'Número:', value: data.phone),
-
-          const SizedBox(height: 12),
-
-          Expanded(
-            child: Text(
-              data.description,
-              textAlign: TextAlign.justify,
-              overflow: TextOverflow.fade,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _InfoRow extends StatelessWidget {
-  final String label;
-  final String value;
-
-  const _InfoRow({required this.label, required this.value});
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        SizedBox(width: 80, child: Text(label)),
-        const SizedBox(width: 8),
-        Expanded(
-          child: Text(
-            value,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-//infografias
-
+//==========Botones para ver las infografias en carrusel=======
 class HorizontalButtonSlider extends StatefulWidget {
   const HorizontalButtonSlider({super.key});
 
@@ -1218,6 +1354,82 @@ class _HorizontalButtonSliderState
     );
   }
 }
+//=============Mini card button, funcionalidad para ver las imagenes=======================
+class InstitucionDetailCard extends StatelessWidget {
+  final InstitucionInfo data;
+  const InstitucionDetailCard({super.key, required this.data});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 388,
+      height: 300,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // HEADER
+          Row(
+            children: [
+              const SizedBox(width: 56, height: 56),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  data.name,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 16),
+          _InfoRow(label: 'Dirección:', value: data.address),
+          const SizedBox(height: 8),
+          _InfoRow(label: 'Número:', value: data.phone),
+          const SizedBox(height: 12),
+          Expanded(
+            child: Text(
+              data.description,
+              textAlign: TextAlign.justify,
+              overflow: TextOverflow.fade,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _InfoRow extends StatelessWidget {
+  final String label;
+  final String value;
+
+  const _InfoRow({required this.label, required this.value});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SizedBox(width: 80, child: Text(label)),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Text(
+            value,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+//==========Funcionalidad para que la imagen superpuesta se cierre
 class MiniCard extends StatelessWidget {
   final String text;
   final String image;
@@ -1302,174 +1514,4 @@ class MiniCard extends StatelessWidget {
   }
 }
 
-class EditContactPage extends StatefulWidget {
-  final int contactId; // id del contacto en la base de datos
-  final Map<String, dynamic> contactData; // datos actuales
 
-  const EditContactPage({
-    super.key,
-    required this.contactId,
-    required this.contactData,
-  });
-
-  @override
-  State<EditContactPage> createState() => _EditContactPageState();
-}
-
-class _EditContactPageState extends State<EditContactPage> {
-  late TextEditingController nomController;
-  late TextEditingController telController;
-  File? _profileImage;
-  final ImagePicker _picker = ImagePicker();
-
-  @override
-  void initState() {
-    super.initState();
-    nomController = TextEditingController(text: widget.contactData['nombre']);
-    telController = TextEditingController(text: widget.contactData['telefono']);
-
-    // si tiene foto guardada, cargamos el archivo
-    if (widget.contactData['foto'] != null &&
-        widget.contactData['foto'] != 'assets/avatar.png') {
-      _profileImage = File(widget.contactData['foto']);
-    }
-  }
-
-  @override
-  void dispose() {
-    nomController.dispose();
-    telController.dispose();
-    super.dispose();
-  }
-
-  Future<void> _pickImage() async {
-    final XFile? image = await _picker.pickImage(
-      source: ImageSource.gallery,
-      maxWidth: 600,
-      maxHeight: 600,
-      imageQuality: 85,
-    );
-
-    if (image != null) {
-      setState(() {
-        _profileImage = File(image.path);
-      });
-    }
-  }
-
-  Future<void> _updateContact() async {
-    final fotoPath = _profileImage?.path ?? 'assets/avatar.png';
-
-    await DatabaseHelper.instance.updateContact(widget.contactId, {
-      'nombre': nomController.text,
-      'telefono': telController.text,
-      'foto': fotoPath,
-    });
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Contacto actualizado correctamente')),
-    );
-
-    Navigator.pop(context); // volver atrás
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Editar Contacto'),
-        backgroundColor: Colors.deepPurple,
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          children: [
-            // FOTO
-            Center(
-              child: Stack(
-                alignment: Alignment.bottomRight,
-                children: [
-                  CircleAvatar(
-                    radius: 60,
-                    backgroundColor: Colors.orange.withOpacity(0.5),
-                    backgroundImage: _profileImage != null
-                        ? FileImage(_profileImage!)
-                        : const AssetImage('assets/avatar.png') as ImageProvider,
-                  ),
-                  GestureDetector(
-                    onTap: _pickImage,
-                    child: Container(
-                      padding: const EdgeInsets.all(6),
-                      decoration: const BoxDecoration(
-                        color: Colors.deepPurple,
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(
-                        Icons.edit,
-                        size: 18,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 30),
-
-            // NOMBRE
-            TextFormField(
-              controller: nomController,
-              decoration: InputDecoration(
-                labelText: 'Nombre',
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(20),
-                ),
-              ),
-            ),
-
-            const SizedBox(height: 20),
-
-            // TELÉFONO
-            TextFormField(
-              controller: telController,
-              keyboardType: TextInputType.phone,
-              decoration: InputDecoration(
-                labelText: 'Teléfono',
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(20),
-                ),
-              ),
-            ),
-
-            const SizedBox(height: 30),
-
-            ElevatedButton(
-  onPressed: _updateContact,
-  style: ElevatedButton.styleFrom(
-    backgroundColor: Colors.deepPurple,
-    minimumSize: const Size.fromHeight(50),
-    shape: RoundedRectangleBorder(
-      borderRadius: BorderRadius.circular(30),
-    ),
-  ),
-  child: Row(
-    mainAxisAlignment: MainAxisAlignment.center,
-    children: const [
-      Text(
-        'Guardar Cambios',
-        style: TextStyle(fontSize: 18),
-      ),
-      SizedBox(width: 8),
-      Icon(Icons.save, size: 24, color: Colors.white),
-    ],
-  ),
-),
-
-
-          ],
-        ),
-      ),
-    );
-  }
-}

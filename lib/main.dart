@@ -1,28 +1,39 @@
 import 'package:alertme/pages/page_inicio_registro_contactos.dart';
 import 'package:alertme/pages/page_inicio_registro_contactos2.dart';
 import 'package:alertme/pages/page_inicio_registro_contactos3.dart';
+import 'package:alertme/pages/page_menu.dart';
 import 'package:flutter/material.dart';
 import 'pages/page_inicio_de_sesion.dart';
 import 'pages/page_user_data.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 // Raíz de la interfaz
-void main() {
-  runApp(const MyApp());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  final prefs = await SharedPreferences.getInstance();
+  final userId = prefs.getInt('userId');
+
+  runApp(MyApp(userId: userId));
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+   final int? userId;
+
+  const MyApp({super.key, this.userId});
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return MaterialApp( //material app
       debugShowCheckedModeBanner: false,
       title: 'Mi App',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      initialRoute: '/login',
+      home: userId != null
+    ? MenuUI(usuarioId: userId!)
+    : const InicioDeSesion(),
       onGenerateRoute: (settings) {
         switch (settings.name) {
           case '/login':

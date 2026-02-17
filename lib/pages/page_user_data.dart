@@ -5,6 +5,7 @@ import 'page_inicio_de_sesion.dart';
 import 'package:alertme/database/database_helper.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class UserProfilePage extends StatefulWidget {
   final int usuarioId; // <-- id del usuario actual
@@ -26,8 +27,8 @@ class _UserProfilePageState extends State<UserProfilePage> {
 
 
   String password = ''; // almacena la contraseña actual
-
-Future<void> _loadUserData() async {
+//=========Carga los datos del user===========
+Future<void> _loadUserData() async { 
   final db = DatabaseHelper.instance;
   final usuario = await db.loginById(widget.usuarioId);
 
@@ -42,11 +43,11 @@ Future<void> _loadUserData() async {
       fotoPath = usuario['foto']; // si tu tabla tiene la columna 'foto'
       if (usuario['foto'] != null && usuario['foto'].toString().isNotEmpty) {
   _profileImage = File(usuario['foto']);
-}
+    }
     });
   }
 }
-
+  //=========actualiza los datos del usuario de acuerdo a los cambios==================
   Future<void> _updateUsuario() async {
   await DatabaseHelper.instance.updateUsuario(widget.usuarioId, {
     'nombre': userName,
@@ -59,7 +60,7 @@ Future<void> _loadUserData() async {
 }
 
   File? _profileImage;
-final ImagePicker _picker = ImagePicker();
+  final ImagePicker _picker = ImagePicker();
 
   void _editName(BuildContext context) {
   final controller = TextEditingController(text: userName);
@@ -82,19 +83,19 @@ final ImagePicker _picker = ImagePicker();
         ),
       ),
         ElevatedButton(
-  onPressed: () async {
-    // 1️⃣ Actualiza el estado local (síncrono)
-    setState(() {
-      userName = controller.text;
-    });
+        onPressed: () async {
+          // 1️⃣ Actualiza el estado local (síncrono)
+          setState(() {
+            userName = controller.text;
+          });
 
-    // 2️⃣ Actualiza la base de datos fuera de setState
-    await _updateUsuario();
+          // 2️⃣ Actualiza la base de datos fuera de setState
+          await _updateUsuario();
 
-    // 3️⃣ Cierra el diálogo
-    Navigator.pop(context);
-  },
-   style: ElevatedButton.styleFrom(
+          // 3️⃣ Cierra el diálogo
+          Navigator.pop(context);
+        },
+        style: ElevatedButton.styleFrom(
           backgroundColor: Colors.deepPurple.withOpacity(0.6), // opcional: cambia color
         ),
         child: Row(
@@ -105,22 +106,21 @@ final ImagePicker _picker = ImagePicker();
             Text('Guardar', style: const TextStyle(color: Colors.white),),
           ],
         ),
-),
+        ),
       ],
     ),
   );
 }
 
-
+//funcion para editar el campo
   void _editField({
   required BuildContext context,
   required String title,
   required String initialValue,
   required Function(String) onSave,
-})
+  })
  {
   final controller = TextEditingController(text: initialValue);
-
   showDialog(
     context: context,
     builder: (_) => AlertDialog(
@@ -139,19 +139,19 @@ final ImagePicker _picker = ImagePicker();
         ),
       ),
         ElevatedButton(
-  onPressed: () async {
-    // 1️⃣ Primero actualiza el estado local (síncrono)
-    setState(() {
-      onSave(controller.text); // aquí solo cambia el valor en memoria
-    });
+      onPressed: () async {
+        // 1️⃣ Primero actualiza el estado local (síncrono)
+        setState(() {
+          onSave(controller.text); // aquí solo cambia el valor en memoria
+        });
 
-    // 2️⃣ Luego, fuera de setState, haces la operación async
-    await _updateUsuario();
+        // 2️⃣ Luego, fuera de setState, haces la operación async
+        await _updateUsuario();
 
-    // 3️⃣ Finalmente, cierras el diálogo
-    Navigator.pop(context);
-  },
-   style: ElevatedButton.styleFrom(
+        // 3️⃣ Finalmente, cierras el diálogo
+        Navigator.pop(context);
+      },
+        style: ElevatedButton.styleFrom(
           backgroundColor: Colors.deepPurple.withOpacity(0.6), // opcional: cambia color
         ),
         child: Row(
@@ -162,14 +162,12 @@ final ImagePicker _picker = ImagePicker();
             Text('Guardar', style: const TextStyle(color: Colors.white),),
           ],
         ),
-),
-
+      ),
       ],
     ),
   );
 }
-
-
+    //============funcion para cambiar la imagen==========
   Future<void> _pickImage() async {
   final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
 
@@ -197,7 +195,7 @@ final ImagePicker _picker = ImagePicker();
   }
 }
 
-
+  //funcion para cerrar sesion
   void _showLogoutDialog(BuildContext context) {
   showDialog(
     context: context,
@@ -224,13 +222,12 @@ final ImagePicker _picker = ImagePicker();
           style: ElevatedButton.styleFrom(
             backgroundColor: Colors.red,
           ),
-          onPressed: () {
-            Navigator.pop(context);
-
-            // Aquí navegas a login
-            Navigator.pushNamedAndRemoveUntil(
+          onPressed: () async {
+            final prefs = await SharedPreferences.getInstance();
+            await prefs.clear(); // 👈 BORRA SESIÓN
+            Navigator.pushAndRemoveUntil(
               context,
-              '/login', // asegúrate de tener esta ruta
+              MaterialPageRoute(builder: (_) => const InicioDeSesion()),
               (route) => false,
             );
           },
@@ -252,119 +249,106 @@ void initState() {
       backgroundColor: const Color.fromARGB(255, 255, 252, 247),
        // SUB MENÚ SUPERIOR
       appBar: AppBar(
-  toolbarHeight: 110,
-  elevation: 0,
-  leadingWidth: 80,
-  backgroundColor: const Color(0xFFE6F0D5),
-
-  titleSpacing: 100, // 👈 espacio entre leading y title
-
-  leading: Padding(
-    padding: const EdgeInsets.all(5.0),
-    child: Image.asset(
-      'assets/logo_inter/logo.png',
-      width: 70,
-      height: 70,
-      fit: BoxFit.contain,
-    ),
-  ),
-
-  title: const Text(
-    'Perfil',
-    style: TextStyle(
-      color: Colors.deepPurple,
-      fontWeight: FontWeight.w600,
-      fontSize: 20
-    ),
-  ),
-),
-
-
+        toolbarHeight: 110,
+        elevation: 0,
+        leadingWidth: 80,
+        backgroundColor: const Color(0xFFE6F0D5),
+        titleSpacing: 100, // 👈 espacio entre leading y title
+        leading: Padding(
+          padding: const EdgeInsets.all(5.0),
+          child: Image.asset(
+            'assets/logo_inter/logo.png',
+            width: 70,
+            height: 70,
+            fit: BoxFit.contain,
+          ),
+        ),
+        title: const Text(
+          'Perfil',
+          style: TextStyle(
+            color: Colors.deepPurple,
+            fontWeight: FontWeight.w600,
+            fontSize: 20
+          ),
+        ),
+      ),
       body: SingleChildScrollView(
     child: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
           children: [
             Align(
-  alignment: Alignment.topLeft,
-  child: IconButton(
-    icon: const Icon(
-      Icons.arrow_back,
-      color: Colors.deepPurple,
-      size: 28,
-    ),
-    onPressed: () {
-      Navigator.pop(context);
-    },
-  ),
-),
-            
+              alignment: Alignment.topLeft,
+              child: IconButton(
+                icon: const Icon(
+                  Icons.arrow_back,
+                  color: Colors.deepPurple,
+                  size: 28,
+                ),
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+              ),
+            ),
              const SizedBox(height: 30),
             // FOTO DE PERFIL
-Center(
-  child: Stack(
-    alignment: Alignment.bottomRight,
-    children: [
-      CircleAvatar(
-        radius: 60,
-        backgroundColor: const Color.fromARGB(136, 255, 182, 98),
-        backgroundImage: _profileImage != null
-            ? FileImage(_profileImage!)
-            : const AssetImage('assets/avatar.png') as ImageProvider,
-      ),
-      GestureDetector(
-        onTap: () {
-          _pickImage();
-          print('Editar foto');
-        },
-        child: Container(
-          padding: const EdgeInsets.all(6),
-          decoration: const BoxDecoration(
-            color: Colors.deepPurple,
-            shape: BoxShape.circle,
-          ),
-          child: const Icon(
-            Icons.edit,
-            size: 18,
-            color: Colors.white,
-          ),
-        ),
-      ),
-    ],
-  ),
-),
-
-
+            Center(
+              child: Stack(
+                alignment: Alignment.bottomRight,
+                children: [
+                  CircleAvatar(
+                    radius: 60,
+                    backgroundColor: const Color.fromARGB(136, 255, 182, 98),
+                    backgroundImage: _profileImage != null
+                        ? FileImage(_profileImage!)
+                        : const AssetImage('assets/avatar.png') as ImageProvider,
+                  ),
+                  GestureDetector(
+                    onTap: () {
+                      _pickImage();
+                      print('Editar foto');
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.all(6),
+                      decoration: const BoxDecoration(
+                        color: Colors.deepPurple,
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.edit,
+                        size: 18,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
             const SizedBox(height: 30),
-
             // NOMBRE
             Row(
-  mainAxisAlignment: MainAxisAlignment.center,
-  children: [
-    Text(
-      userName,
-      style: const TextStyle(
-        fontSize: 20,
-        fontWeight: FontWeight.w600,
-        color: Colors.deepPurple,
-      ),
-    ),
-    const SizedBox(width: 8),
-    GestureDetector(
-      onTap: () => _editName(context),
-      child: const Icon(
-        Icons.edit,
-        size: 18,
-        color: Colors.deepPurple,
-      ),
-    ),
-  ],
-),
-
-
-
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  userName,
+                  style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.deepPurple,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                GestureDetector(
+                  onTap: () => _editName(context),
+                  child: const Icon(
+                    Icons.edit,
+                    size: 18,
+                    color: Colors.deepPurple,
+                  ),
+                ),
+              ],
+            ),
             const SizedBox(height: 100),
-
             // DATOS
             _InfoTile(
               text: email,
@@ -423,39 +407,37 @@ Center(
               ),
             ),
             const SizedBox(height: 40),
-
-GestureDetector(
-  onTap: () {
-    _showLogoutDialog(context);
-  },
-  child: Container(
-    width: double.infinity,
-    padding: const EdgeInsets.symmetric(vertical: 14),
-    decoration: BoxDecoration(
-      color: Colors.red.shade400,
-      borderRadius: BorderRadius.circular(16),
-    ),
-    child: Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: const [
-        Icon(
-          Icons.logout, // icono referente a cerrar sesión
-          color: Colors.white,
-          size: 20,
-        ),
-        SizedBox(width: 8),
-        Text(
-          'Cerrar sesión',
-          style: TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.w600, fontSize: 18
-          ),
-        ),
-      ],
-    ),
-  ),
-),
-
+            GestureDetector(
+              onTap: () {
+                _showLogoutDialog(context);
+              },
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                decoration: BoxDecoration(
+                  color: Colors.red.shade400,
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: const [
+                    Icon(
+                      Icons.logout, // icono referente a cerrar sesión
+                      color: Colors.white,
+                      size: 20,
+                    ),
+                    SizedBox(width: 8),
+                    Text(
+                      'Cerrar sesión',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w600, fontSize: 18
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
           ],
         ),
       ),
@@ -464,6 +446,7 @@ GestureDetector(
   }
 }
 
+//======Widget para mostrar los campos con su edit icon
 class _InfoTile extends StatelessWidget {
   final IconData icon;
   final String text;

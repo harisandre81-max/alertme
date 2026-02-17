@@ -3,6 +3,8 @@ import 'page_menu.dart';
 import 'page_registro_user.dart';
 import 'page_carga.dart';
 import 'package:alertme/database/database_helper.dart';
+import 'package:shared_preferences/shared_preferences.dart'; //sesion abierta
+
 class InicioDeSesion extends StatefulWidget {
   const InicioDeSesion({super.key});
 
@@ -26,9 +28,16 @@ class InicioDeSesionState extends State<InicioDeSesion> {
 
   await Future.delayed(Duration(seconds: seconds));
   Navigator.of(context).pop();
-}
+  }
 
+  //guarda la sesion
+  Future<void> guardarSesion(int userId) async {
+  final prefs = await SharedPreferences.getInstance();
+  await prefs.setBool('isLogged', true);
+  await prefs.setInt('userId', userId);
+  }
 
+  //limpia los campos
   @override
     void dispose() {
       emailController.dispose();
@@ -132,36 +141,36 @@ class InicioDeSesionState extends State<InicioDeSesion> {
                       // SIGUIENTE
                        GestureDetector(
                             onTap: () async {
-  if (_formKey.currentState!.validate()) {
+                            if (_formKey.currentState!.validate()) {
 
-    final user = await DatabaseHelper.instance.login(
-      emailController.text,
-      passwordController.text,
-    );
+                              final user = await DatabaseHelper.instance.login(
+                                emailController.text,
+                                passwordController.text,
+                              );
+                              if (user != null) {
+                                final prefs = await SharedPreferences.getInstance();
+                                await prefs.setInt('userId', user['id']); // 👈 GUARDAR SESIÓN
+                                await showLoading(context, seconds: 2);
+                                Navigator.pushAndRemoveUntil(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => MenuUI(
+                                      usuarioId: user['id'],
+                                    ),
+                                  ),
+                                  (route) => false, // 👈 elimina todo el historial
+                                );
 
-    if (user != null) {
+                              } else {
 
-      await showLoading(context, seconds: 2);
-
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (context) => MenuUI(
-            usuarioId: user['id'],
-          ),
-        ),
-      );
-
-    } else {
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Correo o contraseña incorrectos'),
-        ),
-      );
-    }
-  }
-},
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text('Correo o contraseña incorrectos'),
+                                  ),
+                                );
+                              }
+                            }
+                          },
 
                             child: Container(
                               height: 56, 
@@ -171,24 +180,24 @@ class InicioDeSesionState extends State<InicioDeSesion> {
                                 borderRadius: BorderRadius.circular(30),
                               ),
                               child: Row(
-  mainAxisAlignment: MainAxisAlignment.center,
-  children: const [
-    Icon(
-      Icons.login,
-      color: Colors.white,
-      size: 18,
-    ),
-    SizedBox(width: 8),
-    Text(
-      'Iniciar sesion',
-      style: TextStyle(
-        fontSize: 18,
-        fontWeight: FontWeight.w600,
-        color: Colors.white,
-      ),
-    ),
-  ],
-),
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: const [
+                                  Icon(
+                                    Icons.login,
+                                    color: Colors.white,
+                                    size: 18,
+                                  ),
+                                  SizedBox(width: 8),
+                                  Text(
+                                    'Iniciar sesion',
+                                    style: TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ],
+                              ),
 
                             ),
                           ),

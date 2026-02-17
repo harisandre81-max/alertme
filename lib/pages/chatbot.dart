@@ -5,7 +5,7 @@ import 'package:audioplayers/audioplayers.dart';
 void main() {
   runApp(const ChatBotApp());
 }
-
+//no cambiar, administra el acceso al chatbot
 class ChatBotApp extends StatelessWidget {
   const ChatBotApp({super.key});
 
@@ -22,7 +22,7 @@ class ChatBotApp extends StatelessWidget {
   }
 }
 
-
+//no cambiar ed parte del de ariba
 class ChatScreen extends StatefulWidget {
   final int usuarioId; // ⬅️ final, debe inicializarse
 
@@ -35,7 +35,6 @@ class ChatScreen extends StatefulWidget {
 
 class _ChatScreenState extends State<ChatScreen> {
   final TextEditingController _controller = TextEditingController();
-  final ScrollController _scrollController = ScrollController();
   final List<String> _mensajes = [];
   
 

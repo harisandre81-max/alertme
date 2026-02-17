@@ -1,5 +1,6 @@
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
+import 'package:bcrypt/bcrypt.dart';
 
 class DatabaseHelper {
   static final DatabaseHelper instance = DatabaseHelper._init();
@@ -29,50 +30,79 @@ class DatabaseHelper {
   }
 
   // 🔹 Login
-  Future<Map<String, dynamic>?> login(String email, String password) async {
-    final db = await instance.database;
+Future<Map<String, dynamic>?> login(String email, String password) async {
+  final db = await instance.database;
 
-    final result = await db.query(
-      'usuarios',
-      where: 'email = ? AND password = ?',
-      whereArgs: [email, password],
-    );
+  final result = await db.query(
+    'usuarios',
+    where: 'email = ?',
+    whereArgs: [email],
+  );
 
-    if (result.isNotEmpty) {
-      return result.first; // devuelve todo el usuario
-    } else {
-      return null;
-    }
+  if (result.isNotEmpty) {
+    final user = result.first;
+
+    final storedHash = user['password'] as String;
+
+if (BCrypt.checkpw(password, storedHash)) {
+  return user;
+}
+
   }
+
+  return null; // usuario no encontrado o contraseña incorrecta
+}
+
 
   // 🔹 Crear tablas
-  Future _createDB(Database db, int version) async {
-    await db.execute('''
-      CREATE TABLE usuarios (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        nombre TEXT NOT NULL,
-        edad INTEGER NOT NULL,
-        direccion TEXT NOT NULL,
-        telefono TEXT NOT NULL,
-        email TEXT NOT NULL UNIQUE,
-        password TEXT NOT NULL,
-        foto TEXT DEFAULT 'assets/avatar.png'
-      )
-    ''');
+Future _createDB(Database db, int version) async {
+  await db.execute('''
+    CREATE TABLE usuarios (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      nombre TEXT NOT NULL,
+      edad INTEGER NOT NULL,
+      direccion TEXT NOT NULL,
+      telefono TEXT NOT NULL,
+      email TEXT NOT NULL UNIQUE,
+      password TEXT NOT NULL,
+      foto TEXT DEFAULT 'assets/avatar.png'
+    )
+  ''');
 
-    await db.execute('''
-      CREATE TABLE contactos (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        usuario_id INTEGER NOT NULL,
-        nombre TEXT NOT NULL,
-        edad INTEGER NOT NULL,
-        telefono TEXT NOT NULL,
-        parentesco TEXT NOT NULL,
-        foto TEXT DEFAULT 'assets/avatar_contact.png',
-        FOREIGN KEY(usuario_id) REFERENCES usuarios(id) ON DELETE CASCADE
-      )
-    ''');
-  }
+  await db.execute('''
+    CREATE TABLE contactos (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      usuario_id INTEGER NOT NULL,
+      nombre TEXT NOT NULL,
+      edad INTEGER NOT NULL,
+      telefono TEXT NOT NULL,
+      parentesco TEXT NOT NULL,
+      foto TEXT DEFAULT 'assets/avatar.png',
+      FOREIGN KEY(usuario_id) REFERENCES usuarios(id) ON DELETE CASCADE
+    )
+  ''');
+
+  // 🔹 Insertar usuario admin de prueba
+  final hashedPassword = BCrypt.hashpw('admin123%', BCrypt.gensalt());
+
+  int adminId = await db.insert('usuarios', {
+    'nombre': 'admin',
+    'edad': 14,
+    'direccion': 'Villa Union',
+    'telefono': '555555555',
+    'email': 'admin12@gmail.com',
+    'password': hashedPassword,
+  });
+
+  // 🔹 Insertar contacto de prueba
+  await db.insert('contactos', {
+    'usuario_id': adminId,
+    'nombre': 'randomcontact',
+    'edad': 28,
+    'telefono': '6751107805',
+    'parentesco': 'padre',
+  });
+}
 
   // 🔹 Insertar usuario
   Future<int> insertUsuario(Map<String, dynamic> row) async {
