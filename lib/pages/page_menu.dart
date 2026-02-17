@@ -506,8 +506,8 @@ class ContactCard extends StatelessWidget {
                       IconButton(
                         icon: const Icon(Icons.edit,
                             size: 20, color: Color(0xFF5E3AA1)),
-                        onPressed: () {
-                          Navigator.push(
+                        onPressed: () async {
+                          bool? updated = await Navigator.push(
                             context,
                             MaterialPageRoute(
                               builder: (_) => EditContactPage(
@@ -516,6 +516,12 @@ class ContactCard extends StatelessWidget {
                               ),
                             ),
                           );
+                          // ✅ Si hubo actualización, recargamos los contactos
+                          if (updated == true) {
+                            // Aquí usamos la función que ya tienes en ContactSlider
+                            final sliderState = context.findAncestorStateOfType<_ContactSliderState>();
+                            sliderState?._loadContacts();
+                          }
                         },
                       ),
                     ],
@@ -765,21 +771,56 @@ class _EditContactPageState extends State<EditContactPage> {
     const SnackBar(content: Text('Contacto actualizado correctamente')),
   );
 
-  Navigator.pop(context);
+  // ✅ Devolver un valor para que la pantalla anterior sepa que hubo cambios
+  Navigator.pop(context, true);
 }
 
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      // SUB MENÚ SUPERIOR
       appBar: AppBar(
-        title: const Text('Editar Contacto'),
-        backgroundColor: Colors.deepPurple,
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(20),
+        toolbarHeight: 110,
+        elevation: 0,
+        leadingWidth: 80,
+        backgroundColor: const Color(0xFFE6F0D5),
+        titleSpacing: 80, // 👈 espacio entre leading y title
+        leading: Padding(
+          padding: const EdgeInsets.all(5.0),
+          child: Image.asset(
+            'assets/logo_inter/logo.png',
+            width: 70,
+            height: 70,
+            fit: BoxFit.contain,
+          ),
+        ),
+        title: const Text(
+          'Editar contacto 🖊',
+          style: TextStyle(
+            color: Colors.deepPurple,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ), 
+      body: SingleChildScrollView(
+       padding: const EdgeInsets.all(20),
         child: Column(
+         crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            Align(
+             alignment: Alignment.topLeft,
+             child: IconButton(
+               icon: const Icon(
+                 Icons.arrow_back,
+                 color: Colors.deepPurple,
+                 size: 28,
+               ),
+               onPressed: () {
+                 Navigator.pop(context);
+               },
+             ),
+           ),
             // FOTO
             Center(
               child: Stack(
