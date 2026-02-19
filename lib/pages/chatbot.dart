@@ -26,7 +26,6 @@ class ChatBotApp extends StatelessWidget {
 // ================= CHAT SCREEN =================
 class ChatScreen extends StatefulWidget {
   final int usuarioId;
-
   const ChatScreen({super.key, required this.usuarioId});
 
   @override
@@ -43,6 +42,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
   // ================= LLAMADA =================
   bool mostrarBotonLlamada = false;
+  String telefonoAyuda = "";
 
   // ================= FUNCIONES =================
   bool contiene(String input, List<String> palabras) {
@@ -57,20 +57,17 @@ class _ChatScreenState extends State<ChatScreen> {
     if (_reproduciendo) {
       await _audioPlayer.stop();
     } else {
-      await _audioPlayer.play(
-        AssetSource('audio/Respiracion.mp3'),
-      );
+      await _audioPlayer.play(AssetSource('audio/Respiracion.mp3'));
     }
-
-    setState(() {
-      _reproduciendo = !_reproduciendo;
-    });
+    setState(() => _reproduciendo = !_reproduciendo);
   }
 
   Future<void> llamarAyuda() async {
+    if (telefonoAyuda.isEmpty) return;
+
     final phoneUri = Uri(
       scheme: 'tel',
-      path: '6751035059',
+      path: telefonoAyuda,
     );
 
     if (await canLaunchUrl(phoneUri)) {
@@ -79,13 +76,14 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   // ================= ENVIAR MENSAJE =================
-  Future<void> _enviarMensaje() async {
+  void _enviarMensaje() {
     String input = _controller.text.trim();
     if (input.isEmpty) return;
 
     setState(() {
       _mensajes.add("Tú: $input");
       mostrarBotonLlamada = false;
+      telefonoAyuda = "";
     });
 
     String respuesta = generarRespuesta(input);
@@ -103,7 +101,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
     const canalizacion =
         " Tal vez no te puedo ayudar directamente, "
-        "pero sí puedo mandarte con alguien que te ayude.";
+        "pero sí puedo ponerte en contacto con alguien que te ayude.";
 
     // ================= SALUDO =================
     if (contiene(input, [
@@ -113,26 +111,22 @@ class _ChatScreenState extends State<ChatScreen> {
       "buenas tardes",
       "buenas noches"
     ])) {
-      return "¡Hola! 😊 ¿Cómo te sientes hoy?";
+      return "¡Hola!  Soy Lumi, tu asistente de compañía. ¿Cómo te sientes hoy?";
     }
 
     // ================= VIOLENCIA SEXUAL =================
     if (contiene(input, [
       "violencia sexual",
       "abuso sexual",
-      "abuso",
       "me abusaron",
-      "abusaron de mi",
-      "me tocaron",
-      "me tocaron sin permiso",
-      "me obligaron",
-      "me forzaron",
       "me violaron",
+      "me tocaron sin permiso",
       "acoso sexual"
     ])) {
       mostrarBotonLlamada = true;
+      telefonoAyuda = "911";
       return "Lamento mucho que estés pasando por algo tan difícil. "
-             "No es tu culpa.$canalizacion";
+          "No es tu culpa.$canalizacion";
     }
 
     // ================= VIOLENCIA FÍSICA =================
@@ -142,52 +136,79 @@ class _ChatScreenState extends State<ChatScreen> {
       "me empujan",
       "me patearon",
       "me madrearon",
-      "me lastimaron",
-      "me dejaron moretones",
       "me sangró la nariz",
       "me ahorcaron"
     ])) {
       mostrarBotonLlamada = true;
-      return "Lamento mucho que estés viviendo esta situación 😔. "
-             "Lo que describes es violencia física y no está bien. "
-             "Mereces estar a salvo.$canalizacion";
+      telefonoAyuda = "911";
+      return "Lo que describes es violencia física y es algo serio. "
+          "Mereces estar a salvo.$canalizacion";
     }
 
     // ================= BULLYING =================
     if (contiene(input, [
       "bullying",
+      "acoso escolar",
       "me molestan",
       "se burlan de mi",
       "me humillan",
-      "me traen carrilla"
+      "me insultan",
+      "me excluyen",
+      "me ignoran",
+      "me siento rechazado"
     ])) {
       mostrarBotonLlamada = true;
-      return "Lo que estás viviendo duele y no está bien. "
-             "No estás solo.$canalizacion";
+      telefonoAyuda = "6758670579";
+      return "Siento mucho que estés pasando por esto. "
+          "No mereces que te traten así.$canalizacion";
     }
 
     // ================= VIOLENCIA EN CASA =================
     if (contiene(input, [
+      "violencia familiar",
       "en mi casa",
       "mi papá me pega",
       "mi mamá me pega",
-      "violencia familiar"
+      "me gritan en casa",
+      "me golpean en casa"
     ])) {
       mostrarBotonLlamada = true;
+      telefonoAyuda = "6758670579";
       return "Gracias por confiar en mí. "
-             "Mereces estar a salvo.$canalizacion";
+          "Tu casa debería ser un lugar seguro.$canalizacion";
     }
 
-    // ================= MIEDO =================
+    // ================= ANSIEDAD =================
     if (contiene(input, [
-      "tengo miedo",
-      "me da miedo",
-      "estoy asustado",
-      "me siento inseguro"
+      "ansiedad",
+      "me siento ansioso",
+      "me da ansiedad",
+      "no puedo respirar",
+      "me siento muy nervioso",
+      "ataque de ansiedad"
     ])) {
       mostrarBotonLlamada = true;
-      return "Sentir miedo después de algo difícil es normal. "
-             "No tienes que enfrentarlo solo.$canalizacion";
+      telefonoAyuda = "6758670579";
+      return "Siento que te estés sintiendo así . "
+          "La ansiedad puede ser muy intensa, pero no estás solo.$canalizacion";
+    }
+
+    // ================= DEPRESIÓN =================
+    if (contiene(input, [
+      "depresión",
+      "me siento deprimido",
+      "me siento vacío",
+      "no tengo ganas de nada",
+      "estoy muy triste",
+      "ya no quiero seguir",
+      "me quiero matar",
+      "me quiero morir",
+      "me quiero matar"
+    ])) {
+      mostrarBotonLlamada = true;
+      telefonoAyuda = "6758670579";
+      return "Gracias por decirlo . "
+          "Lo que sientes importa y merece atención.$canalizacion";
     }
 
     // ================= DEFAULT =================
@@ -207,12 +228,10 @@ class _ChatScreenState extends State<ChatScreen> {
           Expanded(
             child: ListView.builder(
               itemCount: _mensajes.length,
-              itemBuilder: (context, index) {
-                return Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Text(_mensajes[index]),
-                );
-              },
+              itemBuilder: (_, i) => Padding(
+                padding: const EdgeInsets.all(8),
+                child: Text(_mensajes[i]),
+              ),
             ),
           ),
 
@@ -223,12 +242,12 @@ class _ChatScreenState extends State<ChatScreen> {
                 foregroundColor: Colors.white,
               ),
               icon: const Icon(Icons.phone),
-              label: const Text("Llamar a ayuda"),
+              label: const Text("Llamar a apoyo"),
               onPressed: llamarAyuda,
             ),
 
           Padding(
-            padding: const EdgeInsets.all(8.0),
+            padding: const EdgeInsets.all(8),
             child: Row(
               children: [
                 Expanded(
