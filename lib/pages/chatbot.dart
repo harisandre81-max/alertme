@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
-import 'page_menu.dart';
 import 'package:audioplayers/audioplayers.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 void main() {
   runApp(const ChatBotApp());
 }
-//no cambiar, administra el acceso al chatbot
+
+// ================= APP =================
 class ChatBotApp extends StatelessWidget {
   const ChatBotApp({super.key});
 
@@ -17,30 +18,31 @@ class ChatBotApp extends StatelessWidget {
       theme: ThemeData(
         scaffoldBackgroundColor: const Color(0xFFE1EAED),
       ),
-      home: ChatScreen(usuarioId: 1), // ✅ ya no const porque es dinámico
+      home: const ChatScreen(usuarioId: 1),
     );
   }
 }
 
-//no cambiar ed parte del de ariba
+// ================= CHAT SCREEN =================
 class ChatScreen extends StatefulWidget {
-  final int usuarioId; // ⬅️ final, debe inicializarse
+  final int usuarioId;
 
-  const ChatScreen({super.key, required this.usuarioId}); // ⬅️ required
+  const ChatScreen({super.key, required this.usuarioId});
 
   @override
   State<ChatScreen> createState() => _ChatScreenState();
 }
 
-
 class _ChatScreenState extends State<ChatScreen> {
   final TextEditingController _controller = TextEditingController();
   final List<String> _mensajes = [];
-  
 
   // ================= AUDIO =================
   final AudioPlayer _audioPlayer = AudioPlayer();
   bool _reproduciendo = false;
+
+  // ================= LLAMADA =================
+  bool mostrarBotonLlamada = false;
 
   // ================= FUNCIONES =================
   bool contiene(String input, List<String> palabras) {
@@ -65,12 +67,25 @@ class _ChatScreenState extends State<ChatScreen> {
     });
   }
 
-  void _enviarMensaje() {
+  Future<void> llamarAyuda() async {
+    final phoneUri = Uri(
+      scheme: 'tel',
+      path: '6751035059',
+    );
+
+    if (await canLaunchUrl(phoneUri)) {
+      await launchUrl(phoneUri);
+    }
+  }
+
+  // ================= ENVIAR MENSAJE =================
+  Future<void> _enviarMensaje() async {
     String input = _controller.text.trim();
     if (input.isEmpty) return;
 
     setState(() {
       _mensajes.add("Tú: $input");
+      mostrarBotonLlamada = false;
     });
 
     String respuesta = generarRespuesta(input);
@@ -85,11 +100,21 @@ class _ChatScreenState extends State<ChatScreen> {
   // ================= RESPUESTAS =================
   String generarRespuesta(String input) {
     input = input.toLowerCase();
-//==================== SALUDO =====================
-// ================= SALUDO =================
-if (contiene(input, ["hola", "buenas", "buen día", "buenas tardes", "buenas noches"])) {
-  return "¡Hola! 😊 ¿Cómo te sientes hoy?";
-}
+
+    const canalizacion =
+        " Tal vez no te puedo ayudar directamente, "
+        "pero sí puedo mandarte con alguien que te ayude.";
+
+    // ================= SALUDO =================
+    if (contiene(input, [
+      "hola",
+      "buenas",
+      "buen día",
+      "buenas tardes",
+      "buenas noches"
+    ])) {
+      return "¡Hola! 😊 ¿Cómo te sientes hoy?";
+    }
 
     // ================= VIOLENCIA SEXUAL =================
     if (contiene(input, [
@@ -100,22 +125,14 @@ if (contiene(input, ["hola", "buenas", "buen día", "buenas tardes", "buenas noc
       "abusaron de mi",
       "me tocaron",
       "me tocaron sin permiso",
-      "me tocaron donde no debian",
-      "me tocaron partes privadas",
       "me obligaron",
       "me forzaron",
       "me violaron",
-      "intento de violacion",
-      "me acosaron sexualmente",
-      "me manosearon",
-      "me besaron sin permiso",
-      "no fue consensuado",
-      "no di permiso",
-      "me senti asustado",
-      "me senti culpable",
-      "me senti avergonzado"
+      "acoso sexual"
     ])) {
-      return "Lamento mucho que estés pasando por algo tan difícil. No es tu culpa. Estoy aquí contigo y podemos buscar ayuda juntos. ";
+      mostrarBotonLlamada = true;
+      return "Lamento mucho que estés pasando por algo tan difícil. "
+             "No es tu culpa.$canalizacion";
     }
 
     // ================= VIOLENCIA FÍSICA =================
@@ -123,23 +140,30 @@ if (contiene(input, ["hola", "buenas", "buen día", "buenas tardes", "buenas noc
       "me pegan",
       "me golpean",
       "me empujan",
+      "me patearon",
       "me madrearon",
-      "me chingaron",
-      "me fregaron"
+      "me lastimaron",
+      "me dejaron moretones",
+      "me sangró la nariz",
+      "me ahorcaron"
     ])) {
-      return "Siento mucho que estés viviendo esto. Nadie tiene derecho a lastimarte. Tu bienestar es importante. ";
+      mostrarBotonLlamada = true;
+      return "Lamento mucho que estés viviendo esta situación 😔. "
+             "Lo que describes es violencia física y no está bien. "
+             "Mereces estar a salvo.$canalizacion";
     }
 
     // ================= BULLYING =================
     if (contiene(input, [
       "bullying",
-      "me hacen bullying",
       "me molestan",
-      "me traen carrilla",
       "se burlan de mi",
-      "me humillan"
+      "me humillan",
+      "me traen carrilla"
     ])) {
-      return "Eso que estás viviendo duele y no está bien. No estás solo, mereces respeto. ";
+      mostrarBotonLlamada = true;
+      return "Lo que estás viviendo duele y no está bien. "
+             "No estás solo.$canalizacion";
     }
 
     // ================= VIOLENCIA EN CASA =================
@@ -147,10 +171,11 @@ if (contiene(input, ["hola", "buenas", "buen día", "buenas tardes", "buenas noc
       "en mi casa",
       "mi papá me pega",
       "mi mamá me pega",
-      "mi padrastro",
-      "hay violencia en mi casa"
+      "violencia familiar"
     ])) {
-      return "Gracias por confiar en mí. Lo que pasa en casa también importa y mereces estar a salvo. 🤍";
+      mostrarBotonLlamada = true;
+      return "Gracias por confiar en mí. "
+             "Mereces estar a salvo.$canalizacion";
     }
 
     // ================= MIEDO =================
@@ -158,61 +183,27 @@ if (contiene(input, ["hola", "buenas", "buen día", "buenas tardes", "buenas noc
       "tengo miedo",
       "me da miedo",
       "estoy asustado",
-      "ando asustado"
+      "me siento inseguro"
     ])) {
-      return "Es normal sentir miedo después de algo difícil. Respira conmigo, estoy aquí contigo. ";
+      mostrarBotonLlamada = true;
+      return "Sentir miedo después de algo difícil es normal. "
+             "No tienes que enfrentarlo solo.$canalizacion";
     }
 
     // ================= DEFAULT =================
-    return "Gracias por contarme cómo te sientes. Estoy aquí para escucharte. ";
+    return "Gracias por contarme cómo te sientes. Estoy aquí para escucharte.";
   }
 
   // ================= UI =================
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-     // SUB MENÚ SUPERIOR
       appBar: AppBar(
-  toolbarHeight: 110,
-  elevation: 0,
-  leadingWidth: 80,
-  backgroundColor: const Color(0xFFE6F0D5),
-
-  titleSpacing: 80, // 👈 espacio entre leading y title
-
-  leading: Padding(
-    padding: const EdgeInsets.all(5.0),
-    child: Image.asset(
-      'assets/logo_inter/logo.png',
-      width: 70,
-      height: 70,
-      fit: BoxFit.contain,
-    ),
-  ),
-
-  title: const Text(
-    'Chatbot Lumi 💬',
-    style: TextStyle(
-      color: Colors.deepPurple,
-      fontWeight: FontWeight.w600,
-    ),
-  ),
-),
+        title: const Text('Chatbot Lumi 💬'),
+        backgroundColor: const Color(0xFFE6F0D5),
+      ),
       body: Column(
         children: [
-           Align(
-             alignment: Alignment.topLeft,
-             child: IconButton(
-               icon: const Icon(
-                 Icons.arrow_back,
-                 color: Colors.deepPurple,
-                 size: 28,
-               ),
-               onPressed: () {
-                 Navigator.pop(context);
-               },
-             ),
-           ),
           Expanded(
             child: ListView.builder(
               itemCount: _mensajes.length,
@@ -224,6 +215,17 @@ if (contiene(input, ["hola", "buenas", "buen día", "buenas tardes", "buenas noc
               },
             ),
           ),
+
+          if (mostrarBotonLlamada)
+            ElevatedButton.icon(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.redAccent,
+                foregroundColor: Colors.white,
+              ),
+              icon: const Icon(Icons.phone),
+              label: const Text("Llamar a ayuda"),
+              onPressed: llamarAyuda,
+            ),
 
           Padding(
             padding: const EdgeInsets.all(8.0),
@@ -238,7 +240,6 @@ if (contiene(input, ["hola", "buenas", "buen día", "buenas tardes", "buenas noc
                     ),
                   ),
                 ),
-                const SizedBox(width: 8),
                 IconButton(
                   icon: const Icon(Icons.send),
                   onPressed: _enviarMensaje,
@@ -247,29 +248,17 @@ if (contiene(input, ["hola", "buenas", "buen día", "buenas tardes", "buenas noc
             ),
           ),
 
-          const SizedBox(height: 20),
-
-          // ===== BOTÓN CALMARME =====
           ElevatedButton.icon(
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFFFDC67F),
               foregroundColor: Colors.black,
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(30),
-              ),
             ),
-            icon: Icon(
-              _reproduciendo ? Icons.stop : Icons.play_arrow,
-              size: 28,
-            ),
-            label: Text(
-              _reproduciendo ? "Detener" : "Calmarme",
-              style: const TextStyle(fontSize: 18),
-            ),
+            icon: Icon(_reproduciendo ? Icons.stop : Icons.play_arrow),
+            label: Text(_reproduciendo ? "Detener" : "Calmarme"),
             onPressed: _toggleCalma,
           ),
-          const SizedBox(height: 40),
+
+          const SizedBox(height: 20),
         ],
       ),
     );
