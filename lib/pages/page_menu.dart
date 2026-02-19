@@ -249,7 +249,7 @@ Future<void> mostrarubicacion(int usuarioId) async {
                           context,
                           InstitucionInfo(
                             name: 'Sistema DIF',
-                            phone: '911',
+                            phone: '6758670579',
                             address: 'Zona Centro',
                             description: 'Institución pública...',
                             image: 'assets/img_institu/dif.png',
@@ -319,7 +319,7 @@ Future<void> mostrarubicacion(int usuarioId) async {
                           InstitucionInfo(
                             name: 'Instituto de la mujer',
                             phone: '+88 01828 9457 20',
-                            address: 'Ciudad de México',
+                            address: 'Nombre de Dios',
                             description: 'Contacto de confianza para emergencias.',
                             image: 'assets/img_institu/proteccion_civil.png',
                           ),
