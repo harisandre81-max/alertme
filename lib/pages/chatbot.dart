@@ -140,7 +140,7 @@ class _ChatScreenState extends State<ChatScreen> {
       "me ahorcaron"
     ])) {
       mostrarBotonLlamada = true;
-      telefonoAyuda = "911";
+      telefonoAyuda = "6751035059";
       return "Lo que describes es violencia física y es algo serio. "
           "Mereces estar a salvo.$canalizacion";
     }

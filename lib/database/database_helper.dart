@@ -54,7 +54,7 @@ if (BCrypt.checkpw(password, storedHash)) {
 }
 
 
-  // 🔹 Crear tablas
+  // 🔹 Crear tablas--BASE DE DATOS
 Future _createDB(Database db, int version) async {
   await db.execute('''
     CREATE TABLE usuarios (

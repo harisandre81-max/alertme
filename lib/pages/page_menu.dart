@@ -76,7 +76,7 @@ Future<void> mostrarubicacion(int usuarioId) async {
   if (!await checkLocation()) return;
   LocationData datos = await location.getLocation();
   String ubicacion =
-      "https://maps.google.com/?q=${datos.latitude},${datos.longitude}";
+  "https://maps.google.com/?q=${datos.latitude},${datos.longitude}";
 
   List<Map<String, dynamic>> contactos =
       await DatabaseHelper.instance.getContactos(usuarioId);
@@ -86,7 +86,8 @@ Future<void> mostrarubicacion(int usuarioId) async {
     return;
   }
 
-  String mensaje = "Ayuda Estoy en peligro. Mi ubicacion es: https://maps.google.com/?q=23.8014156,-104.0594377";
+  String mensaje =
+"Ayuda, estoy en peligro. Mi ubicación es: $ubicacion";
 
   for (var contacto in contactos) {
     String telefono = contacto['telefono'];
@@ -786,6 +787,14 @@ class _EditContactPageState extends State<EditContactPage> {
   late TextEditingController telController;
   late TextEditingController ageController;
   late TextEditingController parentController;
+  String? parentescoSeleccionado;
+
+  final List<String> opcionesParentesco = [
+    'Padre',
+    'Madre',
+    'Tutor',
+    'Profesor',
+  ];
   File? _profileImage;
   final ImagePicker _picker = ImagePicker();
 
@@ -798,6 +807,7 @@ class _EditContactPageState extends State<EditContactPage> {
     );
     telController = TextEditingController(text: widget.contactData['telefono']);
     parentController = TextEditingController(text: widget.contactData['parentesco']);
+    parentescoSeleccionado = widget.contactData['parentesco'];
 
     // si tiene foto guardada, cargamos el archivo
     if (widget.contactData['foto'] != null &&
@@ -956,14 +966,58 @@ class _EditContactPageState extends State<EditContactPage> {
             const SizedBox(height: 20),
 
             // PARENTESCO
-            TextFormField(
-              controller: parentController,
-              decoration: InputDecoration(
-                labelText: 'Parentesco',
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(20),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+
+                // 🔹 ETIQUETA
+                const Padding(
+                  padding: EdgeInsets.only(left: 8, bottom: 5),
+                  child: Text(
+                    "Parentesco",
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.deepPurple,
+                    ),
+                  ),
                 ),
-              ),
+
+                // 🔹 DROPDOWN
+                DropdownButtonFormField<String>(
+                  value: parentescoSeleccionado,
+                  isExpanded: true,
+                  decoration: InputDecoration(
+                    filled: true,
+                    fillColor: Colors.white,
+                    contentPadding:
+                        const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(20),
+                      borderSide: BorderSide.none,
+                    ),
+                  ),
+                  hint: const Text(
+                    "Selecciona el parentesco",
+                    style: TextStyle(color: Colors.deepPurple),
+                  ),
+                  items: opcionesParentesco.map((opcion) {
+                    return DropdownMenuItem<String>(
+                      value: opcion,
+                      child: Text(
+                        opcion,
+                        style: const TextStyle(color: Colors.deepPurple),
+                      ),
+                    );
+                  }).toList(),
+                  onChanged: (value) {
+                    setState(() {
+                      parentescoSeleccionado = value;
+                      parentController.text = value ?? '';
+                    });
+                  },
+                ),
+              ],
             ),
 
             const SizedBox(height: 20),
