@@ -100,7 +100,7 @@ Future _createDB(Database db, int version) async {
     'nombre': 'randomcontact',
     'edad': 28,
     'telefono': '6751107805',
-    'parentesco': 'padre',
+    'parentesco': 'Profesor',
   });
 }
 

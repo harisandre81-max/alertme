@@ -9,6 +9,20 @@ import 'package:location/location.dart';
 import 'package:alertme/database/database_helper.dart';
 import 'package:image_picker/image_picker.dart';
 
+  int obtenerPrioridad(String parentesco) {
+  switch (parentesco) {
+    case 'Padre':
+    case 'Madre':
+      return 1;
+    case 'Tutor':
+      return 2;
+    case 'Profesor':
+      return 3;
+    default:
+      return 4;
+    }
+  }
+
 class MenuUI extends StatefulWidget {
   final int usuarioId;
 
@@ -38,7 +52,7 @@ class EmergencyPopup extends StatefulWidget {
 }
 //===============WIDGET PARA EL POPU==================
 class _EmergencyPopupState extends State<EmergencyPopup> {
-  int seconds = 5;
+  int seconds = 3;
   Timer? _timer;
 
   @override
@@ -171,19 +185,29 @@ Future<void> mostrarubicacion(int usuarioId) async {
   String ubicacion =
   "https://maps.google.com/?q=${datos.latitude},${datos.longitude}";
 
-  List<Map<String, dynamic>> contactos =
+  // 🔥 Obtener contactos
+  final contactosOriginal =
       await DatabaseHelper.instance.getContactos(usuarioId);
 
-  if (contactos.isEmpty) {
+  if (contactosOriginal.isEmpty) {
     print("No hay contactos registrados.");
     return;
   }
 
+  final List<Map<String, dynamic>> contactos =
+      List<Map<String, dynamic>>.from(contactosOriginal);
+
+  contactos.sort((a, b) {
+    int prioridadA = obtenerPrioridad(a['parentesco']);
+    int prioridadB = obtenerPrioridad(b['parentesco']);
+    return prioridadA.compareTo(prioridadB);
+  });
+  
   String mensaje =
 "Ayuda, estoy en peligro. Mi ubicación es: $ubicacion";
 
-  for (var contacto in contactos) {
-    String telefono = contacto['telefono'];
+  for (int i = 0; i < contactos.length; i++) {
+    String telefono = contactos[i]['telefono'];
 
     final Uri smsUri = Uri(
       scheme: 'sms',
@@ -194,10 +218,17 @@ Future<void> mostrarubicacion(int usuarioId) async {
     );
 
     await launchUrl(smsUri, mode: LaunchMode.externalApplication);
+
+    // 👇 Esperar a que el usuario regrese y confirme
+    if (i < contactos.length - 1) {
+      bool continuar = await _mostrarConfirmacionSiguiente(context);
+
+      if (!continuar) break;
+    }
   }
 }
 
-
+//==================funcion para checar la localizacion==========================
   Future<bool> checkLocation() async {
   bool serviceEnabled;
   PermissionStatus permissionGranted;
@@ -216,12 +247,41 @@ Future<void> mostrarubicacion(int usuarioId) async {
 
   return true;
 }
-
+//================funcion para obtener la ubi===================
  Future<LocationData?> ubicacion() async{
   if(!await checkLocation()) return null;
   return await location.getLocation();
 
  }
+
+//=================funcion para abir la app de mensajes para cada contacto============
+Future<bool> _mostrarConfirmacionSiguiente(BuildContext context) async {
+  return await showDialog<bool>(
+        context: context,
+        barrierDismissible: false,
+        builder: (_) => AlertDialog(
+          backgroundColor: const Color.fromARGB(255, 255, 229, 233),
+          title: const Text(
+            "Mensaje enviado",
+            style: TextStyle(color: Colors.deepPurple),
+          ),
+          content: const Text(
+            "¿Deseas enviar la alerta al siguiente contacto?",
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text("No"),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: const Text("Sí"),
+            ),
+          ],
+        ),
+      ) ??
+      false;
+}
 
 //==================UI================
   @override
@@ -767,7 +827,7 @@ class _ContactSliderState extends State<ContactSlider> {
   final PageController _controller = PageController();
   int currentPage = 0;
   List<Map<String, dynamic>> contacts = [];
-
+  
   @override
   void initState() {
     super.initState();
@@ -775,11 +835,24 @@ class _ContactSliderState extends State<ContactSlider> {
   }
 
   Future<void> _loadContacts() async {
-  final datos = await DatabaseHelper.instance.getContactos(widget.usuarioId);
+  final datosOriginal =
+      await DatabaseHelper.instance.getContactos(widget.usuarioId);
+
+  // 🔥 Crear copia modificable
+  final List<Map<String, dynamic>> datos =
+      List<Map<String, dynamic>>.from(datosOriginal);
+
+  // 🔥 Ordenar por prioridad
+  datos.sort((a, b) {
+    int prioridadA = obtenerPrioridad(a['parentesco']);
+    int prioridadB = obtenerPrioridad(b['parentesco']);
+    return prioridadA.compareTo(prioridadB);
+  });
+
   setState(() {
     contacts = datos;
   });
-  }
+}
   void nextPage() {
     if (currentPage < (contacts.length < 3 
         ? contacts.length 
