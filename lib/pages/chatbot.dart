@@ -554,12 +554,46 @@ class _ChatScreenState extends State<ChatScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      // SUB MENÚ SUPERIOR
       appBar: AppBar(
-        title: const Text('Chatbot Lumi 💬'),
+        toolbarHeight: 110,
+        elevation: 0,
+        leadingWidth: 80,
         backgroundColor: const Color(0xFFE6F0D5),
+        titleSpacing: 80, // 👈 espacio entre leading y title
+        leading: Padding(
+          padding: const EdgeInsets.all(5.0),
+          child: Image.asset(
+            'assets/logo_inter/logo.png',
+            width: 70,
+            height: 70,
+            fit: BoxFit.contain,
+          ),
+        ),
+        title: const Text(
+          'Chatbot -  Lumi',
+          style: TextStyle(
+            color: Colors.deepPurple,
+            fontWeight: FontWeight.w600,
+            fontSize: 20
+          ),
+        ),
       ),
       body: Column(
         children: [
+          Align(
+              alignment: Alignment.topLeft,
+              child: IconButton(
+                icon: const Icon(
+                  Icons.arrow_back,
+                  color: Colors.deepPurple,
+                  size: 28,
+                ),
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+              ),
+            ),
           Expanded(
             child: ListView.builder(
               itemCount: _mensajes.length,

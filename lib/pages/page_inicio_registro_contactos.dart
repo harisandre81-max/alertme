@@ -151,6 +151,8 @@ final ImagePicker _picker = ImagePicker();
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
     return Scaffold(
       resizeToAvoidBottomInset: true,
       backgroundColor: const Color(0xFFE6F0D5),
@@ -161,8 +163,8 @@ final ImagePicker _picker = ImagePicker();
           children: [
             // LOGO / ESCUDO (PLACEHOLDER)
             Container(
-              height: 150,
-              width: 140,
+              height: screenHeight * 0.18,
+              width: screenWidth * 0.35,
               decoration: BoxDecoration(
                 color: Colors.transparent,
                 borderRadius: BorderRadius.circular(20),
@@ -176,8 +178,13 @@ final ImagePicker _picker = ImagePicker();
             const SizedBox(height: 20),
 
             // CARD PRINCIPAL
-            Container(
-                padding: const EdgeInsets.all(20),
+            Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(
+                  maxWidth: 500, // ancho máximo en tablets
+                ),
+                child: Container(
+                  padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
                   color: const Color(0xFFFFF6E3),
                   borderRadius: BorderRadius.circular(30),
@@ -484,6 +491,8 @@ const SizedBox(height: 30),
                   ],
                 ),
               ),
+              ),
+            ),
             const SizedBox(height: 20),
           ],
         ),

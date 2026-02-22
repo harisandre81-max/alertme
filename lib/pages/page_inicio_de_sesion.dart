@@ -18,7 +18,6 @@ class InicioDeSesionState extends State<InicioDeSesion> {
     final TextEditingController passwordController = TextEditingController();
     final _formKey = GlobalKey<FormState>();
   
-  
   Future<void> showLoading(BuildContext context, {int seconds = 3}) async {
   showDialog(
     context: context,
@@ -47,20 +46,26 @@ class InicioDeSesionState extends State<InicioDeSesion> {
 
   @override
   Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
     return Scaffold(
       resizeToAvoidBottomInset: true,
       backgroundColor: const Color(0xFFE6F0D5),
-      body: SafeArea(
-        child: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 20),
-        child: Column(
-          children: [
+      body: LayoutBuilder(
+      builder: (context, constraints) {
+      return SingleChildScrollView(
+        child: ConstrainedBox(
+        constraints: BoxConstraints(
+          minHeight: constraints.maxHeight,
+        ),
+        child: IntrinsicHeight(
+          child: Column(
+            children: [
            const SizedBox(height: 20),
 
             // LOGO / ESCUDO (PLACEHOLDER)
             Container(
-              height: 260,
-              width: 160,
+              height: size.height * 0.3,
+              width: size.width * 0.4,
               decoration: BoxDecoration(
                 color: Colors.transparent,
                 borderRadius: BorderRadius.circular(20),
@@ -75,7 +80,9 @@ class InicioDeSesionState extends State<InicioDeSesion> {
 
            // CARD PRINCIPAL
                 Container(
-                padding: const EdgeInsets.all(20),
+                padding: const EdgeInsets.symmetric(horizontal: 10),
+                child: Container(
+                  padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
                   color: const Color(0xFFFFF6E3),
                   borderRadius: BorderRadius.circular(30),
@@ -101,7 +108,7 @@ class InicioDeSesionState extends State<InicioDeSesion> {
                       ],
                     ),
 
-                    const SizedBox(height: 60),   
+                    SizedBox(height: size.height * 0.05),
                     Form(
                       key: _formKey,
                       child: Column(
@@ -224,18 +231,20 @@ class InicioDeSesionState extends State<InicioDeSesion> {
                                   fontWeight: FontWeight.w600,
                                   color: Colors.deepPurple,
                                 ),
-                              ),
-
+                            ),
                           ),
-                           ),             
-                  ],
-                ),
+                        ),             
+                      ],
+                    ),
+                  ),
+                ), 
+                 const SizedBox(height: 20),
+                 ],
               ),
-    
-            const SizedBox(height: 20),
-          ],
-        ),
-      ),
+             ),
+            ),
+          );
+        },
       ),
     );
   }

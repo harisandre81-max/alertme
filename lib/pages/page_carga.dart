@@ -36,6 +36,7 @@ class _LoadingScreenState extends State<LoadingScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
     return Scaffold(
       backgroundColor: const Color(0xFFE6EED2),
       body: Center(
@@ -51,8 +52,8 @@ class _LoadingScreenState extends State<LoadingScreen> {
   },
   child: SizedBox(
     key: ValueKey(_currentIndex),
-    width: 220,
-    height: 220,
+    width: size.width * 0.5,   // 50% del ancho
+    height: size.width * 0.5,
     child: Image.asset(
       _images[_currentIndex],
       fit: BoxFit.contain,

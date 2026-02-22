@@ -176,8 +176,13 @@ final ImagePicker _picker = ImagePicker();
             const SizedBox(height: 20),
 
             // CARD PRINCIPAL
-            Container(
-                padding: const EdgeInsets.all(20),
+            Center(
+  child: ConstrainedBox(
+    constraints: const BoxConstraints(
+      maxWidth: 500, // ancho máximo en tablets
+    ),
+    child: Container(
+      padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
                   color: const Color(0xFFFFF6E3),
                   borderRadius: BorderRadius.circular(30),
@@ -482,6 +487,8 @@ const SizedBox(height: 30),
                   ],
                 ),
               ),
+              ),
+            ),
             const SizedBox(height: 20),
           ],
         ),

@@ -220,7 +220,7 @@ Future<void> _loadUserData() async {
         ),
         ElevatedButton(
           style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.red,
+            backgroundColor: Color.fromARGB(255, 255, 98, 98),
           ),
           onPressed: () async {
             final prefs = await SharedPreferences.getInstance();
@@ -231,7 +231,8 @@ Future<void> _loadUserData() async {
               (route) => false,
             );
           },
-          child: const Text('Cerrar sesión'),
+          child: const Text('Cerrar sesión', style: TextStyle(
+          color: Color.fromARGB(255, 255, 255, 255)),),
         ),
       ],
     ),
@@ -298,7 +299,7 @@ void initState() {
                 children: [
                   CircleAvatar(
                     radius: 60,
-                    backgroundColor: const Color.fromARGB(136, 255, 182, 98),
+                    backgroundColor: const Color(0xFFE6F0D5),
                     backgroundImage: _profileImage != null
                         ? FileImage(_profileImage!)
                         : const AssetImage('assets/avatar.png') as ImageProvider,
@@ -348,7 +349,7 @@ void initState() {
                 ),
               ],
             ),
-            const SizedBox(height: 100),
+            SizedBox(height: MediaQuery.of(context).size.height * 0.08),
             // DATOS
             _InfoTile(
               text: email,
@@ -415,7 +416,7 @@ void initState() {
                 width: double.infinity,
                 padding: const EdgeInsets.symmetric(vertical: 14),
                 decoration: BoxDecoration(
-                  color: Colors.red.shade400,
+                  color: Color.fromARGB(255, 255, 98, 98),
                   borderRadius: BorderRadius.circular(16),
                 ),
                 child: Row(
@@ -464,7 +465,7 @@ class _InfoTile extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       decoration: BoxDecoration(
-        color: const Color.fromARGB(136, 255, 182, 98),
+        color: const Color(0xFFE6F0D5),
         borderRadius: BorderRadius.circular(16),
       ),
       child: Row(

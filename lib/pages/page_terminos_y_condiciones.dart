@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class TerminosUIPage extends StatelessWidget {
@@ -84,8 +85,6 @@ La Aplicación está dirigida a personas que deseen contar con una herramienta d
 
 • Proporcionaras información veraz, actualizada y completa.
 
-• Cuentas con la capacidad legal para aceptar estos Términos.
-
 • En caso de registrar datos de terceros (contactos), cuentas con su consentimiento previo.
   ''',
 ),
@@ -114,7 +113,7 @@ Para el correcto funcionamiento de la Aplicación, el usuario autoriza de forma 
 
 • Servicio de SMS o mensajería, para el envío automático de mensajes de emergencia.
 
-La negativa a otorgar estos permisos puede limitar o impedir el funcionamiento de algunas características clave de la Aplicación.
+La negativa a otorgar estos permisos puede limitar o impedir el funcionamiento de algunas características clave de la aplicación.
   ''',
 ),
 _buildBloque(
@@ -189,7 +188,7 @@ Estos Términos se rigen por las leyes de los Estados Unidos Mexicanos, incluyen
   ''',
 ),
 
-_buildBloqueCorreo("12. CONTACTO"),
+_buildBloqueInstagram("12. REDES SOCIALES"),
     const SizedBox(height: 40),
   ],
 ),
@@ -251,14 +250,14 @@ Widget _buildBloque(String titulo, String contenido) {
     ),
   );
 }
-Widget _buildBloqueCorreo(String titulo) {
+Widget _buildBloqueInstagram(String titulo) {
   return Container(
     margin: const EdgeInsets.only(bottom: 20),
     padding: const EdgeInsets.all(16),
     decoration: BoxDecoration(
       color: Colors.white,
       borderRadius: BorderRadius.circular(16),
-      boxShadow: [
+      boxShadow: const [
         BoxShadow(
           color: Colors.black12,
           blurRadius: 6,
@@ -277,50 +276,51 @@ Widget _buildBloqueCorreo(String titulo) {
             color: Colors.deepPurple,
           ),
         ),
-        const SizedBox(height: 10),
+        const SizedBox(height: 15),
+
         const Text(
-          'Para cualquier duda, comentario o reporte relacionado con la Aplicación, puedes contactarnos en:',
+          'Síguenos en nuestras redes sociales:',
           style: TextStyle(fontSize: 14, color: Colors.deepPurple),
         ),
-        const SizedBox(height: 10),
-        GestureDetector(
-          onTap: () async {
-            final Uri emailLaunchUri = Uri(
-              scheme: 'mailto',
-              path: 'soporte.alertme@gmail.com',
-              query: encodeQueryParameters(<String, String>{
-                'subject': 'Consulta desde AlertMe',
-              }),
-            );
-            if (await canLaunchUrl(emailLaunchUri)) {
-              await launchUrl(emailLaunchUri);
-            } else {
-              print('No se pudo abrir la app de correo');
-            }
-          },
-          child: const Text(
-            'soporte.alertme@gmail.com',
-            style: TextStyle(
-              color: Colors.deepPurple,
-              decoration: TextDecoration.underline,
-              fontWeight: FontWeight.bold,
+
+        const SizedBox(height: 15),
+
+        Row(
+          children: [
+            GestureDetector(
+              onTap: () async {
+                final Uri url = Uri.parse(
+                    'https://www.instagram.com/flashgitz/?hl=es');
+
+                if (!await launchUrl(
+                  url,
+                  mode: LaunchMode.externalApplication,
+                )) {
+                  print('No se pudo abrir Instagram');
+                }
+              },
+              child: Row(
+                children: const [
+                  FaIcon(
+                    FontAwesomeIcons.instagram,
+                    color: Colors.pink,
+                    size: 26,
+                  ),
+                  SizedBox(width: 10),
+                  Text(
+                    '@flashgitz',
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: Colors.deepPurple,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
-        ),
-        const SizedBox(height: 10),
-        const Text(
-          'Al utilizar la Aplicación, confirmas que has leído, entendido y aceptado estos Términos y Condiciones.',
-          style: TextStyle(fontSize: 14, color: Colors.deepPurple),
+          ],
         ),
       ],
     ),
   );
-}
-
-// función para query params
-String? encodeQueryParameters(Map<String, String> params) {
-  return params.entries
-      .map((e) =>
-          '${Uri.encodeComponent(e.key)}=${Uri.encodeComponent(e.value)}')
-      .join('&');
 }

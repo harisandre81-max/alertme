@@ -21,7 +21,100 @@ class MenuUI extends StatefulWidget {
   State<MenuUI> createState() => _MenuUIState();
 }
 
+//===================================================
+//==============EMERGENCY POPU=======================
+//===================================================
+class EmergencyPopup extends StatefulWidget {
 
+  final VoidCallback onFinished; // 👈 función que se ejecutará al terminar
+
+  const EmergencyPopup({
+    super.key,
+    required this.onFinished,
+  });
+
+  @override
+  State<EmergencyPopup> createState() => _EmergencyPopupState();
+}
+//===============WIDGET PARA EL POPU==================
+class _EmergencyPopupState extends State<EmergencyPopup> {
+  int seconds = 5;
+  Timer? _timer;
+
+  @override
+  void initState() {
+    super.initState();
+    _startCountdown();
+  }
+
+  void _startCountdown() {
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (seconds == 0) {
+        _timer?.cancel();
+        widget.onFinished();
+      } else {
+        setState(() {
+          seconds--;
+        });
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      backgroundColor: const Color.fromARGB(255, 255, 229, 233),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20),
+      ),
+      title: const Text(
+        "🚨 Enviando alerta...",
+        style: TextStyle(color: Colors.red),
+      ),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Text(
+            "Se enviará tu ubicación en:",
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 15),
+          Text(
+            "$seconds",
+            style: const TextStyle(
+              fontSize: 40,
+              fontWeight: FontWeight.bold,
+              color: Colors.red,
+            ),
+          ),
+          const SizedBox(height: 15),
+          const Text(
+            "Pulsa cancelar si fue un error.",
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
+      actions: [
+        TextButton(
+          onPressed: () {
+            _timer?.cancel();
+            Navigator.pop(context);
+          },
+          child: const Text(
+            "Cancelar",
+            style: TextStyle(color: Colors.deepPurple),
+          ),
+        ),
+      ],
+    );
+  }
+}
 class SectionHeader extends StatelessWidget {
   final String title;
   final IconData icon;
@@ -358,7 +451,7 @@ Future<void> mostrarubicacion(int usuarioId) async {
                     const SizedBox(height: 20),                        
 //========================Aqui va la informacion de las instituciones================================
                         _VerticalBox(
-                          text: 'Centro de Justicia para Niñas, Niños y Adolescentes Durango',
+                          text: 'Centro de Justicia para los nna',
                           image: 'assets/img_institu/proteccion_civil.png',
                           onTap: () {
                         showDetailCard(
@@ -457,7 +550,16 @@ Future<void> mostrarubicacion(int usuarioId) async {
                         }
 
                         // ✅ Si sí tiene contactos
-                        await mostrarubicacion(widget.usuarioId);
+                        showDialog(
+                          context: context,
+                          barrierDismissible: false,
+                          builder: (_) => EmergencyPopup(
+                            onFinished: () async {
+                              Navigator.pop(context); // cerrar popup
+                              await mostrarubicacion(widget.usuarioId); // enviar ubicación después
+                            },
+                          ),
+                        );
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color.fromARGB(255, 255, 98, 98),
@@ -534,15 +636,21 @@ class ContactCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+
+    final avatarRadius = screenWidth * 0.12;
+    final titleSize = screenWidth * 0.045; 
+    final textSize = screenWidth * 0.04;
+
     final nombre = contacto['nombre'];
     final edad = contacto['edad'].toString();
     final parentesco = contacto['parentesco'];
     final telefono = contacto['telefono'];
     final foto = contacto['foto'];
 
-      return Container(
-      width: 360,
-      height: 180,
+    return Container(
+      width: screenWidth * 0.9,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: const Color.fromARGB(255, 255, 254, 251),
@@ -550,9 +658,9 @@ class ContactCard extends StatelessWidget {
       ),
       child: Row(
         children: [
-          const SizedBox(width: 16),
+          SizedBox(width: screenWidth * 0.05),
           CircleAvatar(
-            radius: 45,
+            radius: avatarRadius,
             backgroundColor: const Color(0xFF5E3AA1),
             backgroundImage: foto != null && foto.toString().isNotEmpty
                 ? (foto.toString().startsWith('assets/')
@@ -560,65 +668,84 @@ class ContactCard extends StatelessWidget {
                     : FileImage(File(foto)))
                 : const AssetImage('assets/avatar.png') as ImageProvider,
           ),
+
+          SizedBox(width: screenWidth * 0.05),
+
           Expanded(
-            child: Padding(
-              padding: const EdgeInsets.only(left: 40),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // 🔹 Nombre + botón editar
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.only(top: 20),
                         child: Text(
                           nombre,
-                          style: const TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF5E3AA1),
+                          style: TextStyle(
+                            fontSize: titleSize,
+                            fontWeight: FontWeight.w600,
+                            color: const Color(0xFF5E3AA1),
                           ),
                         ),
                       ),
-                      IconButton(
-                        icon: const Icon(Icons.edit,
-                            size: 20, color: Color(0xFF5E3AA1)),
-                        onPressed: () async {
-                          bool? updated = await Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => EditContactPage(
-                                contactId: contacto['id'],
-                                contactData: contacto,
-                              ),
-                            ),
-                          );
-                          // ✅ Si hubo actualización, recargamos los contactos
-                          if (updated == true) {
-                            // Aquí usamos la función que ya tienes en ContactSlider
-                            final sliderState = context.findAncestorStateOfType<_ContactSliderState>();
-                            sliderState?._loadContacts();
-                          }
-                        },
+                    ),
+                    IconButton(
+                      icon: const Icon(
+                        Icons.edit,
+                        size: 20,
+                        color: Color(0xFF5E3AA1),
                       ),
-                    ],
+                      onPressed: () async {
+                        bool? updated = await Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => EditContactPage(
+                              contactId: contacto['id'],
+                              contactData: contacto,
+                            ),
+                          ),
+                        );
+
+                        if (updated == true) {
+                          final sliderState = context
+                              .findAncestorStateOfType<_ContactSliderState>();
+                          sliderState?._loadContacts();
+                        }
+                      },
+                    ),
+                  ],
+                ),
+
+                SizedBox(height: screenHeight * 0.01),
+
+                Text(
+                  'Edad: $edad',
+                  style: TextStyle(
+                    fontSize: textSize,
+                    fontWeight: FontWeight.w500, 
+                    color: const Color(0xFF5E3AA1),
                   ),
-                  const SizedBox(height: 8),
-                  Text('Edad: $edad',
-                      style: const TextStyle(
-                          color: Color(0xFF5E3AA1),
-                          fontSize: 20,
-                          fontWeight: FontWeight.w500)),
-                  Text('Parentesco: $parentesco',
-                      style: const TextStyle(
-                          color: Color(0xFF5E3AA1),
-                          fontSize: 20,
-                          fontWeight: FontWeight.w500)),
-                  Text('Teléfono: $telefono',
-                      style: const TextStyle(
-                          color: Color(0xFF5E3AA1),
-                          fontSize: 20,
-                          fontWeight: FontWeight.w500)),
-                ],
-              ),
+                ),
+                Text(
+                  'Parentesco: $parentesco',
+                  style: TextStyle(
+                    fontSize: textSize,
+                    fontWeight: FontWeight.w500, 
+                    color: const Color(0xFF5E3AA1),
+                  ),
+                ),
+                Text(
+                  'Teléfono: $telefono',
+                  style: TextStyle(
+                    fontSize: textSize,
+                    fontWeight: FontWeight.w500, 
+                    color: const Color(0xFF5E3AA1),
+                  ),
+                ),
+              ],
             ),
           ),
         ],
@@ -862,7 +989,40 @@ class _EditContactPageState extends State<EditContactPage> {
 
   @override
   Widget build(BuildContext context) {
+    InputDecoration customInputDecoration(String label) {
+  return InputDecoration(
+    labelText: label,
+    labelStyle: const TextStyle(
+      fontWeight: FontWeight.w600,
+      fontSize: 18,
+      color: Colors.deepPurple,
+    ),
+    filled: true,
+    fillColor: Colors.white,
+
+    enabledBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(12),
+      borderSide: const BorderSide(
+        color: Colors.deepPurple,
+        width: 1.5,
+      ),
+    ),
+
+    focusedBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(12),
+      borderSide: const BorderSide(
+        color: Colors.deepPurple,
+        width: 2,
+      ),
+    ),
+
+    border: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(12),
+    ),
+  );
+}
     return Scaffold(
+    backgroundColor: const Color.fromARGB(255, 255, 252, 247),
       // SUB MENÚ SUPERIOR
       appBar: AppBar(
         toolbarHeight: 110,
@@ -880,7 +1040,7 @@ class _EditContactPageState extends State<EditContactPage> {
           ),
         ),
         title: const Text(
-          'Editar contacto 🖊',
+          'Editar contacto',
           style: TextStyle(
             color: Colors.deepPurple,
             fontWeight: FontWeight.w600,
@@ -941,12 +1101,12 @@ class _EditContactPageState extends State<EditContactPage> {
             // NOMBRE
             TextFormField(
               controller: nomController,
-              decoration: InputDecoration(
-                labelText: 'Nombre',
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(20),
-                ),
+              style: const TextStyle(
+                color: Colors.deepPurple,
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
               ),
+              decoration: customInputDecoration('Nombre'),
             ),
 
             const SizedBox(height: 20),
@@ -954,13 +1114,12 @@ class _EditContactPageState extends State<EditContactPage> {
             // EDAD
             TextFormField(
               controller: ageController,
-              keyboardType: TextInputType.number,
-              decoration: InputDecoration(
-                labelText: 'Edad',
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(20),
-                ),
+              style: const TextStyle(
+                color: Colors.deepPurple,
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
               ),
+              decoration: customInputDecoration('Edad'),
             ),
 
             const SizedBox(height: 20),
@@ -985,38 +1144,54 @@ class _EditContactPageState extends State<EditContactPage> {
 
                 // 🔹 DROPDOWN
                 DropdownButtonFormField<String>(
-                  value: parentescoSeleccionado,
-                  isExpanded: true,
-                  decoration: InputDecoration(
-                    filled: true,
-                    fillColor: Colors.white,
-                    contentPadding:
-                        const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(20),
-                      borderSide: BorderSide.none,
-                    ),
-                  ),
-                  hint: const Text(
-                    "Selecciona el parentesco",
-                    style: TextStyle(color: Colors.deepPurple),
-                  ),
-                  items: opcionesParentesco.map((opcion) {
-                    return DropdownMenuItem<String>(
-                      value: opcion,
-                      child: Text(
-                        opcion,
-                        style: const TextStyle(color: Colors.deepPurple),
-                      ),
-                    );
-                  }).toList(),
-                  onChanged: (value) {
-                    setState(() {
-                      parentescoSeleccionado = value;
-                      parentController.text = value ?? '';
-                    });
-                  },
-                ),
+  value: parentescoSeleccionado,
+  style: const TextStyle(
+    color: Colors.deepPurple,
+    fontSize: 18, // 👈 AUMENTA AQUÍ
+    fontWeight: FontWeight.w500,
+  ),
+  decoration: InputDecoration(
+    contentPadding: const EdgeInsets.symmetric(
+      horizontal: 16,
+      vertical: 18, // 👈 hace el campo más alto
+    ),
+    filled: true,
+    fillColor: Colors.white,
+    enabledBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(12),
+      borderSide: const BorderSide(
+        color: Colors.deepPurple,
+        width: 1.5,
+      ),
+    ),
+    focusedBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(12),
+      borderSide: const BorderSide(
+        color: Colors.deepPurple,
+        width: 2,
+      ),
+    ),
+
+    border: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(12),
+    ),
+  ),
+  items: opcionesParentesco.map((opcion) {
+    return DropdownMenuItem<String>(
+      value: opcion,
+      child: Text(
+        opcion,
+        style: const TextStyle(color: Colors.deepPurple),
+      ),
+    );
+  }).toList(),
+  onChanged: (value) {
+    setState(() {
+      parentescoSeleccionado = value;
+      parentController.text = value ?? '';
+    });
+  },
+),
               ],
             ),
 
@@ -1025,13 +1200,12 @@ class _EditContactPageState extends State<EditContactPage> {
             // TELÉFONO
             TextFormField(
               controller: telController,
-              keyboardType: TextInputType.phone,
-              decoration: InputDecoration(
-                labelText: 'Teléfono',
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(20),
-                ),
+              style: const TextStyle(
+                color: Colors.deepPurple,
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
               ),
+              decoration: customInputDecoration('Teléfono'),
             ),
 
 
@@ -1087,8 +1261,8 @@ class _VerticalBox extends StatelessWidget {
       onTap: onTap,
       borderRadius: BorderRadius.circular(16),
       child: Container(
-        width: 386,
-        height: 87,
+        width: MediaQuery.of(context).size.width * 0.9,
+        height: MediaQuery.of(context).size.height * 0.1,
         padding: const EdgeInsets.symmetric(horizontal: 30),
         decoration: BoxDecoration(
           color: const Color.fromARGB(239, 233, 245, 212),
@@ -1160,12 +1334,12 @@ void showDetailCard(BuildContext context, InstitucionInfo user) {
       return  Align(
     alignment: Alignment.bottomCenter, 
     child: Padding(
-      padding: const EdgeInsets.only(bottom: 40),
+      padding: const EdgeInsets.only(bottom: 10),
       child: Material(
       color: Colors.transparent,
         child: Container(
-          width: 388,
-          height: 300,
+          width: MediaQuery.of(context).size.width * 0.9,
+          height: MediaQuery.of(context).size.height * 0.4,
           padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 16),
           decoration: BoxDecoration(
             color: Color.fromARGB(255, 255, 252, 247),
@@ -1504,8 +1678,8 @@ class InstitucionDetailCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 388,
-      height: 300,
+      width: MediaQuery.of(context).size.width * 0.9,
+      height: MediaQuery.of(context).size.height * 0.3,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(20),

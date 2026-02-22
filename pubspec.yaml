@@ -38,6 +38,7 @@ dependencies:
   cupertino_icons: ^1.0.8
   audioplayers: ^5.2.1
   shared_preferences: ^2.2.2
+  font_awesome_flutter: ^10.7.0
 
   flutter:
     sdk: flutter

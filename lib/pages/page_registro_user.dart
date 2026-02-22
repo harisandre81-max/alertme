@@ -95,9 +95,17 @@ final ImagePicker _picker = ImagePicker();
       resizeToAvoidBottomInset: true,
       backgroundColor: const Color(0xFFE6F0D5),
       body: SafeArea(
-  child: SingleChildScrollView(
-    padding: const EdgeInsets.symmetric(horizontal: 20),
-    child: Column(
+  child: LayoutBuilder(
+  builder: (context, constraints) {
+    return SingleChildScrollView(
+      child: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(
+            maxWidth: 500, // 👈 límite en pantallas grandes
+          ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
       // LOGO
@@ -461,7 +469,12 @@ final ImagePicker _picker = ImagePicker();
          ),
         ),
       ),
+      ),
     );
+  },
+  ),
+      ),
+  );
   }
 }
 
