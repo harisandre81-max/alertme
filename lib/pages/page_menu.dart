@@ -8,7 +8,9 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:location/location.dart';
 import 'package:alertme/database/database_helper.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:flutter/services.dart';
 
+//================funcion para odenar los contactos por prioridad================
   int obtenerPrioridad(String parentesco) {
   switch (parentesco) {
     case 'Padre':
@@ -161,8 +163,30 @@ class SectionHeader extends StatelessWidget {
   }
 }
 
+//==================Menu state=================
 class _MenuUIState extends State<MenuUI> {
+  static const platform = MethodChannel('sos_channel');
 
+  @override
+  void initState() {
+    super.initState();
+
+    platform.setMethodCallHandler((call) async {
+      if (call.method == "triggerSOS") {
+        print("🚨 SOS ACTIVADO");
+
+        // Aquí puedes poner lo que quieras que haga
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("🚨 SOS ACTIVADO")),
+        );
+      }
+    });
+  }
+
+  void _activarSOSDesdeBoton() async {
+    await mostrarubicacion(widget.usuarioId);
+  }
+  
 //==================PANTALLA DE CARGA============
   Future<void> showLoading(BuildContext context, {int seconds = 3}) async {
   showDialog(

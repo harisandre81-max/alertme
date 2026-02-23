@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">alertme</string>
+
+    <string name="accessibility_service_description">
+        Servicio de accesibilidad para activar el botón SOS con volumen
+    </string>
+</resources>

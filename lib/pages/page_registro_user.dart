@@ -31,18 +31,21 @@ class _RegisterUserState extends State<RegisterUser> {
 Future<void> _requestInitialPermissions() async {
   final Location location = Location();
 
-  // 📍 UBICACIÓN
   bool serviceEnabled = await location.serviceEnabled();
   if (!serviceEnabled) {
     serviceEnabled = await location.requestService();
+    if (!serviceEnabled) return;
   }
 
   PermissionStatus permissionGranted = await location.hasPermission();
   if (permissionGranted == PermissionStatus.denied) {
-    await location.requestPermission();
+    permissionGranted = await location.requestPermission();
+    if (permissionGranted != PermissionStatus.granted) {
+      return;
+    }
   }
 
-  print("Permisos solicitados al registrarse");
+  print("Permiso de ubicación concedido correctamente");
 }
 
 //==================PANTALLA DE CARGA================
