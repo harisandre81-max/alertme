@@ -42,19 +42,6 @@ body: Stack(
 ListView(
   padding: const EdgeInsets.all(20),
   children: [
-     Align(
-  alignment: Alignment.topLeft,
-  child: IconButton(
-    icon: const Icon(
-      Icons.arrow_back,
-      color: Colors.deepPurple,
-      size: 28,
-    ),
-    onPressed: () {
-      Navigator.pop(context);
-    },
-  ),
-),
 
     _buildBloque(
       "Bienvenido/a a AlertMe.",

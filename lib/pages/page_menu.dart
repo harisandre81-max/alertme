@@ -426,17 +426,17 @@ Future<bool> _mostrarConfirmacionSiguiente(BuildContext context) async {
                         showDetailCard(
                           context,
                           InstitucionInfo(
-                            name: 'Sistema DIF',
-                            phone: '6758670579',
-                            address: 'Zona Centro',
-                            description: 'Institución pública...',
+                            name: 'Sistema Nacional para el Desarrollo Integral de la Familia',
+                            phone: '675 865 0002',
+                            address: 'Aquiles Serdán 123, Zona Centro, 34890 Vicente Guerrero, Dgo.',
+                            description: 'Intitucion que apoya a familias vulnerables con asistencia social, alimentos, orientación y protección a menores y adultos mayores.',
                             image: 'assets/img_institu/dif.png',
                           ),
                         );
                       },
-                      phoneNumber: '911',
+                      phoneNumber: '675 865 0002',
                         onPhoneTap: () async {
-                          final uri = Uri.parse('tel:911');
+                          final uri = Uri.parse('tel:675 865 0002');
                           await launchUrl(uri, mode: LaunchMode.externalApplication);
                         },
                     ),
@@ -449,10 +449,10 @@ Future<bool> _mostrarConfirmacionSiguiente(BuildContext context) async {
                         showDetailCard(
                           context,
                           InstitucionInfo(
-                            name: '911',
-                            phone: '+88 01828 9457 20',
-                            address: 'Ciudad de México',
-                            description: 'Contacto de confianza para emergencias.',
+                            name: 'Servicio de Emergencias 911',
+                            phone: '911',
+                            address: '',
+                            description: 'Institucion que atiende emergencias médicas, de seguridad o desastres y canaliza ayuda inmediata.',
                             image: 'assets/img_institu/911-logo.png',
                           ),
                         );
@@ -472,17 +472,17 @@ Future<bool> _mostrarConfirmacionSiguiente(BuildContext context) async {
                         showDetailCard(
                           context,
                           InstitucionInfo(
-                            name: 'Proteción civil',
-                            phone: '+88 01828 9457 20',
-                            address: 'Ciudad de México',
-                            description: 'Contacto de confianza para emergencias.',
+                            name: 'Sistema Nacional de Protección Civil',
+                            phone: '618 137 9627',
+                            address: 'Av. del Factor # 200, La Cuadra del Ferrocarril, 34020 Durango, Dgo.',
+                            description: 'Institucion que previene y atiende desastres naturales, coordina rescates y promueve medidas de seguridad.',
                             image: 'assets/img_institu/proteccion_civil.png',
                           ),
                         );
                       },
-                         phoneNumber: '911',
+                         phoneNumber: '618 137 9627',
                           onPhoneTap: () async {
-                            final uri = Uri.parse('tel:911');
+                            final uri = Uri.parse('tel:618 137 9627');
                             await launchUrl(uri, mode: LaunchMode.externalApplication);
                           },
                     ),
@@ -490,22 +490,22 @@ Future<bool> _mostrarConfirmacionSiguiente(BuildContext context) async {
 //========================Aqui va la informacion de las instituciones================================
                         _VerticalBox(
                           text: 'Instituto de la mujer',
-                          image: 'assets/img_institu/proteccion_civil.png',
+                          image: 'assets/img_institu/insti de la mujer 1.png',
                           onTap: () {
                         showDetailCard(
                           context,
                           InstitucionInfo(
                             name: 'Instituto de la mujer',
-                            phone: '+88 01828 9457 20',
-                            address: 'Nombre de Dios',
-                            description: 'Contacto de confianza para emergencias.',
-                            image: 'assets/img_institu/proteccion_civil.png',
+                            phone: '618 137 4600',
+                            address: 'Zaragoza 528 Sur, Centro, 34000 Durango, Dgo.',
+                            description: 'Institucion que promueve igualdad de género, brinda apoyo legal y psicológico a mujeres.',
+                            image: 'assets/img_institu/insti de la mujer 1.png',
                           ),
                         );
                       },
-                         phoneNumber: '911',
+                         phoneNumber: '618 137 4600',
                           onPhoneTap: () async {
-                            final uri = Uri.parse('tel:911');
+                            final uri = Uri.parse('tel:618 137 4600');
                             await launchUrl(uri, mode: LaunchMode.externalApplication);
                           },
                     ),
@@ -513,22 +513,22 @@ Future<bool> _mostrarConfirmacionSiguiente(BuildContext context) async {
 //========================Aqui va la informacion de las instituciones================================
                         _VerticalBox(
                           text: 'Seguridad publica',
-                          image: 'assets/img_institu/proteccion_civil.png',
+                          image: 'assets/img_institu/seguri public durango 1.png',
                           onTap: () {
                         showDetailCard(
                           context,
                           InstitucionInfo(
-                            name: 'Seguridad publica',
-                            phone: '+88 01828 9457 20',
-                            address: 'Ciudad de México',
-                            description: 'Contacto de confianza para emergencias.',
-                            image: 'assets/img_institu/proteccion_civil.png',
+                            name: 'Secretaría de Seguridad y Protección Ciudadana',
+                            phone: '618 137 4000',
+                            address: 'Carretera Mexico kilometro 7.5 Ejido Dolores Hidalgo, Dolores Hidalgo Cuna de la Independencia Nacional, Dgo.',
+                            description: 'Institucion que mantiene el orden, previene delitos y protege a la ciudadanía.',
+                            image: 'assets/img_institu/seguri public durango 1.png',
                           ),
                         );
                       },
-                         phoneNumber: '911',
+                         phoneNumber: '618 137 4000',
                           onPhoneTap: () async {
-                            final uri = Uri.parse('tel:911');
+                            final uri = Uri.parse('tel:618 137 4000');
                             await launchUrl(uri, mode: LaunchMode.externalApplication);
                           },
                     ),
@@ -536,22 +536,22 @@ Future<bool> _mostrarConfirmacionSiguiente(BuildContext context) async {
 //========================Aqui va la informacion de las instituciones================================
                         _VerticalBox(
                           text: 'Centro de Justicia para los nna',
-                          image: 'assets/img_institu/proteccion_civil.png',
+                          image: 'assets/img_institu/centr de justi de los nna 1.png',
                           onTap: () {
                         showDetailCard(
                           context,
                           InstitucionInfo(
-                            name: 'Centro de Justicia para Niñas, Niños y Adolescentes Durango',
-                            phone: '618 137 3562',
+                            name: 'Centro de Justicia para Niñas, Niños y Adolescentes',
+                            phone: '618 268 0413',
                             address: 'Boulevard José María Patoni Manzana 105 • Predio Rústico La Tinaja y Los Lugos , Durango, Mexico, 34217',
-                            description: 'Contacto de confianza para emergencias.',
-                            image: 'assets/img_institu/proteccion_civil.png',
+                            description: 'Institucion que protege derechos de niñas, niños y adolescentes, ofreciendo atención legal, psicológica y acompañamiento.',
+                            image: 'assets/img_institu/centr de justi de los nna 1.png',
                           ),
                         );
                       },
-                         phoneNumber: '618 137 3562',
+                         phoneNumber: '618 268 0413',
                           onPhoneTap: () async {
-                            final uri = Uri.parse('tel:618 137 3562');
+                            final uri = Uri.parse('tel:618 268 0413');
                             await launchUrl(uri, mode: LaunchMode.externalApplication);
                           },
                     ),
@@ -1436,7 +1436,7 @@ void showDetailCard(BuildContext context, InstitucionInfo user) {
       color: Colors.transparent,
         child: Container(
           width: MediaQuery.of(context).size.width * 0.9,
-          height: MediaQuery.of(context).size.height * 0.4,
+          height: MediaQuery.of(context).size.height * 0.5,
           padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 16),
           decoration: BoxDecoration(
             color: Color.fromARGB(255, 255, 252, 247),
@@ -1494,27 +1494,48 @@ void showDetailCard(BuildContext context, InstitucionInfo user) {
                 ),
               ],
             ),
-            Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-            Text('Direccion:',style: const TextStyle(
-                fontSize: 20,
-                color: Colors.deepPurple,
-              ),),
-            const SizedBox(width: 10),
-            Text(
-              user.address,
-              textAlign: TextAlign.justify,
-              style: const TextStyle(fontSize: 20, color: Colors.deepPurple,),
-            ),
-            ],
-            ),
-            const SizedBox(height: 8),
-            Text(
-              user.description,
-              textAlign: TextAlign.justify,
-              style: const TextStyle(fontSize: 20, color: Colors.deepPurple,),
-            ),
+            const SizedBox(height: 16),
+            RichText(
+  text: TextSpan(
+    style: const TextStyle(
+      fontSize: 17,
+      //fontWeight: FontWeight.w600,
+      color: Colors.deepPurple,
+    ),
+    children: [
+      const TextSpan(
+        text: 'Dirección: ',
+      ),
+      TextSpan(
+        text: user.address,
+        style: const TextStyle(
+          fontWeight: FontWeight.normal,
+        ),
+      ),
+    ],
+  ),
+),
+            const SizedBox(height: 20),
+            RichText(
+  text: TextSpan(
+    style: const TextStyle(
+      fontSize: 17,
+   
+      color: Colors.deepPurple,
+    ),
+    children: [
+      const TextSpan(
+        text: 'Descripción: ',
+      ),
+      TextSpan(
+        text: user.description,
+        style: const TextStyle(
+          fontWeight: FontWeight.normal,
+        ),
+      ),
+    ],
+  ),
+),
             ],
           ),
         ),

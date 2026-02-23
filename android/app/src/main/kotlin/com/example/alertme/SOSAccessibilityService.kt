@@ -105,7 +105,7 @@ class SOSAccessibilityService : AccessibilityService() {
                     val lat = location.latitude
                     val lng = location.longitude
 
-                    val message = "🚨 AYUDA! Necesito asistencia médica inmediata.\nMi ubicación:\nhttps://maps.google.com/?q=$lat,$lng"
+                    val message = "Ayuda, estoy en peligro. Mi ubicación es: https://maps.google.com/?q=$lat,$lng"
 
                     val intent = Intent(Intent.ACTION_VIEW).apply {
                         data = Uri.parse("sms:")

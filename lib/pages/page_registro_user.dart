@@ -18,12 +18,14 @@ class RegisterUser extends StatefulWidget {
 }
 
 class _RegisterUserState extends State<RegisterUser> {
-   final TextEditingController nomController = TextEditingController();
+    //==================controladores para los campos============
+    final TextEditingController nomController = TextEditingController();
     final TextEditingController edadController = TextEditingController();
     final TextEditingController telController = TextEditingController();
     final TextEditingController emailController = TextEditingController();
     final TextEditingController passwordController = TextEditingController();
     final TextEditingController dirController = TextEditingController();
+
     final _formKey = GlobalKey<FormState>();
     bool acceptTerms = false;
 
