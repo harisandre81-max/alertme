@@ -42,6 +42,7 @@ body: Stack(
 ListView(
   padding: const EdgeInsets.all(20),
   children: [
+    const SizedBox(height: 40),
     _buildBloque(
       "Bienvenido/a a AlertMe.",
       "Al descargar, instalar, registrarte o utilizar la Aplicación, aceptas de manera expresa y voluntaria los presentes Términos y Condiciones de Uso. Si no estás de acuerdo con ellos, te recomendamos no utilizar la Aplicación.",
