@@ -1436,7 +1436,7 @@ void showDetailCard(BuildContext context, InstitucionInfo user) {
       color: Colors.transparent,
         child: Container(
           width: MediaQuery.of(context).size.width * 0.9,
-          height: MediaQuery.of(context).size.height * 0.5,
+          height: MediaQuery.of(context).size.height * 0.42,
           padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 16),
           decoration: BoxDecoration(
             color: Color.fromARGB(255, 255, 252, 247),
