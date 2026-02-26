@@ -18,12 +18,14 @@ class RegisterUser extends StatefulWidget {
 }
 
 class _RegisterUserState extends State<RegisterUser> {
-   final TextEditingController nomController = TextEditingController();
+    //==================controladores para los campos============
+    final TextEditingController nomController = TextEditingController();
     final TextEditingController edadController = TextEditingController();
     final TextEditingController telController = TextEditingController();
     final TextEditingController emailController = TextEditingController();
     final TextEditingController passwordController = TextEditingController();
     final TextEditingController dirController = TextEditingController();
+
     final _formKey = GlobalKey<FormState>();
     bool acceptTerms = false;
 
@@ -31,18 +33,21 @@ class _RegisterUserState extends State<RegisterUser> {
 Future<void> _requestInitialPermissions() async {
   final Location location = Location();
 
-  // 📍 UBICACIÓN
   bool serviceEnabled = await location.serviceEnabled();
   if (!serviceEnabled) {
     serviceEnabled = await location.requestService();
+    if (!serviceEnabled) return;
   }
 
   PermissionStatus permissionGranted = await location.hasPermission();
   if (permissionGranted == PermissionStatus.denied) {
-    await location.requestPermission();
+    permissionGranted = await location.requestPermission();
+    if (permissionGranted != PermissionStatus.granted) {
+      return;
+    }
   }
 
-  print("Permisos solicitados al registrarse");
+  print("Permiso de ubicación concedido correctamente");
 }
 
 //==================PANTALLA DE CARGA================

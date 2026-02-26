@@ -39,13 +39,13 @@ dependencies:
   audioplayers: ^5.2.1
   shared_preferences: ^2.2.2
   font_awesome_flutter: ^10.7.0
+  tutorial_coach_mark: 1.3.3
 
   flutter:
     sdk: flutter
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
-  syncfusion_flutter_pdfviewer: ^32.2.3
 
 dev_dependencies:
   flutter_test:
@@ -74,7 +74,6 @@ flutter:
     - assets/imagenes/
     - assets/logo_app/
     - assets/logo_inter/
-    - assets/pdfs/terminos.pdf
     - assets/img_institu/
     - assets/
     - assets/audio/Respiracion.mp3
