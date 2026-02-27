@@ -29,27 +29,6 @@ class _RegisterUserState extends State<RegisterUser> {
     final _formKey = GlobalKey<FormState>();
     bool acceptTerms = false;
 
-//==================FUNCION PARA PEDIR PERMISOS================
-Future<void> _requestInitialPermissions() async {
-  final Location location = Location();
-
-  bool serviceEnabled = await location.serviceEnabled();
-  if (!serviceEnabled) {
-    serviceEnabled = await location.requestService();
-    if (!serviceEnabled) return;
-  }
-
-  PermissionStatus permissionGranted = await location.hasPermission();
-  if (permissionGranted == PermissionStatus.denied) {
-    permissionGranted = await location.requestPermission();
-    if (permissionGranted != PermissionStatus.granted) {
-      return;
-    }
-  }
-
-  print("Permiso de ubicación concedido correctamente");
-}
-
 //==================PANTALLA DE CARGA================
     Future<void> showLoading(BuildContext context, {int seconds = 3}) async {
     showDialog(
@@ -384,9 +363,6 @@ final ImagePicker _picker = ImagePicker();
                                   'password': hashedPassword,
                                   'foto': fotoPath, // nunca será null
                                 });
-
-                                // 👇 PEDIR PERMISOS AQUÍ
-                                await _requestInitialPermissions();
 
                                 // 🔹 GUARDAR SESIÓN AUTOMÁTICAMENTE
                                 final prefs = await SharedPreferences.getInstance();

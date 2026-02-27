@@ -634,13 +634,26 @@ Future<bool> _mostrarConfirmacionSiguiente(BuildContext context) async {
                         }
 
                         // ✅ Si sí tiene contactos
+                        bool permisosOk = await checkLocation();
+
+                        if (!permisosOk) {
+                          // ❌ Si rechazó permisos, no mostrar popup
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text("Necesitas activar la ubicación para usar SOS"),
+                            ),
+                          );
+                          return;
+                        }
+
+                        // ✅ Si aceptó permisos, ahora sí mostrar popup
                         showDialog(
                           context: context,
                           barrierDismissible: false,
                           builder: (_) => EmergencyPopup(
                             onFinished: () async {
-                              Navigator.pop(context); // cerrar popup
-                              await mostrarubicacion(widget.usuarioId); // enviar ubicación después
+                              Navigator.pop(context); 
+                              await mostrarubicacion(widget.usuarioId);
                             },
                           ),
                         );
