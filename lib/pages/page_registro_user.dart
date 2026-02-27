@@ -8,7 +8,6 @@ import 'package:alertme/database/database_helper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:bcrypt/bcrypt.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:location/location.dart';
 
 class RegisterUser extends StatefulWidget {
   const RegisterUser({super.key});
