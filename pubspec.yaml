@@ -51,6 +51,7 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
 
+
   flutter_launcher_icons: ^0.13.1
   flutter_native_splash: ^2.4.3
 
@@ -75,8 +76,7 @@ flutter:
     - assets/logo_app/
     - assets/logo_inter/
     - assets/img_institu/
-    - assets/
-    - assets/audio/Respiracion.mp3
+    - assets/audio/relax.mp3
     - assets/chat/lumi.png
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in

@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'dart:async';
 
 void main() {
   runApp(const ChatBotApp());
 }
-
-
 
 // ================= APP =================
 class ChatBotApp extends StatelessWidget {
@@ -40,6 +39,27 @@ class _ChatScreenState extends State<ChatScreen> {
   // ================= LLAMADA =================
   bool mostrarBotonLlamada = false;
   String telefonoAyuda = "";
+
+  // ================= RESPIRACIÓN =================
+  bool respirando = false;
+  double tamanioCirculo = 80;
+  Timer? _timer;
+
+  void toggleRespiracion() {
+    if (respirando) {
+      _timer?.cancel();
+    } else {
+      _timer = Timer.periodic(const Duration(seconds: 4), (timer) {
+        setState(() {
+          tamanioCirculo = tamanioCirculo == 80 ? 150 : 80;
+        });
+      });
+    }
+
+    setState(() {
+      respirando = !respirando;
+    });
+  }
 
   // ================= FUNCIONES =================
   bool contiene(String input, List<String> palabras) {
@@ -169,166 +189,134 @@ class _ChatScreenState extends State<ChatScreen> {
 
   // ================= UI =================
   @override
- Widget build(BuildContext context) {
-  return Scaffold(
-    backgroundColor: const Color(0xFFE6F0D5),
-    body: SafeArea(
-      child: Column(
-        children: [
-          // ───────────── BARRA SUPERIOR (SOLO BACK) ─────────────
-         Container(
-  height: 50,
-  padding: const EdgeInsets.symmetric(horizontal: 8),
-  color: const Color(0xFFE6F0D5),
-  child: Stack(
-    alignment: Alignment.center,
-    children: [
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFFE6F0D5),
+      body: SafeArea(
+        child: Column(
+          children: [
 
-      // 🔙 Botón atrás
-      Align(
-        alignment: Alignment.centerLeft,
-        child: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Color(0xFF8D77AB)),
-          iconSize: 35,
-          onPressed: () {
-            if (Navigator.canPop(context)) {
-              Navigator.pop(context);
-            }
-          },
-        ),
-      ),
+            const SizedBox(height: 20),
 
-      //Imagen centrada
-      Image.asset(
-        'assets/logo_inter/logo.png',
-        height: 150,
-        width: 150,
-      ),
-    ],
-  ),
-),
+            Image.asset(
+              'assets/chat/lumi.png',
+              width: 200,
+            ),
 
-          // ───────────── LUMI GRANDE (FUERA DE LA BARRA) ─────────────
-          const SizedBox(height: 1),
+            const SizedBox(height: 10),
 
-         Column(
-  children: [
-    const SizedBox(height: 1),
-
-   /* Container(
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        color: Color(0xFFE0EBC8),
-      ),*/
-      Center(
-        child: Image.asset(
-          'assets/chat/lumi.png',
-          width: 230,
-          height: 230,
-          fit: BoxFit.cover,
-        ),
-      ),
-   // ),
-              const SizedBox(height: 1),
-
-              const Text(
-                '- L U M I -',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 3,
-                  
-                  
-                ),
+            const Text(
+              '- L U M I -',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 3,
               ),
-            ],
-          ),
+            ),
 
-          const SizedBox(height: 1),
+            const SizedBox(height: 15),
 
-          // ───────────── CHAT ─────────────
-          Expanded(
-            child: ListView.builder(
-              padding: const EdgeInsets.all(12),
-              itemCount: _mensajes.length,
-              itemBuilder: (_, i) {
-                final msg = _mensajes[i];
-                final esUsuario = msg.startsWith("Tú:");
-                return Align(
-                  alignment: esUsuario
-                      ? Alignment.centerLeft
-                      : Alignment.centerRight,
-                  child: Container(
-                    margin: const EdgeInsets.symmetric(vertical: 6),
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: esUsuario
-                          ? const Color(0xFFFDC67F)
-                          : const Color(0xFF9B88B7),
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: Text(
-                      msg.replaceFirst(
-                          esUsuario ? "Tú: " : "Lumi: ", ""),
-                      style: TextStyle(
+            // ================= RESPIRACIÓN UI =================
+            AnimatedContainer(
+              duration: const Duration(seconds: 4),
+              width: tamanioCirculo,
+              height: tamanioCirculo,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: const Color(0xFF8D77AB).withOpacity(0.4),
+              ),
+            ),
+
+            const SizedBox(height: 8),
+
+            ElevatedButton(
+              onPressed: toggleRespiracion,
+              child: Text(
+                respirando ? "Detener respiración" : "Calmarme",
+              ),
+            ),
+
+            const SizedBox(height: 10),
+
+            // ================= CHAT =================
+            Expanded(
+              child: ListView.builder(
+                padding: const EdgeInsets.all(12),
+                itemCount: _mensajes.length,
+                itemBuilder: (_, i) {
+                  final msg = _mensajes[i];
+                  final esUsuario = msg.startsWith("Tú:");
+                  return Align(
+                    alignment: esUsuario
+                        ? Alignment.centerLeft
+                        : Alignment.centerRight,
+                    child: Container(
+                      margin: const EdgeInsets.symmetric(vertical: 6),
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
                         color: esUsuario
-                            ? Colors.black
-                            : Colors.white,
+                            ? const Color(0xFFFDC67F)
+                            : const Color(0xFF9B88B7),
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Text(
+                        msg.replaceFirst(
+                            esUsuario ? "Tú: " : "Lumi: ", ""),
+                        style: TextStyle(
+                          color: esUsuario
+                              ? Colors.black
+                              : Colors.white,
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+
+            if (mostrarBotonLlamada)
+              ElevatedButton.icon(
+                icon: const Icon(Icons.phone),
+                label: const Text("Llamar a apoyo"),
+                onPressed: llamarAyuda,
+              ),
+
+            Padding(
+              padding: const EdgeInsets.all(8),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: _controller,
+                      decoration: InputDecoration(
+                        hintText: "Escribe algo...",
+                        filled: true,
+                        fillColor: Colors.white,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(25),
+                          borderSide: BorderSide.none,
+                        ),
                       ),
                     ),
                   ),
-                );
-              },
-            ),
-          ),
-
-          // ───────────── BOTÓN DE LLAMADA ─────────────
-          if (mostrarBotonLlamada)
-            ElevatedButton.icon(
-              icon: const Icon(Icons.phone),
-              label: const Text("Llamar a apoyo"),
-              onPressed: llamarAyuda,
-            ),
-
-          // ───────────── INPUT ─────────────
-          Padding(
-            padding: const EdgeInsets.all(8),
-            child: Row(
-              children: [
-
-const SizedBox(height: 10,),
-
-                Expanded(
-                  child: TextField(
-                    controller: _controller,
-                    decoration: InputDecoration(
-                      hintText: "Escribe algo...",
-                      filled: true,
-                      fillColor: Colors.white,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(25),
-                        borderSide: BorderSide.none,
-                      ),
-                    ),
+                  IconButton(
+                    icon: const Icon(Icons.send),
+                    color: Color(0xFF8D77AB),
+                    onPressed: _enviarMensaje,
+                    iconSize: 40,
                   ),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.send),
-                  color: Color(0xFF8D77AB),
-                  onPressed: _enviarMensaje,
-                  iconSize: 40,
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
-    ),
-  );
-}
-  // ================= DISPOSE =================
+    );
+  }
+
   @override
   void dispose() {
+    _timer?.cancel();
     _controller.dispose();
     super.dispose();
   }
