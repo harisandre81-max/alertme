@@ -280,6 +280,7 @@ class _ChatScreenState extends State<ChatScreen> {
   "crisis de panico","me dio un ataque",
 
   // Síntomas físicos
+  "no puedo respirar ",
   "me late rápido el corazón",
   "me tiembla el cuerpo",
   "me tiemblan las manos",
@@ -295,6 +296,7 @@ class _ChatScreenState extends State<ChatScreen> {
   "tengo opresión en el pecho",
 
   // Pensamientos acelerados
+  "sobrepienso mucho",
   "no puedo dejar de pensar",
   "mi mente no se detiene",
   "pienso demasiado",
