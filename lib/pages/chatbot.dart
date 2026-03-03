@@ -149,36 +149,198 @@ class _ChatScreenState extends State<ChatScreen> {
     }
 
     if (contiene(input, [
-      "me pegan","me golpean","me agreden",
-      "me lastiman","me maltratan"
-    ])) {
+  "me pegan","me golpean","me agreden","me lastiman","me maltratan",
+  "me están pegando","me están golpeando","me están agrediendo",
+  "me pegaron","me golpearon","me agredieron","me lastimaron",
+  "me maltrataron","me hizo daño","me hacen daño","me hicieron daño",
+  "me empujan","me empujaron","me jalonean","me jalan",
+  "me cachetean","me cachetearon","me bofetean","me bofetearon",
+  "me patean","me patearon","me dan patadas",
+  "me dan puñetazos","me dieron puñetazos",
+  "me dan golpes","me dieron golpes",
+  "me aventaron","me avientan","me tiraron al suelo",
+  "me arrastran","me arrastraron",
+  "me pellizcan","me pellizcaron",
+  "me queman","me quemaron","me intentaron quemar",
+  "me cortaron","me cortan","me hicieron cortadas",
+  "me amenazan con golpearme",
+  "me amenazan con matarme",
+  "me atacan","me atacaron",
+  "me rompen mis cosas","rompieron mis cosas",
+  "me azotan","me azotaron",
+  "me aprietan fuerte","me sujetan fuerte",
+  "me encierran","me encerraron",
+  "no me dejan salir",
+  "me controlan con violencia",
+  "me agarran del cuello",
+  "me ahorcan","me intentaron ahorcar",
+  "me tiran cosas",
+  "me lanzan objetos",
+  "me agredió mi pareja",
+  "mi pareja me pega",
+  "mi esposo me golpea",
+  "mi esposa me golpea",
+  "mi papá me pega",
+  "mi mamá me pega",
+  "me pega mi hermano",
+  "me pega mi familiar",
+  "vivo violencia",
+  "sufro violencia",
+  "hay violencia en mi casa",
+  "me siento en peligro",
+  "tengo miedo de que me pegue",
+  "tengo miedo de que me lastime",
+  "me tratan con violencia",
+  "me violentan",
+  "me hacen moretones",
+  "me dejaron moretones",
+  "me dejaron heridas",
+  "tengo heridas por golpes",
+  "me sangraron por golpearme",
+  "me rompieron algo",
+  "me fracturaron",
+  "me pegaron con cinturón",
+  "me pegaron con objeto",
+  "me pegaron con palo",
+  "me golpearon la cara",
+  "me golpearon la cabeza",
+  "me golpearon el cuerpo",
+  "me pegaron en el estómago",
+  "me pegaron en la espalda",
+  "me golpearon fuerte",
+  "me pegan diario",
+  "me golpean seguido",
+  "me maltratan siempre",
+  "me agreden constantemente"
+])) {
       mostrarBotonLlamada = true;
       telefonoAyuda = "6751035059";
       return "Lo que describes es violencia física y es algo serio. Mereces estar a salvo.$canalizacion";
     }
 
     if (contiene(input, [
-      "bullying","acoso escolar","me molestan",
-      "se burlan de mi","me humillan"
-    ])) {
+  "bullying","acoso escolar","me molestan","se burlan de mi","me humillan",
+
+  // Burlas
+  "se ríen de mi","se rien de mi","me hacen burla","me insultan",
+  "me dicen cosas feas","me ponen apodos","me dicen apodos",
+  "me dicen groserías","me ofenden","me ridiculizan",
+  "me exhiben","me hacen sentir menos",
+
+  // Exclusión
+  "me excluyen","me ignoran","nadie me habla",
+  "no me dejan jugar","no me quieren en el grupo",
+  "me dejan solo","me apartan","me rechazan",
+  "no me invitan","me hacen a un lado",
+
+  // Amenazas
+  "me amenazan","me intimidan","me asustan",
+  "me dicen que me van a pegar",
+  "me dicen que me van a hacer algo",
+
+  // Agresiones físicas relacionadas
+  "me empujan en la escuela",
+  "me pegan en la escuela",
+  "me golpean en la escuela",
+  "me tiran mis cosas",
+  "me esconden mis cosas",
+  "me rompen mis cosas",
+
+  // Redes sociales (ciberbullying)
+  "me molestan por redes",
+  "me acosan por internet",
+  "me insultan en redes",
+  "publicaron algo de mi",
+  "compartieron fotos mías",
+  "me hacen memes",
+  "hablan mal de mi en redes",
+
+  // Sentimientos asociados
+  "me siento humillado",
+  "me siento avergonzado",
+  "me siento rechazado",
+  "tengo miedo de ir a la escuela",
+  "no quiero ir a la escuela",
+  "odio la escuela por lo que me hacen",
+  "me siento solo en la escuela"
+])) {
       mostrarBotonLlamada = true;
       telefonoAyuda = "6758670579";
       return "Siento mucho que estés pasando por esto. No mereces que te traten así.$canalizacion";
     }
 
     if (contiene(input, [
-      "ansiedad","me siento ansioso",
-      "me siento ansiosa","ataque de ansiedad"
-    ])) {
+  "ansiedad","me siento ansioso","me siento ansiosa","ataque de ansiedad",
+
+  // Variaciones comunes
+  "estoy ansioso","estoy ansiosa",
+  "tengo ansiedad","sufro ansiedad",
+  "me da ansiedad","me está dando ansiedad",
+  "crisis de ansiedad","ataque de pánico",
+  "crisis de panico","me dio un ataque",
+
+  // Síntomas físicos
+  "me late rápido el corazón",
+  "me tiembla el cuerpo",
+  "me tiemblan las manos",
+  "me sudan las manos",
+  "me falta el aire",
+  "siento que no puedo respirar",
+  "siento presión en el pecho",
+  "me duele el pecho por nervios",
+  "tengo náuseas por nervios",
+  "me siento mareado",
+  "me siento mareada",
+  "siento un nudo en la garganta",
+  "tengo opresión en el pecho",
+
+  // Pensamientos acelerados
+  "no puedo dejar de pensar",
+  "mi mente no se detiene",
+  "pienso demasiado",
+  "sobrepienso todo",
+  "no puedo controlar mis pensamientos",
+  "siento que algo malo va a pasar",
+  "estoy muy nervioso",
+  "estoy muy nerviosa",
+
+  // Conductuales
+  "no puedo dormir por ansiedad",
+  "me cuesta dormir por nervios",
+  "me siento inquieto",
+  "me siento inquieta",
+  "no puedo relajarme",
+  "me siento desesperado",
+  "me siento desesperada",
+  "estoy muy alterado",
+  "estoy muy alterada"
+  ])){
       mostrarBotonLlamada = true;
       telefonoAyuda = "6758670579";
       return "La ansiedad puede ser muy intensa, pero no estás solo.$canalizacion";
     }
 
     if (contiene(input, [
-      "depresión","depresion",
-      "me quiero morir","me quiero matar"
-    ])) {
+  "depresión","depresion",
+  "estoy deprimido","estoy deprimida",
+  "me siento deprimido","me siento deprimida",
+  "me siento vacío","me siento vacio",
+  "no tengo ganas de nada",
+  "ya no quiero seguir",
+  "no quiero vivir",
+  "quisiera desaparecer",
+  "me quiero morir",
+  "me quiero matar",
+  "quiero matarme",
+  "quiero morirme",
+  "no vale la pena vivir",
+  "mi vida no tiene sentido",
+  "no le importo a nadie",
+  "me siento inútil",
+  "me siento sin esperanza",
+  "todo sería mejor sin mí",
+  "sería mejor si no estuviera aquí"
+])) {
       mostrarBotonLlamada = true;
       telefonoAyuda = "6758670579";
       return "Gracias por decirlo. Lo que sientes importa y merece atención.$canalizacion";
