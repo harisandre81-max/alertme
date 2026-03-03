@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:audioplayers/audioplayers.dart';
 import 'dart:async';
 
 void main() {
@@ -45,11 +46,35 @@ class _ChatScreenState extends State<ChatScreen> {
   double tamanioCirculo = 80;
   Timer? _timer;
 
-  void toggleRespiracion() {
+  final AudioPlayer _audioPlayer = AudioPlayer();
+
+  @override
+  void initState() {
+    super.initState();
+    _audioPlayer.setReleaseMode(ReleaseMode.loop);
+  }
+
+  void toggleRespiracion() async {
     if (respirando) {
+      // 🔻 FADE OUT
+      for (double v = 1.0; v >= 0; v -= 0.05) {
+        await _audioPlayer.setVolume(v);
+        await Future.delayed(const Duration(milliseconds: 100));
+      }
+
+      await _audioPlayer.stop();
       _timer?.cancel();
     } else {
-      _timer = Timer.periodic(const Duration(seconds: 4), (timer) {
+      await _audioPlayer.setVolume(0);
+      await _audioPlayer.play(AssetSource('audio/relax.mp3'));
+
+      // 🔺 FADE IN
+      for (double v = 0; v <= 0.3; v += 0.03) {
+        await _audioPlayer.setVolume(v);
+        await Future.delayed(const Duration(milliseconds: 100));
+      }
+
+      _timer = Timer.periodic(const Duration(milliseconds: 4900), (timer)  {
         setState(() {
           tamanioCirculo = tamanioCirculo == 80 ? 150 : 80;
         });
@@ -61,7 +86,6 @@ class _ChatScreenState extends State<ChatScreen> {
     });
   }
 
-  // ================= FUNCIONES =================
   bool contiene(String input, List<String> palabras) {
     input = input.toLowerCase();
     for (var palabra in palabras) {
@@ -83,7 +107,6 @@ class _ChatScreenState extends State<ChatScreen> {
     }
   }
 
-  // ================= ENVIAR MENSAJE =================
   void _enviarMensaje() {
     final input = _controller.text.trim();
     if (input.isEmpty) return;
@@ -103,7 +126,6 @@ class _ChatScreenState extends State<ChatScreen> {
     _controller.clear();
   }
 
-  // ================= RESPUESTAS =================
   String generarRespuesta(String input) {
     input = input.toLowerCase();
 
@@ -112,60 +134,41 @@ class _ChatScreenState extends State<ChatScreen> {
         "pero sí puedo ponerte en contacto con alguien que te ayude.";
 
     if (contiene(input, [
-      "hola",
-      "buenas",
-      "buen día",
-      "buenas tardes",
-      "buenas noches",
+      "hola","buenas","buen día","buenas tardes","buenas noches"
     ])) {
       return "¡Hola! Soy Lumi, tu asistente de compañía. ¿Cómo te sientes hoy?";
     }
 
     if (contiene(input, [
-      "violencia sexual",
-      "abuso sexual",
-      "me abusaron",
-      "me violaron",
-      "me tocaron sin permiso",
-      "acoso sexual",
+      "violencia sexual","abuso sexual","me abusaron",
+      "me violaron","me tocaron sin permiso","acoso sexual"
     ])) {
       mostrarBotonLlamada = true;
       telefonoAyuda = "911";
-      return "Lamento mucho que estés pasando por algo tan difícil. "
-          "No es tu culpa.$canalizacion";
+      return "Lamento mucho que estés pasando por algo tan difícil. No es tu culpa.$canalizacion";
     }
 
     if (contiene(input, [
-      "me pegan",
-      "me golpean",
-      "me agreden",
-      "me lastiman",
-      "me maltratan",
+      "me pegan","me golpean","me agreden",
+      "me lastiman","me maltratan"
     ])) {
       mostrarBotonLlamada = true;
       telefonoAyuda = "6751035059";
-      return "Lo que describes es violencia física y es algo serio. "
-          "Mereces estar a salvo.$canalizacion";
+      return "Lo que describes es violencia física y es algo serio. Mereces estar a salvo.$canalizacion";
     }
 
     if (contiene(input, [
-      "bullying",
-      "acoso escolar",
-      "me molestan",
-      "se burlan de mi",
-      "me humillan",
+      "bullying","acoso escolar","me molestan",
+      "se burlan de mi","me humillan"
     ])) {
       mostrarBotonLlamada = true;
       telefonoAyuda = "6758670579";
-      return "Siento mucho que estés pasando por esto. "
-          "No mereces que te traten así.$canalizacion";
+      return "Siento mucho que estés pasando por esto. No mereces que te traten así.$canalizacion";
     }
 
     if (contiene(input, [
-      "ansiedad",
-      "me siento ansioso",
-      "me siento ansiosa",
-      "ataque de ansiedad",
+      "ansiedad","me siento ansioso",
+      "me siento ansiosa","ataque de ansiedad"
     ])) {
       mostrarBotonLlamada = true;
       telefonoAyuda = "6758670579";
@@ -173,21 +176,25 @@ class _ChatScreenState extends State<ChatScreen> {
     }
 
     if (contiene(input, [
-      "depresión",
-      "depresion",
-      "me quiero morir",
-      "me quiero matar",
+      "depresión","depresion",
+      "me quiero morir","me quiero matar"
     ])) {
       mostrarBotonLlamada = true;
       telefonoAyuda = "6758670579";
-      return "Gracias por decirlo. "
-          "Lo que sientes importa y merece atención.$canalizacion";
+      return "Gracias por decirlo. Lo que sientes importa y merece atención.$canalizacion";
     }
 
     return "Gracias por contarme cómo te sientes. Estoy aquí para escucharte.";
   }
 
-  // ================= UI =================
+  @override
+  void dispose() {
+    _timer?.cancel();
+    _audioPlayer.dispose();
+    _controller.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -216,7 +223,6 @@ class _ChatScreenState extends State<ChatScreen> {
 
             const SizedBox(height: 15),
 
-            // ================= RESPIRACIÓN UI =================
             AnimatedContainer(
               duration: const Duration(seconds: 4),
               width: tamanioCirculo,
@@ -238,7 +244,6 @@ class _ChatScreenState extends State<ChatScreen> {
 
             const SizedBox(height: 10),
 
-            // ================= CHAT =================
             Expanded(
               child: ListView.builder(
                 padding: const EdgeInsets.all(12),
@@ -260,12 +265,9 @@ class _ChatScreenState extends State<ChatScreen> {
                         borderRadius: BorderRadius.circular(16),
                       ),
                       child: Text(
-                        msg.replaceFirst(
-                            esUsuario ? "Tú: " : "Lumi: ", ""),
+                        msg.replaceFirst(esUsuario ? "Tú: " : "Lumi: ", ""),
                         style: TextStyle(
-                          color: esUsuario
-                              ? Colors.black
-                              : Colors.white,
+                          color: esUsuario ? Colors.black : Colors.white,
                         ),
                       ),
                     ),
@@ -301,7 +303,7 @@ class _ChatScreenState extends State<ChatScreen> {
                   ),
                   IconButton(
                     icon: const Icon(Icons.send),
-                    color: Color(0xFF8D77AB),
+                    color: const Color(0xFF8D77AB),
                     onPressed: _enviarMensaje,
                     iconSize: 40,
                   ),
@@ -312,12 +314,5 @@ class _ChatScreenState extends State<ChatScreen> {
         ),
       ),
     );
-  }
-
-  @override
-  void dispose() {
-    _timer?.cancel();
-    _controller.dispose();
-    super.dispose();
   }
 }
