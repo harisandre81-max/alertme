@@ -528,7 +528,7 @@ void dispose() {
     _mensajes.removeAt(i);
   });
 
-  mostrarPopupRespiracion("assets/chat/video_hablando.mp4");
+  mostrarPopupRespiracion("assets/chat/respira.mp4");
 },
               ),
 
