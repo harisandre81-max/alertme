@@ -34,7 +34,7 @@ class ChatScreen extends StatefulWidget {
 class _ChatScreenState extends State<ChatScreen>
     with SingleTickerProviderStateMixin {
     bool esSituacionFuerte = false; 
-
+  final GlobalKey<_VideoLumiState> lumiKey = GlobalKey();
   final TextEditingController _controller = TextEditingController();
   final List<String> _mensajes = [];
 
@@ -46,6 +46,9 @@ class _ChatScreenState extends State<ChatScreen>
 void initState() {
   super.initState();
 
+}
+  void animarLumi() {
+  lumiKey.currentState?.reproducirAnimacion();
 }
 
   bool contiene(String input, List<String> palabras) {
@@ -72,6 +75,8 @@ void initState() {
   void _enviarMensaje() {
     final input = _controller.text.trim();
     if (input.isEmpty) return;
+
+    animarLumi();
 
     esSituacionFuerte = false;
 
@@ -353,13 +358,13 @@ _controller.clear();
     barrierDismissible: true,
     builder: (context) {
       return Dialog(
-        backgroundColor: Colors.white,
+        backgroundColor: const Color(0xFFB3D4CB).withOpacity(0.85),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20),
         ),
         child: Container(
-          width: 350,
-          height: 450, // 👈 tamaño fijo
+          width: MediaQuery.of(context).size.width * 0.85,
+          height: 450,
           padding: const EdgeInsets.all(20),
           child: Column(
             children: [
@@ -406,6 +411,7 @@ _controller.clear();
     },
   );
 }
+
   @override
 void dispose() {
   _controller.dispose();
@@ -448,7 +454,7 @@ void dispose() {
     children: [
       // ================= PARTE SUPERIOR FIJA =================
       SizedBox(
-        height: 180,
+        height: 240,
         child: Column(
           children: [
             Align(
@@ -464,11 +470,16 @@ void dispose() {
                 },
               ),
             ),
-
-            Image.asset(
-              'assets/chat/lumi.png',
-              width: 190,
-            ),
+           Container(
+  width: 190,
+  height: 190,
+  decoration: BoxDecoration(
+    shape: BoxShape.circle,
+  ),
+  child: ClipOval(
+    child: VideoLumi(key: lumiKey),
+  ),
+)
           ],
         ),
       ),
@@ -686,4 +697,82 @@ class _VideoEjercicioState extends State<VideoEjercicio> {
       child: VideoPlayer(_controller!),
     );
   }
+}
+
+class VideoLumi extends StatefulWidget {
+  const VideoLumi({super.key});
+
+  @override
+  State<VideoLumi> createState() => _VideoLumiState();
+}
+
+class _VideoLumiState extends State<VideoLumi> {
+  VideoPlayerController? _controller;
+  bool mostrarImagen = true;
+  @override
+  void initState() {
+    super.initState();
+    _initVideo();
+  }
+
+  void reproducirAnimacion() async {
+  if (_controller == null || !_controller!.value.isInitialized) return;
+
+  setState(() {
+    mostrarImagen = false;
+  });
+
+  await _controller!.seekTo(Duration.zero);
+  await _controller!.play();
+
+  final duracion = _controller!.value.duration;
+
+  await Future.delayed(duracion);
+
+  await _controller!.pause();
+
+  if (mounted) {
+    setState(() {
+      mostrarImagen = true;
+    });
+  }
+}
+
+  Future<void> _initVideo() async {
+    _controller = VideoPlayerController.asset(
+      "assets/chat/chat-hablando.mp4",
+    );
+
+    await _controller!.initialize();
+    await _controller!.setLooping(true); // 👈 se cicla
+    await _controller!.pause();// 👈 inicia automático
+    await _controller!.setVolume(0);
+    
+    if (mounted) setState(() {});
+  }
+
+  @override
+  void dispose() {
+    _controller?.dispose();
+    super.dispose();
+  }
+
+  @override
+Widget build(BuildContext context) {
+  if (mostrarImagen) {
+    return Image.asset(
+      "assets/chat/lumi.png",
+      fit: BoxFit.cover,
+    );
+  }
+
+  if (_controller == null || !_controller!.value.isInitialized) {
+    return const Center(child: CircularProgressIndicator());
+  }
+
+  return AspectRatio(
+    aspectRatio: _controller!.value.aspectRatio,
+    child: VideoPlayer(_controller!),
+  );
+}
 }
