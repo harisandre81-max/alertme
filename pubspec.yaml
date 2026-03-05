@@ -78,8 +78,9 @@ flutter:
     - assets/logo_inter/
     - assets/img_institu/
     - assets/audio/relax.mp3
-    - assets/chat/lumi.png
+    - assets/chat/chat-hablando.mp4
     - assets/chat/respira.mp4
+    - assets/chat/lumi.png
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
   # the material Icons class.
