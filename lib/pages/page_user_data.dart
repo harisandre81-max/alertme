@@ -252,13 +252,13 @@ void initState() {
       appBar: AppBar(
         toolbarHeight: 110,
         elevation: 0,
-        leadingWidth: 80,
+        leadingWidth: 100,
         backgroundColor: const Color(0xFFE6F0D5),
-        titleSpacing: 100, // 👈 espacio entre leading y title
+        titleSpacing: 90, // 👈 espacio entre leading y title
         leading: Padding(
           padding: const EdgeInsets.all(5.0),
           child: Image.asset(
-            'assets/logo_inter/logo.png',
+            'assets/logo_inter/logo-interfaces.png',
             width: 70,
             height: 70,
             fit: BoxFit.contain,
