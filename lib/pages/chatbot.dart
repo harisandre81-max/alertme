@@ -46,44 +46,10 @@ class _ChatScreenState extends State<ChatScreen>
 void initState() {
   super.initState();
 
-<<<<<<< HEAD
-  void toggleRespiracion() async {
-    if (respirando) {
-      // 🔻 FADE OUT
-      for (double v = 1.0; v >= 0; v -= 0.05) {
-        await _audioPlayer.setVolume(v);
-        await Future.delayed(const Duration(milliseconds: 100));
-      }
-
-      await _audioPlayer.stop();
-      _timer?.cancel();
-    } else {
-      await _audioPlayer.setVolume(0);
-      await _audioPlayer.play(AssetSource('audio/relax.mp3'));
-
-      // 🔺 FADE IN
-      for (double v = 0; v <= 0.3; v += 0.03) {
-        await _audioPlayer.setVolume(v);
-        await Future.delayed(const Duration(milliseconds: 80));
-      }
-
-      _timer = Timer.periodic(const Duration(milliseconds: 4500), (timer)  {
-        setState(() {
-          tamanioCirculo = tamanioCirculo == 80 ? 150 : 80;
-        });
-      });
-    }
-
-    setState(() {
-      respirando = !respirando;
-    });
-  }
-=======
 }
   void animarLumi() {
   lumiKey.currentState?.reproducirAnimacion();
 }
->>>>>>> 120e714b8c4babfb054dc37e9de42630113fe1dc
 
   bool contiene(String input, List<String> palabras) {
     input = input.toLowerCase();
@@ -93,7 +59,7 @@ void initState() {
     return false;
   }
 
-  Future<void> llamarAyuda() async {//borro eso? o si se esta usando
+  Future<void> llamarAyuda() async {
     if (telefonoAyuda.isEmpty) return;
 
     final phoneUri = Uri(
@@ -739,121 +705,9 @@ class _VideoEjercicioState extends State<VideoEjercicio> {
       );
     }
 
-<<<<<<< HEAD
-            Image.asset(
-              //Zona avatar chat
-              'assets/chat/lumi.png',
-              width: 200,
-            ),
-
-            const SizedBox(height: 10),
-
-            const Text(
-              '- L U M I -',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                letterSpacing: 3,
-              ),
-            ),
-
-            const SizedBox(height: 15),
-
-            AnimatedContainer(
-              duration: const Duration(seconds: 4),
-              width: tamanioCirculo,
-              height: tamanioCirculo,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: const Color(0xFF8D77AB).withOpacity(0.4),
-              ),
-            ),
-
-            const SizedBox(height: 8),
-
-            ElevatedButton(
-              onPressed: toggleRespiracion,
-              child: Text(
-                respirando ? "Detener respiración" : "Calmarme",
-              ),
-            ),
-
-            const SizedBox(height: 10),
-
-            Expanded(
-              child: ListView.builder(
-                padding: const EdgeInsets.all(12),
-                itemCount: _mensajes.length,
-                itemBuilder: (_, i) {
-                  final msg = _mensajes[i];
-                  final esUsuario = msg.startsWith("Tú:");
-                  return Align(
-                    alignment: esUsuario
-                        ? Alignment.centerLeft
-                        : Alignment.centerRight,
-                    child: Container(
-                      margin: const EdgeInsets.symmetric(vertical: 6),
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: esUsuario
-                            ? const Color(0xFFFDC67F)
-                            : const Color(0xFF9B88B7),
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: Text(
-                        msg.replaceFirst(esUsuario ? "Tú: " : "Lumi: ", ""),
-                        style: TextStyle(
-                          color: esUsuario ? Colors.black : Colors.white,
-                        ),
-                      ),
-                    ),
-                  );
-                },
-              ),
-            ),
-
-            if (mostrarBotonLlamada)
-              ElevatedButton.icon(
-                icon: const Icon(Icons.phone),
-                label: const Text("Llamar a apoyo"),
-                onPressed: llamarAyuda,
-              ),
-
-            Padding(
-              padding: const EdgeInsets.all(8),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: TextField(
-                      controller: _controller,
-                      decoration: InputDecoration(
-                        hintText: "Escribe algo...",
-                        filled: true,
-                        fillColor: Colors.white,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(25),
-                          borderSide: BorderSide.none,
-                        ),
-                      ),
-                    ),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.send),
-                    color: const Color(0xFF8D77AB),
-                    onPressed: _enviarMensaje,
-                    iconSize: 40,
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-=======
     return AspectRatio(
       aspectRatio: _controller!.value.aspectRatio,
       child: VideoPlayer(_controller!),
->>>>>>> 120e714b8c4babfb054dc37e9de42630113fe1dc
     );
   }
 }
