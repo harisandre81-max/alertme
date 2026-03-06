@@ -71,10 +71,10 @@ class _ChatScreenState extends State<ChatScreen> {
       // 🔺 FADE IN
       for (double v = 0; v <= 0.3; v += 0.03) {
         await _audioPlayer.setVolume(v);
-        await Future.delayed(const Duration(milliseconds: 100));
+        await Future.delayed(const Duration(milliseconds: 80));
       }
 
-      _timer = Timer.periodic(const Duration(milliseconds: 4900), (timer)  {
+      _timer = Timer.periodic(const Duration(milliseconds: 4500), (timer)  {
         setState(() {
           tamanioCirculo = tamanioCirculo == 80 ? 150 : 80;
         });
@@ -370,6 +370,7 @@ class _ChatScreenState extends State<ChatScreen> {
             const SizedBox(height: 20),
 
             Image.asset(
+              //Zona avatar chat
               'assets/chat/lumi.png',
               width: 200,
             ),
