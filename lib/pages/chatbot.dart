@@ -93,7 +93,7 @@ void initState() {
     return false;
   }
 
-  Future<void> llamarAyuda() async {
+  Future<void> llamarAyuda() async {//borro eso? o si se esta usando
     if (telefonoAyuda.isEmpty) return;
 
     final phoneUri = Uri(
@@ -115,10 +115,14 @@ void initState() {
     esSituacionFuerte = false;
 
     setState(() {
-      _mensajes.add("Tú: $input");
-      mostrarBotonLlamada = false;
-      telefonoAyuda = "";
-    });
+
+  // 👇 elimina la opción de calma si existe
+  _mensajes.removeWhere((m) => m == "Lumi_opcion_calma");
+
+  _mensajes.add("Tú: $input");
+  mostrarBotonLlamada = false;
+  telefonoAyuda = "";
+});
 
     final respuesta = generarRespuesta(input);
 
@@ -335,7 +339,7 @@ _controller.clear();
       telefonoAyuda = "6758670579";
       return "La ansiedad puede ser muy intensa, pero no estás solo.$canalizacion";
     }
-
+//============llamada de btn respiracion=========
     if (contiene(input, [
   "necesito calmarme",
   "quiero calmarme",
@@ -354,6 +358,21 @@ _controller.clear();
   esSituacionFuerte = true;
 
   return "Vamos a calmarnos juntos. Puedo guiarte con un ejercicio de respiración.";
+}
+//============respuesta para cerrar el este de opciones====
+  if (contiene(input, [
+  "no quiero nada",
+  "no quiero ayuda",
+  "no quiero hacer nada",
+  "no gracias",
+  "estoy bien",
+  "solo quería decirlo",
+  "solo quería hablar",
+  "muchas gracias",
+  "no",
+  "ya me siento mejor",
+])) {
+  return "Está bien. Estoy aquí para escucharte si deseas contarme algo más.";
 }
 
     if (contiene(input, [
@@ -385,14 +404,14 @@ _controller.clear();
 
     return "Gracias por contarme cómo te sientes. Estoy aquí para escucharte.";
   }
-  
+//============popup de respiracion=========
   void mostrarPopupRespiracion(String videoPath) {
   showDialog(
     context: context,
     barrierDismissible: true,
     builder: (context) {
       return Dialog(
-        backgroundColor: const Color(0xFFB3D4CB).withOpacity(0.85),
+        backgroundColor: const Color(0xFFB3D4CB),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20),
         ),
@@ -451,7 +470,7 @@ void dispose() {
   _controller.dispose();
   super.dispose();
 }
-
+//============UI=========
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -547,7 +566,7 @@ void dispose() {
               borderRadius: BorderRadius.circular(16),
             ),
             child: const Text(
-              "¿Te gustaría hacer un ejercicio breve para calmarte?",
+              "¿Qué quieres hacer?",
             ),
           ),
 
@@ -555,49 +574,43 @@ void dispose() {
 
           // 🟣 BOTONES
           Row(
-            children: [
+  children: [
 
-              // ✅ BOTÓN SÍ
-              ElevatedButton.icon(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFFDC67F),
-                  foregroundColor: Colors.black,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                ),
-                icon: const Icon(Icons.check),
-                label: const Text("Sí"),
-                onPressed: () {
-  setState(() {
-    _mensajes.removeAt(i);
-  });
+    // 📞 BOTÓN LLAMAR
+    ElevatedButton.icon(
+      style: ElevatedButton.styleFrom(
+        backgroundColor: const Color(0xFFFDC67F),
+        foregroundColor: Colors.black,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+      ),
+      icon: const Icon(Icons.phone),
+      label: const Text("Hacer llamada"),
+      onPressed: () {
+        llamarAyuda();
+      },
+    ),
 
-  mostrarPopupRespiracion("assets/chat/respira.mp4");
-},
-              ),
+    const SizedBox(width: 10),
 
-              const SizedBox(width: 10),
-
-              // ❌ BOTÓN NO
-              ElevatedButton.icon(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFFDC67F),
-                  foregroundColor: Colors.black,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                ),
-                icon: const Icon(Icons.close),
-                label: const Text("No"),
-                onPressed: () {
-                  setState(() {
-                    _mensajes.removeAt(i);
-                  });
-                },
-              ),
-            ],
-          ),
+    // 🧘 BOTÓN RELAJARSE
+    ElevatedButton.icon(
+      style: ElevatedButton.styleFrom(
+        backgroundColor: const Color(0xFFFDC67F),
+        foregroundColor: Colors.black,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+      ),
+      icon: const Icon(Icons.self_improvement),
+      label: const Text("Relajarse"),
+      onPressed: () {
+        mostrarPopupRespiracion("assets/chat/respira.mp4");
+      },
+    ),
+  ],
+)
         ],
       ),
     ),
@@ -672,7 +685,7 @@ void dispose() {
     );
   }
 }
-
+//============video de respiracion=========
 class VideoEjercicio extends StatefulWidget {
   final String videoPath;
 
@@ -851,7 +864,7 @@ class VideoLumi extends StatefulWidget {
   @override
   State<VideoLumi> createState() => _VideoLumiState();
 }
-
+//============chat imagen=========
 class _VideoLumiState extends State<VideoLumi> {
   VideoPlayerController? _controller;
   bool mostrarImagen = true;
