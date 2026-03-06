@@ -40,6 +40,7 @@ dependencies:
   shared_preferences: ^2.2.2
   font_awesome_flutter: ^10.7.0
   tutorial_coach_mark: 1.3.3
+  video_player: ^2.8.2
 
   flutter:
     sdk: flutter
@@ -77,6 +78,8 @@ flutter:
     - assets/logo_inter/
     - assets/img_institu/
     - assets/audio/relax.mp3
+    - assets/chat/chat-hablando.mp4
+    - assets/chat/respira.mp4
     - assets/chat/lumi.png
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in

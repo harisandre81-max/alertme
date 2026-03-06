@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:audioplayers/audioplayers.dart';
-import 'dart:async';
-
+import 'package:video_player/video_player.dart';
 void main() {
   runApp(const ChatBotApp());
 }
@@ -33,7 +31,10 @@ class ChatScreen extends StatefulWidget {
   State<ChatScreen> createState() => _ChatScreenState();
 }
 
-class _ChatScreenState extends State<ChatScreen> {
+class _ChatScreenState extends State<ChatScreen>
+    with SingleTickerProviderStateMixin {
+    bool esSituacionFuerte = false; 
+  final GlobalKey<_VideoLumiState> lumiKey = GlobalKey();
   final TextEditingController _controller = TextEditingController();
   final List<String> _mensajes = [];
 
@@ -41,19 +42,11 @@ class _ChatScreenState extends State<ChatScreen> {
   bool mostrarBotonLlamada = false;
   String telefonoAyuda = "";
 
-  // ================= RESPIRACIÓN =================
-  bool respirando = false;
-  double tamanioCirculo = 80;
-  Timer? _timer;
-
-  final AudioPlayer _audioPlayer = AudioPlayer();
-
   @override
-  void initState() {
-    super.initState();
-    _audioPlayer.setReleaseMode(ReleaseMode.loop);
-  }
+void initState() {
+  super.initState();
 
+<<<<<<< HEAD
   void toggleRespiracion() async {
     if (respirando) {
       // 🔻 FADE OUT
@@ -85,6 +78,12 @@ class _ChatScreenState extends State<ChatScreen> {
       respirando = !respirando;
     });
   }
+=======
+}
+  void animarLumi() {
+  lumiKey.currentState?.reproducirAnimacion();
+}
+>>>>>>> 120e714b8c4babfb054dc37e9de42630113fe1dc
 
   bool contiene(String input, List<String> palabras) {
     input = input.toLowerCase();
@@ -111,6 +110,10 @@ class _ChatScreenState extends State<ChatScreen> {
     final input = _controller.text.trim();
     if (input.isEmpty) return;
 
+    animarLumi();
+
+    esSituacionFuerte = false;
+
     setState(() {
       _mensajes.add("Tú: $input");
       mostrarBotonLlamada = false;
@@ -119,11 +122,18 @@ class _ChatScreenState extends State<ChatScreen> {
 
     final respuesta = generarRespuesta(input);
 
-    setState(() {
-      _mensajes.add("Lumi: $respuesta");
-    });
+setState(() {
+  _mensajes.add("Lumi: $respuesta");
+});
 
-    _controller.clear();
+if (esSituacionFuerte) {
+  Future.delayed(const Duration(milliseconds: 500), () {
+    setState(() {
+      _mensajes.add("Lumi_opcion_calma");
+    });
+  });
+}
+_controller.clear();
   }
 
   String generarRespuesta(String input) {
@@ -143,6 +153,7 @@ class _ChatScreenState extends State<ChatScreen> {
       "violencia sexual","abuso sexual","me abusaron",
       "me violaron","me tocaron sin permiso","acoso sexual"
     ])) {
+      esSituacionFuerte = true;
       mostrarBotonLlamada = true;
       telefonoAyuda = "911";
       return "Lamento mucho que estés pasando por algo tan difícil. No es tu culpa.$canalizacion";
@@ -213,6 +224,7 @@ class _ChatScreenState extends State<ChatScreen> {
   "me maltratan siempre",
   "me agreden constantemente"
 ])) {
+      esSituacionFuerte = true;
       mostrarBotonLlamada = true;
       telefonoAyuda = "6751035059";
       return "Lo que describes es violencia física y es algo serio. Mereces estar a salvo.$canalizacion";
@@ -264,6 +276,7 @@ class _ChatScreenState extends State<ChatScreen> {
   "odio la escuela por lo que me hacen",
   "me siento solo en la escuela"
 ])) {
+      esSituacionFuerte = true;
       mostrarBotonLlamada = true;
       telefonoAyuda = "6758670579";
       return "Siento mucho que estés pasando por esto. No mereces que te traten así.$canalizacion";
@@ -317,10 +330,31 @@ class _ChatScreenState extends State<ChatScreen> {
   "estoy muy alterado",
   "estoy muy alterada"
   ])){
+      esSituacionFuerte = true;
       mostrarBotonLlamada = true;
       telefonoAyuda = "6758670579";
       return "La ansiedad puede ser muy intensa, pero no estás solo.$canalizacion";
     }
+
+    if (contiene(input, [
+  "necesito calmarme",
+  "quiero calmarme",
+  "ayúdame a calmarme",
+  "ayudame a calmarme",
+  "quiero tranquilizarme",
+  "estoy nervioso",
+  "estoy nerviosa",
+  "estoy muy nervioso",
+  "estoy muy nerviosa",
+  "estoy alterado",
+  "estoy alterada",
+  "estoy ansioso",
+  "estoy ansiosa"
+])) {
+  esSituacionFuerte = true;
+
+  return "Vamos a calmarnos juntos. Puedo guiarte con un ejercicio de respiración.";
+}
 
     if (contiene(input, [
   "depresión","depresion",
@@ -343,6 +377,7 @@ class _ChatScreenState extends State<ChatScreen> {
   "todo sería mejor sin mí",
   "sería mejor si no estuviera aquí"
 ])) {
+      esSituacionFuerte = true;
       mostrarBotonLlamada = true;
       telefonoAyuda = "6758670579";
       return "Gracias por decirlo. Lo que sientes importa y merece atención.$canalizacion";
@@ -350,25 +385,348 @@ class _ChatScreenState extends State<ChatScreen> {
 
     return "Gracias por contarme cómo te sientes. Estoy aquí para escucharte.";
   }
+  
+  void mostrarPopupRespiracion(String videoPath) {
+  showDialog(
+    context: context,
+    barrierDismissible: true,
+    builder: (context) {
+      return Dialog(
+        backgroundColor: const Color(0xFFB3D4CB).withOpacity(0.85),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Container(
+          width: MediaQuery.of(context).size.width * 0.85,
+          height: 450,
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            children: [
+
+              const Text(
+                "Respira conmigo",
+                style: TextStyle(
+                  fontSize: 26,
+                  color: Colors.deepPurple,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+
+              const SizedBox(height: 20),
+
+              // 👇 AQUÍ VA TU VIDEO
+              Expanded(
+  child: ClipRRect(
+    borderRadius: BorderRadius.circular(15),
+    child: VideoEjercicio(videoPath: videoPath),
+  ),
+),
+
+              const SizedBox(height: 20),
+
+              ElevatedButton.icon(
+                icon: const Icon(Icons.close),
+                label: const Text("Cerrar"),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF8D77AB),
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(25),
+                  ),
+                ),
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+              ),
+            ],
+          ),
+        ),
+      );
+    },
+  );
+}
+
+  @override
+void dispose() {
+  _controller.dispose();
+  super.dispose();
+}
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      resizeToAvoidBottomInset: false,
+      // SUB MENÚ SUPERIOR<==no borrar LUIS!!
+      appBar: AppBar(
+        toolbarHeight: 110,
+        elevation: 0,
+        leadingWidth: 100,
+        backgroundColor: const Color(0xFFE6F0D5),
+        titleSpacing: 60, // 👈 espacio entre leading y title
+        leading: Padding(
+          padding: const EdgeInsets.all(5.0),
+          child: Image.asset(
+            'assets/logo_inter/logo-interfaces.png',
+            width: 70,
+            height: 70,
+            fit: BoxFit.contain,
+          ),
+        ),
+        title: const Text(
+              '- L U M I -',
+              style: TextStyle(
+                fontSize: 20,
+                color: Colors.deepPurple,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 3,
+              ),
+            ),
+      ),
+      backgroundColor: const Color.fromARGB(255, 255, 252, 247),
+      body: SafeArea(
+  child: Column(
+    children: [
+      // ================= PARTE SUPERIOR FIJA =================
+      SizedBox(
+        height: 240,
+        child: Column(
+          children: [
+            Align(
+              alignment: Alignment.topLeft,
+              child: IconButton(
+                icon: const Icon(
+                  Icons.arrow_back,
+                  color: Colors.deepPurple,
+                  size: 28,
+                ),
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+              ),
+            ),
+           Container(
+  width: 190,
+  height: 190,
+  decoration: BoxDecoration(
+    shape: BoxShape.circle,
+  ),
+  child: ClipOval(
+    child: VideoLumi(key: lumiKey),
+  ),
+)
+          ],
+        ),
+      ),
+
+      // ================= CHAT =================
+      Expanded(
+  child: ListView.builder(
+    padding: const EdgeInsets.all(12),
+    itemCount: _mensajes.length,
+    itemBuilder: (_, i) {
+      final msg = _mensajes[i];
+
+      // 👇 MENSAJE ESPECIAL PARA OPCIÓN DE CALMA
+      if (msg == "Lumi_opcion_calma") {
+  return Align(
+    alignment: Alignment.centerLeft,
+    child: ConstrainedBox(
+      constraints: BoxConstraints(
+        maxWidth: MediaQuery.of(context).size.width * 0.75,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+
+          // 🟡 BURBUJA DEL MENSAJE
+          Container(
+            margin: const EdgeInsets.symmetric(vertical: 6),
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: const Color(0xFFFDC67F),
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: const Text(
+              "¿Te gustaría hacer un ejercicio breve para calmarte?",
+            ),
+          ),
+
+          const SizedBox(height: 8),
+
+          // 🟣 BOTONES
+          Row(
+            children: [
+
+              // ✅ BOTÓN SÍ
+              ElevatedButton.icon(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFFDC67F),
+                  foregroundColor: Colors.black,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                ),
+                icon: const Icon(Icons.check),
+                label: const Text("Sí"),
+                onPressed: () {
+  setState(() {
+    _mensajes.removeAt(i);
+  });
+
+  mostrarPopupRespiracion("assets/chat/respira.mp4");
+},
+              ),
+
+              const SizedBox(width: 10),
+
+              // ❌ BOTÓN NO
+              ElevatedButton.icon(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFFDC67F),
+                  foregroundColor: Colors.black,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                ),
+                icon: const Icon(Icons.close),
+                label: const Text("No"),
+                onPressed: () {
+                  setState(() {
+                    _mensajes.removeAt(i);
+                  });
+                },
+              ),
+            ],
+          ),
+        ],
+      ),
+    ),
+  );
+}
+      // 👇 MENSAJES NORMALES
+      final esUsuario = msg.startsWith("Tú:");
+
+      return Align(
+        alignment:
+            esUsuario ? Alignment.centerRight : Alignment.centerLeft,
+        child: ConstrainedBox(
+    constraints: BoxConstraints(
+      maxWidth: MediaQuery.of(context).size.width * 0.65,
+    ),
+        child: Container(
+          margin: const EdgeInsets.symmetric(vertical: 6),
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: esUsuario
+                ? const Color(0xFF9B88B7)
+                : const Color(0xFFFDC67F),
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Text(
+            msg.replaceFirst(esUsuario ? "Tú: " : "Lumi: ", ""),
+            style: TextStyle(
+              color: esUsuario ? Colors.white : Colors.black,
+            ),
+          ),
+        ),
+        ),
+      );
+    },
+  ),
+),
+      // ================= INPUT =================
+      Container(
+        padding: EdgeInsets.only(
+          left: 8,
+          right: 8,
+          bottom: MediaQuery.of(context).viewInsets.bottom,
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: TextField(
+                controller: _controller,
+                decoration: InputDecoration(
+                  hintText: "Escribe algo...",
+                  filled: true,
+                  fillColor: Colors.white,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(25),
+                    borderSide: BorderSide.none,
+                  ),
+                ),
+              ),
+            ),
+            IconButton(
+              icon: const Icon(Icons.send),
+              color: const Color(0xFF8D77AB),
+              onPressed: _enviarMensaje,
+              iconSize: 40,
+            ),
+          ],
+        ),
+      ),
+    ],
+  ),
+),
+    );
+  }
+}
+
+class VideoEjercicio extends StatefulWidget {
+  final String videoPath;
+
+  const VideoEjercicio({super.key, required this.videoPath});
+
+  @override
+  State<VideoEjercicio> createState() => _VideoEjercicioState();
+}
+
+class _VideoEjercicioState extends State<VideoEjercicio> {
+  VideoPlayerController? _controller;
+  bool error = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _initVideo();
+  }
+
+  Future<void> _initVideo() async {
+    try {
+      _controller = VideoPlayerController.asset(widget.videoPath);
+      await _controller!.initialize();
+      await _controller!.setLooping(true);
+      await _controller!.play();
+
+      if (mounted) setState(() {});
+    } catch (e) {
+      error = true;
+      if (mounted) setState(() {});
+    }
+  }
 
   @override
   void dispose() {
-    _timer?.cancel();
-    _audioPlayer.dispose();
-    _controller.dispose();
+    _controller?.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFE6F0D5),
-      body: SafeArea(
-        child: Column(
-          children: [
+    if (error) {
+      return const Center(
+        child: Text("Error cargando el video"),
+      );
+    }
 
-            const SizedBox(height: 20),
+    if (_controller == null || !_controller!.value.isInitialized) {
+      return const Center(
+        child: CircularProgressIndicator(),
+      );
+    }
 
+<<<<<<< HEAD
             Image.asset(
               //Zona avatar chat
               'assets/chat/lumi.png',
@@ -478,6 +836,89 @@ class _ChatScreenState extends State<ChatScreen> {
           ],
         ),
       ),
+=======
+    return AspectRatio(
+      aspectRatio: _controller!.value.aspectRatio,
+      child: VideoPlayer(_controller!),
+>>>>>>> 120e714b8c4babfb054dc37e9de42630113fe1dc
     );
   }
+}
+
+class VideoLumi extends StatefulWidget {
+  const VideoLumi({super.key});
+
+  @override
+  State<VideoLumi> createState() => _VideoLumiState();
+}
+
+class _VideoLumiState extends State<VideoLumi> {
+  VideoPlayerController? _controller;
+  bool mostrarImagen = true;
+  @override
+  void initState() {
+    super.initState();
+    _initVideo();
+  }
+
+  void reproducirAnimacion() async {
+  if (_controller == null || !_controller!.value.isInitialized) return;
+
+  setState(() {
+    mostrarImagen = false;
+  });
+
+  await _controller!.seekTo(Duration.zero);
+  await _controller!.play();
+
+  final duracion = _controller!.value.duration;
+
+  await Future.delayed(duracion);
+
+  await _controller!.pause();
+
+  if (mounted) {
+    setState(() {
+      mostrarImagen = true;
+    });
+  }
+}
+
+  Future<void> _initVideo() async {
+    _controller = VideoPlayerController.asset(
+      "assets/chat/chat-hablando.mp4",
+    );
+
+    await _controller!.initialize();
+    await _controller!.setLooping(true); // 👈 se cicla
+    await _controller!.pause();// 👈 inicia automático
+    await _controller!.setVolume(0);
+    
+    if (mounted) setState(() {});
+  }
+
+  @override
+  void dispose() {
+    _controller?.dispose();
+    super.dispose();
+  }
+
+  @override
+Widget build(BuildContext context) {
+  if (mostrarImagen) {
+    return Image.asset(
+      "assets/chat/lumi.png",
+      fit: BoxFit.cover,
+    );
+  }
+
+  if (_controller == null || !_controller!.value.isInitialized) {
+    return const Center(child: CircularProgressIndicator());
+  }
+
+  return AspectRatio(
+    aspectRatio: _controller!.value.aspectRatio,
+    child: VideoPlayer(_controller!),
+  );
+}
 }

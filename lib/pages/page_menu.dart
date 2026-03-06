@@ -317,12 +317,12 @@ Future<bool> _mostrarConfirmacionSiguiente(BuildContext context) async {
       appBar: AppBar(
         toolbarHeight: 110,
         elevation: 0,
-        leadingWidth: 80,
+        leadingWidth: 100,
         backgroundColor: const Color(0xFFE6F0D5),
         leading: Padding(
           padding: const EdgeInsets.all(5.0),
           child: Image.asset(
-      'assets/logo_inter/logo.png',
+      'assets/logo_inter/logo-interfaces.png',
       width: 70,
       height: 70,
       fit: BoxFit.contain,
@@ -682,40 +682,42 @@ Future<bool> _mostrarConfirmacionSiguiente(BuildContext context) async {
           // BOTÓN FLOTANTE FIJO
           // ===============================
           Positioned(
-            right: 20,
-            top: MediaQuery.of(context).size.height / 2 + 110,
-            child: GestureDetector(
-              onTap: () async {
-                await showLoading(context, seconds: 3);
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                  builder: (context) => ChatScreen(usuarioId: widget.usuarioId),
-                  )     ,
-                  );
-                },
-                  child: Container(
-                    width: 50,
-                    height: 50,
-                    decoration: BoxDecoration(
-                      color: const Color.fromARGB(255, 230, 212, 255), // morado que ya usas
-                      shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black26,
-                          blurRadius: 6,
-                          offset: Offset(0, 3),
-                        ),
-                      ],
-                    ),
-                    child: const Icon(
-                      Icons.chat_bubble_rounded,
-                      color: Colors.white,
-                      size: 28,
-                      ),
-              ),
-            ),
+  right: 20,
+  top: MediaQuery.of(context).size.height / 2 + 110,
+  child: GestureDetector(
+    onTap: () async {
+      await showLoading(context, seconds: 3);
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => ChatScreen(usuarioId: widget.usuarioId),
+        ),
+      );
+    },
+    child: Container(
+      width: 60,
+      height: 60,
+      decoration: BoxDecoration(
+        color: Color.fromARGB(255, 255, 252, 247), // 👈 fondo blanco
+        shape: BoxShape.circle,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black26,
+            blurRadius: 8,
+            offset: Offset(0, 4),
           ),
+        ],
+      ),
+      child: Padding(
+       padding: EdgeInsets.zero,
+        child: Image.asset(
+          'assets/chat/lumi.png', 
+          fit: BoxFit.cover,
+        ),
+      ),
+    ),
+  ),
+),
         ],
       ),
     );

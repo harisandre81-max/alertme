@@ -92,6 +92,7 @@ Future _createDB(Database db, int version) async {
     'telefono': '555555555',
     'email': 'admin81@gmail.com',
     'password': hashedPassword,
+    'foto': 'assets/avatar.png',
   });
 
   // 🔹 Insertar contacto de prueba
@@ -101,6 +102,7 @@ Future _createDB(Database db, int version) async {
     'edad': 28,
     'telefono': '6751107805',
     'parentesco': 'Profesor',
+    'foto': 'assets/avatar.png',
   });
 }
 
