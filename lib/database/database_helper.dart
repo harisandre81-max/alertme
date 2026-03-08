@@ -1,7 +1,6 @@
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import 'package:bcrypt/bcrypt.dart';
-
 class DatabaseHelper {
   static final DatabaseHelper instance = DatabaseHelper._init();
   static Database? _database;
@@ -65,10 +64,10 @@ Future _createDB(Database db, int version) async {
       telefono TEXT NOT NULL,
       email TEXT NOT NULL UNIQUE,
       password TEXT NOT NULL,
-      foto TEXT DEFAULT 'assets/avatar.png'
+      foto TEXT DEFAULT 'assets/avatar.png',
+      sync INTEGER DEFAULT 0
     )
   ''');
-
   await db.execute('''
     CREATE TABLE contactos (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -78,6 +77,7 @@ Future _createDB(Database db, int version) async {
       telefono TEXT NOT NULL,
       parentesco TEXT NOT NULL,
       foto TEXT DEFAULT 'assets/avatar.png',
+      sync INTEGER DEFAULT 0,
       FOREIGN KEY(usuario_id) REFERENCES usuarios(id) ON DELETE CASCADE
     )
   ''');
@@ -190,5 +190,68 @@ Future<Map<String, dynamic>?> loginWithEmail(String email) async {
   }
 
   return null;
+}
+// 🔹 Ver si hay datos pendientes de usuario
+Future<bool> hayDatosPendientesUsuario(int usuarioId) async {
+  final db = await database;
+  final result = await db.query(
+    'usuarios',
+    where: 'id = ? AND sync = 0',
+    whereArgs: [usuarioId],
+  );
+  return result.isNotEmpty;
+}
+
+// 🔹 Obtener datos pendientes de usuario
+Future<List<Map<String, dynamic>>> getUsuariosPendientes(int usuarioId) async {
+  final db = await database;
+  return await db.query(
+    'usuarios',
+    where: 'id = ? AND sync = 0',
+    whereArgs: [usuarioId],
+  );
+}
+
+// 🔹 Marcar usuario como sincronizado
+Future<void> marcarUsuarioSincronizado(int usuarioId) async {
+  final db = await database;
+  await db.update(
+    'usuarios',
+    {'sync': 1},
+    where: 'id = ?',
+    whereArgs: [usuarioId],
+  );
+}
+
+// 🔹 Ver si hay contactos pendientes
+Future<bool> hayContactosPendientes(int usuarioId) async {
+  final db = await database;
+  final result = await db.query(
+    'contactos',
+    where: 'usuario_id = ? AND sync = 0',
+    whereArgs: [usuarioId],
+  );
+  return result.isNotEmpty;
+}
+
+// 🔹 Obtener contactos pendientes
+Future<List<Map<String, dynamic>>> getContactosPendientes(int usuarioId) async {
+  final db = await database;
+  return await db.query(
+    'contactos',
+    where: 'usuario_id = ? AND sync = 0',
+    whereArgs: [usuarioId],
+  );
+}
+
+// 🔹 Marcar contacto como sincronizado
+Future<void> marcarContactoSincronizado(int contactoId) async {
+  final db = await database;
+  await db.update(
+    'contactos',
+    {'sync': 1},
+    where: 'id = ?',
+    whereArgs: [contactoId],
+  );
 }
 }

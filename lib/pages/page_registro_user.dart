@@ -15,7 +15,24 @@ class RegisterUser extends StatefulWidget {
   @override
   State<RegisterUser> createState() => _RegisterUserState();
 }
+  // Generador de contraseña segura
+String generateSecurePassword() {
+  const letters = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  const numbers = '0123456789';
+  const symbols = '@\$!%*?&._-';
 
+  final rand = DateTime.now().millisecondsSinceEpoch;
+
+  String letter = letters[rand % letters.length];
+  String number = numbers[(rand ~/ 2) % numbers.length];
+  String symbol = symbols[(rand ~/ 3) % symbols.length];
+
+  // Generar 5 caracteres aleatorios de letters + numbers + symbols
+  const allChars = letters + numbers + symbols;
+  final random = List.generate(5, (i) => allChars[(rand + i) % allChars.length]).join();
+
+  return '$letter$number$symbol$random'; // Total: 1+1+1+5 = 8 caracteres
+}
 class _RegisterUserState extends State<RegisterUser> {
     //==================controladores para los campos============
     final TextEditingController nomController = TextEditingController();
@@ -27,7 +44,6 @@ class _RegisterUserState extends State<RegisterUser> {
     final _formKey = GlobalKey<FormState>();
     bool acceptTerms = false;
     String? googlePhoto;
-
 //==================PANTALLA DE CARGA================
     Future<void> showLoading(BuildContext context, {int seconds = 3}) async {
     showDialog(
@@ -40,24 +56,19 @@ class _RegisterUserState extends State<RegisterUser> {
 
     Navigator.of(context).pop(); // cerrar loading
     }
-    Future<void> signInWithGoogle() async {
-
-  final GoogleSignInAccount? user =
-      await GoogleSignIn().signIn();
-
+    // signInWithGoogle simplificado
+Future<void> signInWithGoogle() async {
+  final GoogleSignInAccount? user = await GoogleSignIn().signIn();
   if (user != null) {
-
     setState(() {
-
       nomController.text = user.displayName ?? "";
       emailController.text = user.email;
       googlePhoto = user.photoUrl;
-      passwordController.text = user.id;
-
+      // ✅ Generar contraseña automáticamente
+      String generatedPassword = generateSecurePassword();
+      passwordController.text = generatedPassword;
     });
-
   }
-
 }
   @override
     void dispose() {
@@ -302,6 +313,7 @@ final ImagePicker _picker = ImagePicker();
                             controller: passwordController,
                             keyboardType: TextInputType.visiblePassword,
                             isPassword: true,
+                            enabled: passwordController.text.isEmpty,
                             validator: (value) {
                               if (value == null || value.isEmpty) {
                                 return 'Campo obligatorio';
@@ -400,29 +412,32 @@ final ImagePicker _picker = ImagePicker();
                  googlePhoto ??
                  'assets/avatar.png';
 
-      String hashedPassword = BCrypt.hashpw(
-        passwordController.text,
-        BCrypt.gensalt(),
-      );
+      // Determina la contraseña a guardar
+String passwordToSave = passwordController.text.isNotEmpty
+    ? passwordController.text      // si el usuario escribió manualmente
+    : generateSecurePassword();    // si es registro Google
 
-      final userId = await DatabaseHelper.instance.insertUsuario({
-        'nombre': nomController.text,
-        'edad': int.parse(edadController.text),
-        'direccion': dirController.text,
-        'telefono': telController.text,
-        'email': emailController.text,
-        'password': hashedPassword,
-        'foto': fotoPath,
-      });
-
+String hashedPassword = BCrypt.hashpw(
+  passwordController.text,
+  BCrypt.gensalt(),
+);
+final userId = await DatabaseHelper.instance.insertUsuario({
+  'nombre': nomController.text,
+  'edad': int.parse(edadController.text),
+  'direccion': dirController.text,
+  'telefono': telController.text,
+  'email': emailController.text,
+  'password': hashedPassword,   // ✅ guardamos hash
+  'foto': _profileImage?.path ?? googlePhoto ?? 'assets/avatar.png',
+});
       // ✔️ MENSAJE DE ÉXITO
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Usuario creado correctamente'),
-          backgroundColor: Colors.green,
-        ),
-      );
-
+  const SnackBar(
+    content: Text('Usuario creado correctamente'),
+    backgroundColor: Colors.green,
+    duration: Duration(seconds: 2),
+  ),
+);
       final prefs = await SharedPreferences.getInstance();
       await prefs.setInt('userId', userId);
 
@@ -566,6 +581,7 @@ class _InputBox extends StatefulWidget {
   final String? Function(String?)? validator;
   final TextInputType keyboardType;
   final bool isPassword;
+  final bool enabled;
 
   const _InputBox({
     required this.text,
@@ -573,6 +589,7 @@ class _InputBox extends StatefulWidget {
     this.validator,
     this.keyboardType = TextInputType.text,
     this.isPassword = false,
+    this.enabled = true,
   });
    @override
   State<_InputBox> createState() => _InputBoxState();

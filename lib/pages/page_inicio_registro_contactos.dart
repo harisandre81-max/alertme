@@ -6,6 +6,7 @@ import 'page_carga.dart';
 import 'package:alertme/database/database_helper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:telephony/telephony.dart';
+import 'package:url_launcher/url_launcher.dart';
 class Contact extends StatefulWidget {
   final int usuarioId;
 
@@ -140,7 +141,7 @@ final ImagePicker _picker = ImagePicker();
     });
   }
 }
-
+  
   void mostrarConfirmacionContacto(String nombre) {
   showDialog(
     context: context,
@@ -173,16 +174,30 @@ final ImagePicker _picker = ImagePicker();
   Future<void> pedirPermisosSMS() async {
   bool? permissionsGranted = await telephony.requestSmsPermissions;
   }
+  
+Future<void> enviarSMS(String telefono, String nombreContacto,String nombreUsuarioRegistrador,) async {
+    String mensaje = "Has sido registrado como contacto de emergencia en AlertMe por $nombreUsuarioRegistrador.";
 
-  Future<void> enviarSMS(String telefono, String nombreContacto) async {
-
-  String mensaje =
-      "Has sido registrado como contacto de emergencia en AlertMe.";
-
-  await telephony.sendSms(
-    to: telefono,
-    message: mensaje,
-  );
+  if (Platform.isAndroid) {
+    await pedirPermisosSMS();
+    // Solo Android usa telephony
+    try {
+      await telephony.sendSms(
+        to: telefono,
+        message: mensaje,
+      );
+    } catch (e) {
+      print("Error enviando SMS en Android: $e");
+    }
+  } else if (Platform.isIOS) {
+    // iOS: abrir app de SMS con url_launcher
+    final smsUrl = Uri.parse('sms:$telefono?body=${Uri.encodeComponent(mensaje)}');
+    if (await canLaunchUrl(smsUrl)) {
+      await launchUrl(smsUrl);
+    } else {
+      print("No se pudo abrir la app de SMS en iOS");
+    }
+  }
 }
   @override
     void dispose() {
@@ -488,7 +503,14 @@ const SizedBox(height: 30),
       'foto': _profileImage?.path,
     });
 
-    await enviarSMS(telController.text, nomController.text);
+    var usuario = await DatabaseHelper.instance.loginById(widget.usuarioId);
+    String nombreUsuario = usuario?['nombre'] ?? "Usuario";
+
+    await enviarSMS(
+      telController.text,
+      nomController.text,
+      nombreUsuario,
+    );
 
     mostrarConfirmacionContacto(nomController.text);
 

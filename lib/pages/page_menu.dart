@@ -9,7 +9,12 @@ import 'package:location/location.dart';
 import 'package:alertme/database/database_helper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter/services.dart';
-
+import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+Future<bool> hayInternet() async {
+  var result = await Connectivity().checkConnectivity();
+  return result == ConnectivityResult.mobile || result == ConnectivityResult.wifi;
+}
 //================funcion para odenar los contactos por prioridad================
   int obtenerPrioridad(String parentesco) {
   switch (parentesco) {
@@ -181,8 +186,91 @@ class _MenuUIState extends State<MenuUI> {
         );
       }
     });
+    _checarSincronizacion();
+  }
+  void _checarSincronizacion() async {
+  bool conectado = await hayInternet();
+  bool hayUsuariosPendientes = await DatabaseHelper.instance.hayDatosPendientesUsuario(widget.usuarioId);
+  bool hayContactosPendientes = await DatabaseHelper.instance.hayContactosPendientes(widget.usuarioId);
+
+  if (conectado && (hayUsuariosPendientes || hayContactosPendientes)) {
+    _mostrarPopupSincronizacion();
+  }
+}
+
+void _mostrarPopupSincronizacion() {
+  showDialog(
+    context: context,
+    builder: (_) => AlertDialog(
+      title: const Text("🌐 Sincronizar cuenta"),
+      content: const Text("¿Quieres sincronizar tus datos con Firebase para acceder desde cualquier dispositivo?"),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text("No"),
+        ),
+        ElevatedButton(
+          onPressed: () async {
+            Navigator.pop(context);
+            await _subirDatosAFirebase();
+          },
+          child: const Text("Sí"),
+        ),
+      ],
+    ),
+  );
+}
+  Future<void> _subirDatosAFirebase() async {
+  // 🔹 Usuarios
+  final usuarios = await DatabaseHelper.instance.getUsuariosPendientes(widget.usuarioId);
+print("Usuarios pendientes: $usuarios"); // 🔹 Esto te dice qué hay en SQLite
+  for (var usuario in usuarios) {
+    print("Subiendo usuario: $usuario");
+    try {
+    await FirebaseFirestore.instance
+        .collection('usuarios')
+        .doc(widget.usuarioId.toString())
+        .set({
+          'nombre': usuario['nombre'],
+          'edad': usuario['edad'],
+          'direccion': usuario['direccion'],
+          'telefono': usuario['telefono'],
+          'email': usuario['email'],
+          'foto': usuario['foto'],
+        }, SetOptions(merge: true));
+        } catch (e) {
+    print("Error subiendo usuario: $e");
+  }
+    await DatabaseHelper.instance.marcarUsuarioSincronizado(widget.usuarioId);
   }
 
+  // 🔹 Contactos
+  final contactos = await DatabaseHelper.instance.getContactosPendientes(widget.usuarioId);
+  for (var contacto in contactos) {
+    print("Subiendo contacto: $contacto");
+    try {
+    await FirebaseFirestore.instance
+        .collection('usuarios')
+        .doc(widget.usuarioId.toString())
+        .collection('contactos')
+        .doc(contacto['id'].toString())
+        .set({
+          'nombre': contacto['nombre'],
+          'edad': contacto['edad'],
+          'telefono': contacto['telefono'],
+          'parentesco': contacto['parentesco'],
+          'foto': contacto['foto'],
+        }, SetOptions(merge: true));
+      } catch (e) {
+    print("Error subiendo contacto: $e");
+  }
+    await DatabaseHelper.instance.marcarContactoSincronizado(contacto['id']);
+  }
+
+  ScaffoldMessenger.of(context).showSnackBar(
+    const SnackBar(content: Text("✅ Datos sincronizados con éxito")),
+  );
+}
   void _activarSOSDesdeBoton() async {
     await mostrarubicacion(widget.usuarioId);
   }
