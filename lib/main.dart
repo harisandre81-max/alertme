@@ -6,11 +6,11 @@ import 'package:flutter/material.dart';
 import 'pages/page_inicio_de_sesion.dart';
 import 'pages/page_user_data.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
+import 'package:firebase_core/firebase_core.dart';
 // Raíz de la interfaz
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
+  await Firebase.initializeApp();
   final prefs = await SharedPreferences.getInstance();
   final userId = prefs.getInt('userId');
 

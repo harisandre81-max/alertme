@@ -54,7 +54,7 @@ class EmergencyPopup extends StatefulWidget {
 }
 //===============WIDGET PARA EL POPU==================
 class _EmergencyPopupState extends State<EmergencyPopup> {
-  int seconds = 3;
+  int seconds = 5;
   Timer? _timer;
 
   @override
@@ -413,7 +413,11 @@ Future<bool> _mostrarConfirmacionSiguiente(BuildContext context) async {
 //=====================================================
                 const SectionHeader(
                 title: "Instituciones de apoyo",
-                icon: Icons.local_hospital,
+                icon: Icons.apartment,
+                /*Icons.business
+Icons.account_balance
+Icons.location_city
+Icons.domain */
                 ),  
                 const SizedBox(height: 15), 
                 Column(
@@ -560,8 +564,64 @@ Future<bool> _mostrarConfirmacionSiguiente(BuildContext context) async {
 //=================================================================================================================
                   ],
                 ),
+                const SizedBox(height: 90),
 
-                const SizedBox(height: 100), // espacio para el menú inferior
+const SectionHeader(
+  title: "Acerca de nosotros",
+  icon: Icons.info,
+),
+
+const SizedBox(height: 15),
+
+GestureDetector(
+  onTap: () async {
+    final Uri url = Uri.parse(
+      "https://www.instagram.com/equipoacademico_sjic?igsh=ZWZrZzFhMHBlY3Bn&utm_source=qr",
+    );
+
+    await launchUrl(
+      url,
+      mode: LaunchMode.externalApplication,
+    );
+  },
+  child: Container(
+    width: MediaQuery.of(context).size.width * 0.9,
+    padding: const EdgeInsets.all(20),
+    decoration: BoxDecoration(
+      color: const Color(0xFFE6F0D5),
+      borderRadius: BorderRadius.circular(16),
+    ),
+    child: Row(
+      children: [
+
+        const Icon(
+          Icons.camera_alt,
+          color: Colors.deepPurple,
+          size: 30,
+        ),
+
+        const SizedBox(width: 20),
+
+        const Expanded(
+          child: Text(
+            "Síguenos en Instagram",
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
+              color: Colors.deepPurple,
+            ),
+          ),
+        ),
+
+        const Icon(
+          Icons.open_in_new,
+          color: Colors.deepPurple,
+        ),
+      ],
+    ),
+  ),
+),
+                const SizedBox(height: 70), // espacio para el menú inferior
               ],
             ),
           ),
@@ -592,47 +652,10 @@ Future<bool> _mostrarConfirmacionSiguiente(BuildContext context) async {
                 final contactos = await DatabaseHelper.instance
                 .getContactos(widget.usuarioId);
                 if (contactos.isEmpty) {
-                showDialog(
-                  context: context,
-                  builder: (_) => AlertDialog(
-                    backgroundColor: const Color.fromARGB(255, 255, 229, 233), 
-                    title: Row(
-                      children: const [
-                        Icon(
-                          Icons.warning_amber_rounded,
-                          color: Colors.red,
-                        ),
-                        SizedBox(width: 8),
-                        Text("Contacto necesario"),
-                      ],
-                    ),
-                    content: const Text(
-                      "Para usar el botón SOS necesitas registrar al menos un contacto de emergencia.",
-                    ),
-                    actions: [
-                      TextButton.icon(
-                        onPressed: () => Navigator.pop(context),
-                        icon: const Icon(Icons.schedule),
-                        label: const Text("Más tarde"),
-                      ),
-                      ElevatedButton.icon(
-                        onPressed: () {
-                          Navigator.pop(context);
-                          Navigator.pushNamed(
-                            context,
-                            '/contact1',
-                            arguments: widget.usuarioId,
-                          );
-                        },
-                        icon: const Icon(Icons.person_add),
-                        label: const Text("Registrar ahora"),
-                      ),
-                              ],
-                            ),
-                          );
-                          return;
-                        }
-
+  final uri = Uri.parse('tel:911');
+  await launchUrl(uri, mode: LaunchMode.externalApplication);
+  return;
+}
                         // ✅ Si sí tiene contactos
                         bool permisosOk = await checkLocation();
 
@@ -1080,21 +1103,28 @@ class _EditContactPageState extends State<EditContactPage> {
   }
 
   Future<void> _updateContact() async {
+
+  int edad = int.tryParse(ageController.text) ?? 0;
+
+  if (edad < 18) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text("El contacto debe ser mayor de 18 años"),
+      ),
+    );
+    return;
+  }
+
   final fotoPath = _profileImage?.path ?? 'assets/avatar.png';
 
   await DatabaseHelper.instance.updateContact(widget.contactId, {
     'nombre': nomController.text,
-    'edad': int.parse(ageController.text), // 👈 IMPORTANTE
+    'edad': edad,
     'parentesco': parentController.text,
     'telefono': telController.text,
     'foto': fotoPath,
   });
 
-  ScaffoldMessenger.of(context).showSnackBar(
-    const SnackBar(content: Text('Contacto actualizado correctamente')),
-  );
-
-  // ✅ Devolver un valor para que la pantalla anterior sepa que hubo cambios
   Navigator.pop(context, true);
 }
 

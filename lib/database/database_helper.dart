@@ -176,5 +176,19 @@ Future<int> updateContact(int id, Map<String, dynamic> values) async {
       whereArgs: [id],
     );
   }
+Future<Map<String, dynamic>?> loginWithEmail(String email) async {
+  final db = await instance.database;
 
+  final result = await db.query(
+    'usuarios',
+    where: 'email = ?',
+    whereArgs: [email],
+  );
+
+  if (result.isNotEmpty) {
+    return result.first;
+  }
+
+  return null;
+}
 }

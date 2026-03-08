@@ -41,6 +41,11 @@ dependencies:
   font_awesome_flutter: ^10.7.0
   tutorial_coach_mark: 1.3.3
   video_player: ^2.8.2
+  telephony: ^0.2.0
+  google_sign_in: ^6.2.1
+  firebase_core: ^2.24.0
+  firebase_auth: ^4.8.0
+  cloud_firestore: ^4.9.0
 
   flutter:
     sdk: flutter
@@ -81,6 +86,8 @@ flutter:
     - assets/chat/chat-hablando.mp4
     - assets/chat/respira.mp4
     - assets/chat/lumi.png
+    - assets/avatar.png
+    - assets/google.png
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
   # the material Icons class.

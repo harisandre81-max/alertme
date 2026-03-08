@@ -45,30 +45,26 @@ ListView(
     const SizedBox(height: 40),
     _buildBloque(
       "Bienvenido/a a AlertMe.",
-      "Al descargar, instalar, registrarte o utilizar la Aplicación, aceptas de manera expresa y voluntaria los presentes Términos y Condiciones de Uso. Si no estás de acuerdo con ellos, te recomendamos no utilizar la Aplicación.",
+      "Al descargar, instalar, registrarte o utilizar Alertme, aceptas de manera expresa y voluntaria los presentes Términos y Condiciones de Uso. Si no estás de acuerdo con ellos, te recomendamos no utilizar la Aplicación.",
     ),
 
     _buildBloque(
   "1. OBJETIVO DE LA APLICACIÓN",
   '''
-La Aplicación tiene como finalidad contribuir a la prevención, orientación y reporte de situaciones de violencia o agresión, mediante:
+Alertme tiene como finalidad contribuir a la prevención, orientación y reporte de situaciones de violencia o agresión, mediante:
 
 • El envío de mensajes de alerta a los contactos registrados por el usuario al presionar un botón de emergencia.
 
-• El uso de un chatbot informativo que brinda consejos generales sobre cómo actuar ante situaciones de violencia o acoso.
-
-• La visualización de infografías informativas relacionadas con la violencia, el acoso y la prevención.
-
 • El acceso a números telefónicos de instituciones locales y organismos de apoyo especializados en casos de violencia.
 
-La Aplicación no sustituye los servicios de emergencia, autoridades policiales, asesoría legal ni atención médica profesional.
+Alertme no sustituye los servicios de emergencia, autoridades policiales, asesoría legal ni atención médica profesional.
   ''',
 ),
 
     _buildBloque(
   "2. USUARIOS",
   '''
-La Aplicación está dirigida a personas que deseen contar con una herramienta de apoyo y prevención ante situaciones de riesgo. Al utilizarla, declaras que:
+Alertme está dirigida a personas que desen contar con una herramienta de apoyo y prevención ante situaciones de riesgo. Al utilizarla, declaras que:
 
 • Proporcionaras información veraz, actualizada y completa.
 
@@ -94,7 +90,7 @@ Al autorizar el registro del menor, el tutor acepta estas responsabilidades.
 _buildBloque(
   "4. PERMISOS DE LA APLICACIÓN",
   '''
-Para el correcto funcionamiento de la Aplicación, el usuario autoriza de forma expresa el acceso a:
+Para el correcto funcionamiento de Alertme, el usuario autoriza de forma expresa el acceso a:
 
 • Ubicación del dispositivo, con el fin de compartirla en los mensajes de alerta enviados a los contactos registrados.
 
@@ -112,13 +108,13 @@ El botón de alerta está diseñado exclusivamente para situaciones reales de ri
 
 • Entender que el envío de mensajes depende de factores externos como la conectividad, la señal móvil y la disponibilidad del servicio de mensajería.
 
-• La Aplicación no garantiza que los contactos respondan ni que la ayuda llegue de forma inmediata.
+• Alertme no garantiza que los contactos respondan ni que la ayuda llegue de forma inmediata.
   ''',
 ),
 _buildBloque(
   "6. CHATBOT E INFORMACIÓN PROPORCIONADA",
   '''
-El chatbot de la Aplicación:
+El chatbot de Alertme:
 
 • Ofrece orientación general e informativa.
 
@@ -140,7 +136,7 @@ Aunque se procura que la información sea actualizada y confiable, no se garanti
 _buildBloque(
   "8. RESPONSABILIDAD Y LIMITACIÓN DE GARANTÍAS",
   '''
-El uso de la Aplicación se realiza bajo tu propio riesgo. AlertMe no será responsable por:
+El uso de Alertme se realiza bajo tu propio riesgo. AlertMe no será responsable por:
 
 • Daños directos o indirectos derivados del uso o la imposibilidad de uso de la Aplicación.
 
@@ -156,7 +152,7 @@ El tratamiento de los datos personales se realizará conforme a lo dispuesto por
 
 Los datos personales proporcionados por el usuario serán utilizados únicamente para las finalidades descritas en estos Términos y condiciones.
 
-La aplicación implementa medidas de seguridad administrativas, técnicas y físicas para proteger la información contra daño, pérdida, alteración, destrucción o acceso no autorizado. Entre dichas medidas se incluye el uso de mecanismos de cifrado (encriptación) para el resguardo de la información, con el fin de evitar que terceros no autorizados puedan acceder a los datos.
+Alertme implementa medidas de seguridad administrativas, técnicas y físicas para proteger la información contra daño, pérdida, alteración, destrucción o acceso no autorizado. Entre dichas medidas se incluye el uso de mecanismos de cifrado (encriptación) para el resguardo de la información, con el fin de evitar que terceros no autorizados puedan acceder a los datos.
   ''',
 ),
 
@@ -174,8 +170,6 @@ _buildBloque(
 Estos Términos se rigen por las leyes de los Estados Unidos Mexicanos, incluyendo, de manera enunciativa más no limitativa, el Código Civil Federal, el Código de Comercio, la Ley Federal de Protección de Datos Personales en Posesión de los Particulares y demás disposiciones aplicables. Cualquier controversia será sometida a los tribunales competentes en Durango, México.
   ''',
 ),
-
-_buildBloqueInstagram("12. REDES SOCIALES"),
     const SizedBox(height: 40),
   ],
 ),
@@ -229,84 +223,10 @@ Widget _buildBloque(String titulo, String contenido) {
         Text(
   contenido,
   style: const TextStyle(
-    fontSize: 16,
+    fontSize: 14,
     color: Colors.deepPurple, // 👈 todo morado
   ),
 ),
-      ],
-    ),
-  );
-}
-Widget _buildBloqueInstagram(String titulo) {
-  return Container(
-    margin: const EdgeInsets.only(bottom: 20),
-    padding: const EdgeInsets.all(16),
-    decoration: BoxDecoration(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(16),
-      boxShadow: const [
-        BoxShadow(
-          color: Colors.black12,
-          blurRadius: 6,
-          offset: Offset(0, 3),
-        )
-      ],
-    ),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          titulo,
-          style: const TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-            color: Colors.deepPurple,
-          ),
-        ),
-        const SizedBox(height: 15),
-
-        const Text(
-          'Síguenos en nuestras redes sociales:',
-          style: TextStyle(fontSize: 14, color: Colors.deepPurple),
-        ),
-
-        const SizedBox(height: 15),
-
-        Row(
-          children: [
-            GestureDetector(
-              onTap: () async {
-                final Uri url = Uri.parse(
-                    'https://www.instagram.com/flashgitz/?hl=es');
-
-                if (!await launchUrl(
-                  url,
-                  mode: LaunchMode.externalApplication,
-                )) {
-                  print('No se pudo abrir Instagram');
-                }
-              },
-              child: Row(
-                children: const [
-                  FaIcon(
-                    FontAwesomeIcons.instagram,
-                    color: Colors.pink,
-                    size: 26,
-                  ),
-                  SizedBox(width: 10),
-                  Text(
-                    '@flashgitz',
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.deepPurple,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
       ],
     ),
   );

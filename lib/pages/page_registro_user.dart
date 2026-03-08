@@ -8,7 +8,7 @@ import 'package:alertme/database/database_helper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:bcrypt/bcrypt.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
+import 'package:google_sign_in/google_sign_in.dart';
 class RegisterUser extends StatefulWidget {
   const RegisterUser({super.key});
 
@@ -24,9 +24,9 @@ class _RegisterUserState extends State<RegisterUser> {
     final TextEditingController emailController = TextEditingController();
     final TextEditingController passwordController = TextEditingController();
     final TextEditingController dirController = TextEditingController();
-
     final _formKey = GlobalKey<FormState>();
     bool acceptTerms = false;
+    String? googlePhoto;
 
 //==================PANTALLA DE CARGA================
     Future<void> showLoading(BuildContext context, {int seconds = 3}) async {
@@ -40,8 +40,25 @@ class _RegisterUserState extends State<RegisterUser> {
 
     Navigator.of(context).pop(); // cerrar loading
     }
+    Future<void> signInWithGoogle() async {
 
+  final GoogleSignInAccount? user =
+      await GoogleSignIn().signIn();
 
+  if (user != null) {
+
+    setState(() {
+
+      nomController.text = user.displayName ?? "";
+      emailController.text = user.email;
+      googlePhoto = user.photoUrl;
+      passwordController.text = user.id;
+
+    });
+
+  }
+
+}
   @override
     void dispose() {
       nomController.dispose();
@@ -70,7 +87,38 @@ final ImagePicker _picker = ImagePicker();
     });
   }
 }
-          
+  void confirmarGoogle() {
+  showDialog(
+    context: context,
+    builder: (context) {
+      return AlertDialog(
+        title: const Text("Registro con Google"),
+        content: const Text(
+          "¿Quieres registrarte con tu cuenta de Google?"
+        ),
+        actions: [
+
+          TextButton(
+            child: const Text("No"),
+            onPressed: () {
+              Navigator.pop(context);
+            },
+          ),
+
+          ElevatedButton(
+            child: const Text("Sí"),
+            onPressed: () {
+              Navigator.pop(context);
+              signInWithGoogle();
+            },
+          ),
+
+        ],
+      );
+    },
+  );
+
+}
 
   @override
   Widget build(BuildContext context) {
@@ -143,8 +191,10 @@ final ImagePicker _picker = ImagePicker();
                             radius: 60,
                             backgroundColor: const Color.fromARGB(136, 255, 182, 98),
                             backgroundImage: _profileImage != null
-                                ? FileImage(_profileImage!)
-                                : const AssetImage('assets/avatar.png') as ImageProvider,
+    ? FileImage(_profileImage!)
+    : googlePhoto != null
+        ? NetworkImage(googlePhoto!)
+        : const AssetImage('assets/avatar.png') as ImageProvider,
                           ),
                           GestureDetector(
                             onTap: () {
@@ -214,7 +264,7 @@ final ImagePicker _picker = ImagePicker();
                           const SizedBox(height: 20),
 
                           _InputBox(
-                            text: 'Telefono',
+                            text: 'Teléfono',
                             controller: telController,
                             keyboardType: TextInputType.phone,
                             validator: (value) {
@@ -333,60 +383,80 @@ final ImagePicker _picker = ImagePicker();
                     // SIGUIENTE
                           GestureDetector(
                             onTap: () async {
-                            if (_formKey.currentState!.validate()) {
+  if (_formKey.currentState!.validate()) {
 
-                              if (!acceptTerms) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text('Debes aceptar los términos y condiciones'),
-                                  ),
-                                );
-                                return;
-                              }
-    
+    if (!acceptTerms) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Debes aceptar los términos y condiciones'),
+        ),
+      );
+      return;
+    }
 
-                              try {
-                                final fotoPath = _profileImage?.path ?? 'assets/avatar.png';
-                                // 🔹 GUARDAR USUARIO EN SQLITE
-                                String hashedPassword = BCrypt.hashpw(
-                                passwordController.text,
-                                BCrypt.gensalt(),
-                              );
+    try {
 
-                                final userId = await DatabaseHelper.instance.insertUsuario({
-                                  'nombre': nomController.text,
-                                  'edad': int.parse(edadController.text),
-                                  'direccion': dirController.text,
-                                  'telefono': telController.text,
-                                  'email': emailController.text,
-                                  'password': hashedPassword,
-                                  'foto': fotoPath, // nunca será null
-                                });
+      final fotoPath = _profileImage?.path ??
+                 googlePhoto ??
+                 'assets/avatar.png';
 
-                                // 🔹 GUARDAR SESIÓN AUTOMÁTICAMENTE
-                                final prefs = await SharedPreferences.getInstance();
-                                await prefs.setInt('userId', userId);
+      String hashedPassword = BCrypt.hashpw(
+        passwordController.text,
+        BCrypt.gensalt(),
+      );
 
-                                await showLoading(context, seconds: 2); //pantalla de carga
+      final userId = await DatabaseHelper.instance.insertUsuario({
+        'nombre': nomController.text,
+        'edad': int.parse(edadController.text),
+        'direccion': dirController.text,
+        'telefono': telController.text,
+        'email': emailController.text,
+        'password': hashedPassword,
+        'foto': fotoPath,
+      });
 
-                                // 🔹 PASAR EL ID AL REGISTRO DE CONTACTO
-                                Navigator.pushAndRemoveUntil(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (_) => Contact(usuarioId: userId),
-                                  ),
-                                  (route) => false,
-                                );
+      // ✔️ MENSAJE DE ÉXITO
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Usuario creado correctamente'),
+          backgroundColor: Colors.green,
+        ),
+      );
 
-                              } catch (e) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text('Error al registrar usuario: $e'),
-                                  ),
-                                );
-                              }
-                            }
-                          },
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setInt('userId', userId);
+
+      await showLoading(context, seconds: 2);
+
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(
+          builder: (_) => Contact(usuarioId: userId),
+        ),
+        (route) => false,
+      );
+
+    } catch (e) {
+
+      // ⚠️ ERROR DE CORREO DUPLICADO
+      if (e.toString().contains('UNIQUE constraint failed')) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("Ese correo ya está registrado"),
+            backgroundColor: Colors.red,
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error al registrar usuario: $e'),
+          ),
+        );
+      }
+
+    }
+  }
+},
                             child: Container(
                               height: 56, 
                               width: double.infinity,
@@ -417,8 +487,40 @@ final ImagePicker _picker = ImagePicker();
                               ),
                             ),
                           ),
-                          const SizedBox(height: 40),
-                          Center( 
+                           const SizedBox(height: 40),
+                 Row(
+  children: const [
+    Expanded(child: Divider()),
+    Padding(
+      padding: EdgeInsets.symmetric(horizontal: 10),
+      child: Text("o",style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.deepPurple,
+                                ),),
+    ),
+    Expanded(child: Divider()),
+  ],
+),
+const SizedBox(height: 10),
+Center(
+  child: SizedBox(
+    width: 250,
+    child: ElevatedButton.icon(
+      icon: Image.asset(
+        'assets/google.png',
+        height: 24,
+      ),
+      label: const Text("Continuar con Google"),
+      onPressed: () async {
+        await signInWithGoogle();
+      },
+    ),
+  ),
+),
+const SizedBox(height: 40),
+
+                           Center( 
                             child: GestureDetector(
                             onTap: () async {
                               await showLoading(context, seconds: 3);
@@ -434,14 +536,13 @@ final ImagePicker _picker = ImagePicker();
                             child: Text(
                                 '¿Ya tienes una cuenta?',
                                 style: TextStyle(
-                                  fontSize: 16,
+                                  fontSize: 18,
                                   fontWeight: FontWeight.w600,
                                   color: Colors.deepPurple,
                                 ),
-                              ),
-
+                            ),
                           ),
-                           ),
+                        ), 
                   ],
                 ),
               ),

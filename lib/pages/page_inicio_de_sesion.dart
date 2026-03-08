@@ -4,7 +4,7 @@ import 'page_registro_user.dart';
 import 'page_carga.dart';
 import 'package:alertme/database/database_helper.dart';
 import 'package:shared_preferences/shared_preferences.dart'; //sesion abierta
-
+import 'package:google_sign_in/google_sign_in.dart';
 class InicioDeSesion extends StatefulWidget {
   const InicioDeSesion({super.key});
 
@@ -35,7 +35,53 @@ class InicioDeSesionState extends State<InicioDeSesion> {
   await prefs.setBool('isLogged', true);
   await prefs.setInt('userId', userId);
   }
+  Future signInWithGoogle() async {
 
+  try {
+
+    final GoogleSignInAccount? googleUser =
+        await GoogleSignIn().signIn();
+
+    if (googleUser == null) return;
+
+    final email = googleUser.email;
+
+    final user =
+        await DatabaseHelper.instance.loginWithEmail(email);
+
+    if (user != null) {
+
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setInt('userId', user['id']);
+
+      await showLoading(context, seconds: 2);
+
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(
+          builder: (_) => MenuUI(usuarioId: user['id']),
+        ),
+        (route) => false,
+      );
+
+    } else {
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+              "Este correo no está registrado en AlertMe"),
+        ),
+      );
+
+    }
+
+  } catch (e) {
+
+    print("Error login Google: $e");
+
+  }
+
+}
   //limpia los campos
   @override
     void dispose() {
@@ -207,9 +253,39 @@ class InicioDeSesionState extends State<InicioDeSesion> {
                               ),
 
                             ),
-                          ),
-                       
-                           const SizedBox(height: 40),
+                          ),  
+                          const SizedBox(height: 40),
+                 Row(
+  children: const [
+    Expanded(child: Divider()),
+    Padding(
+      padding: EdgeInsets.symmetric(horizontal: 10),
+      child: Text("o",style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.deepPurple,
+                                ),),
+    ),
+    Expanded(child: Divider()),
+  ],
+),
+const SizedBox(height: 10),
+                 Center(
+  child: SizedBox(
+    width: 250,
+    child: ElevatedButton.icon(
+      icon: Image.asset(
+        'assets/google.png',
+        height: 24,
+      ),
+      label: const Text("Continuar con Google"),
+      onPressed: () async {
+        await signInWithGoogle();
+      },
+    ),
+  ),
+),
+const SizedBox(height: 40),
 
                            Center( 
                             child: GestureDetector(
@@ -233,12 +309,12 @@ class InicioDeSesionState extends State<InicioDeSesion> {
                                 ),
                             ),
                           ),
-                        ),             
+                        ),          
                       ],
                     ),
                   ),
                 ), 
-                 const SizedBox(height: 20),
+const SizedBox(height: 70),
                  ],
               ),
              ),

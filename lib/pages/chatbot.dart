@@ -322,7 +322,7 @@ _controller.clear();
   "estoy ansiosa"
 ])) {
   esSituacionFuerte = true;
-
+  telefonoAyuda = "6751035059";
   return "Vamos a calmarnos juntos. Puedo guiarte con un ejercicio de respiración.";
 }
 //============respuesta para cerrar el este de opciones====

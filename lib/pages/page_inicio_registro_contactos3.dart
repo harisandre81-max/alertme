@@ -4,6 +4,7 @@ import 'page_menu.dart';
 import 'page_carga.dart';
 import 'package:alertme/database/database_helper.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:telephony/telephony.dart';
 class Contact3 extends StatefulWidget {
   final int usuarioId;
 
@@ -16,14 +17,14 @@ class Contact3 extends StatefulWidget {
   State<Contact3> createState() => _Contact3State();
 }
 
-
 class _Contact3State extends State<Contact3> {
    final TextEditingController nomController = TextEditingController();
-   final TextEditingController edadController = TextEditingController();
-   final TextEditingController telController = TextEditingController();
-   final TextEditingController parentezcoController = TextEditingController();
-   final _formKey = GlobalKey<FormState>();
-
+    final TextEditingController edadController = TextEditingController();
+    final TextEditingController telController = TextEditingController();
+    final TextEditingController parentezcoController = TextEditingController();
+    final Telephony telephony = Telephony.instance;
+    final _formKey = GlobalKey<FormState>();
+  
   Future<void> showLoading(BuildContext context, {int seconds = 3}) async {
   showDialog(
     context: context,
@@ -33,7 +34,7 @@ class _Contact3State extends State<Contact3> {
 
   await Future.delayed(Duration(seconds: seconds));
   Navigator.of(context).pop();
-  }
+}
 String? parentescoSeleccionado;
 
 final List<String> opcionesParentesco = [
@@ -121,7 +122,6 @@ void mostrarDialogoContactos() {
     },
   );
 }
-
   File? _profileImage;
 final ImagePicker _picker = ImagePicker();
 
@@ -140,6 +140,57 @@ final ImagePicker _picker = ImagePicker();
   }
 }
 
+  void mostrarConfirmacionContacto(String nombre) {
+  showDialog(
+    context: context,
+    builder: (_) => AlertDialog(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20),
+      ),
+      title: const Text(
+        "Contacto registrado",
+        style: TextStyle(
+          color: Colors.deepPurple,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+      content: Text(
+        "$nombre fue agregado como contacto de emergencia.",
+      ),
+      actions: [
+        TextButton(
+          onPressed: () {
+            Navigator.pop(context);
+          },
+          child: const Text("OK"),
+        )
+      ],
+    ),
+  );
+}
+
+  Future<void> verificarPermisos() async {
+  bool? permisos = await telephony.requestSmsPermissions;
+
+  if (permisos != true) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text("Se necesitan permisos para enviar SMS"),
+      ),
+    );
+  }
+}
+
+  Future<void> enviarSMS(String telefono, String nombreContacto) async {
+
+  String mensaje =
+      "Has sido registrado como contacto de emergencia en AlertMe.";
+
+  await telephony.sendSms(
+    to: telefono,
+    message: mensaje,
+  );
+}
   @override
     void dispose() {
       nomController.dispose();
@@ -151,6 +202,8 @@ final ImagePicker _picker = ImagePicker();
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
     return Scaffold(
       resizeToAvoidBottomInset: true,
       backgroundColor: const Color(0xFFE6F0D5),
@@ -161,8 +214,8 @@ final ImagePicker _picker = ImagePicker();
           children: [
             // LOGO / ESCUDO (PLACEHOLDER)
             Container(
-              height: 150,
-              width: 140,
+              height: screenHeight * 0.18,
+              width: screenWidth * 0.35,
               decoration: BoxDecoration(
                 color: Colors.transparent,
                 borderRadius: BorderRadius.circular(20),
@@ -177,12 +230,12 @@ final ImagePicker _picker = ImagePicker();
 
             // CARD PRINCIPAL
             Center(
-  child: ConstrainedBox(
-    constraints: const BoxConstraints(
-      maxWidth: 500, // ancho máximo en tablets
-    ),
-    child: Container(
-      padding: const EdgeInsets.all(20),
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(
+                  maxWidth: 500, // ancho máximo en tablets
+                ),
+                child: Container(
+                  padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
                   color: const Color(0xFFFFF6E3),
                   borderRadius: BorderRadius.circular(30),
@@ -197,11 +250,11 @@ final ImagePicker _picker = ImagePicker();
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: const [
                          Padding(
-                        padding: EdgeInsets.only(left: 20),
+                        padding: EdgeInsets.only(left: 10),
                         child: Text(
                           'REGISTRO DE CONTACTOS',
                           style: TextStyle(
-                            fontSize: 22,
+                            fontSize: 20,
                             fontWeight: FontWeight.w600,
                             color: Colors.deepPurple,
                           ),
@@ -212,7 +265,7 @@ final ImagePicker _picker = ImagePicker();
                         child: Text(
                           'NO.3',
                           style: TextStyle(
-                            fontSize: 22,
+                            fontSize: 20,
                             fontWeight: FontWeight.w600,
                             color: Colors.deepPurple,
                           ),       
@@ -365,10 +418,11 @@ const SizedBox(height: 30),
 ),
 
 
+
                           const SizedBox(height: 20),
 
                           _InputBox(
-                            text: 'Telefono',
+                            text: 'Teléfono',
                             controller: telController,
                             keyboardType: TextInputType.phone,
                             validator: (value) {
@@ -433,16 +487,19 @@ const SizedBox(height: 30),
   if (_formKey.currentState!.validate()) {
 
     await DatabaseHelper.instance.insertContactoLimitado({
-  'usuario_id': widget.usuarioId,
-  'nombre': nomController.text,
-  'edad': int.parse(edadController.text),
-  'telefono': telController.text,
-  'parentesco': parentescoSeleccionado,
-  'foto': _profileImage?.path,
-});
+      'usuario_id': widget.usuarioId,
+      'nombre': nomController.text,
+      'edad': int.parse(edadController.text),
+      'telefono': telController.text,
+      'parentesco': parentescoSeleccionado,
+      'foto': _profileImage?.path,
+    });
 
+    await enviarSMS(telController.text, nomController.text);
 
-    await showLoading(context, seconds: 3);
+    mostrarConfirmacionContacto(nomController.text);
+
+    await showLoading(context, seconds: 2);
 
     Navigator.push(
       context,
