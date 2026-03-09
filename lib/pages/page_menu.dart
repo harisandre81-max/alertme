@@ -260,7 +260,14 @@ print("Usuarios pendientes: $usuarios"); // 🔹 Esto te dice qué hay en SQLite
   if (!mounted) return;
 
   ScaffoldMessenger.of(context).showSnackBar(
-    const SnackBar(content: Text("✅ Datos sincronizados")),
+    SnackBar(content: const Text('✅ Datos sincronizados'),
+    backgroundColor: Colors.green,
+    duration: const Duration(seconds: 2),
+    behavior: SnackBarBehavior.floating,
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(20),
+    ),
+    ),
   );
 }
 }
