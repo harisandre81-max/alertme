@@ -12,8 +12,8 @@ import 'package:flutter/services.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 Future<bool> hayInternet() async {
-  var result = await Connectivity().checkConnectivity();
-  return result == ConnectivityResult.mobile || result == ConnectivityResult.wifi;
+  final result = await Connectivity().checkConnectivity();
+  return result != ConnectivityResult.none;
 }
 //================funcion para odenar los contactos por prioridad================
   int obtenerPrioridad(String parentesco) {
@@ -188,37 +188,26 @@ class _MenuUIState extends State<MenuUI> {
     });
     _checarSincronizacion();
   }
-  void _checarSincronizacion() async {
-  bool conectado = await hayInternet();
-  bool hayUsuariosPendientes = await DatabaseHelper.instance.hayDatosPendientesUsuario(widget.usuarioId);
-  bool hayContactosPendientes = await DatabaseHelper.instance.hayContactosPendientes(widget.usuarioId);
+  Timer? _syncTimer;
 
-  if (conectado && (hayUsuariosPendientes || hayContactosPendientes)) {
-    _mostrarPopupSincronizacion();
-  }
-}
+void _checarSincronizacion() {
+  _syncTimer?.cancel(); // evita duplicados
 
-void _mostrarPopupSincronizacion() {
-  showDialog(
-    context: context,
-    builder: (_) => AlertDialog(
-      title: const Text("🌐 Sincronizar cuenta"),
-      content: const Text("¿Quieres sincronizar tus datos con Firebase para acceder desde cualquier dispositivo?"),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: const Text("No"),
-        ),
-        ElevatedButton(
-          onPressed: () async {
-            Navigator.pop(context);
-            await _subirDatosAFirebase();
-          },
-          child: const Text("Sí"),
-        ),
-      ],
-    ),
-  );
+  _syncTimer = Timer.periodic(const Duration(minutes: 1), (_) async {
+    bool conectado = await hayInternet();
+    if (!conectado) return;
+
+    final db = DatabaseHelper.instance;
+
+    bool pendientes =
+        await db.hayDatosPendientesUsuario(widget.usuarioId) ||
+        await db.hayContactosPendientes(widget.usuarioId);
+
+    if (pendientes) {
+      print("🔄 Sincronizando datos...");
+      await _subirDatosAFirebase();
+    }
+  });
 }
   Future<void> _subirDatosAFirebase() async {
   // 🔹 Usuarios
@@ -267,9 +256,13 @@ print("Usuarios pendientes: $usuarios"); // 🔹 Esto te dice qué hay en SQLite
     await DatabaseHelper.instance.marcarContactoSincronizado(contacto['id']);
   }
 
+  if (usuarios.isNotEmpty || contactos.isNotEmpty) {
+  if (!mounted) return;
+
   ScaffoldMessenger.of(context).showSnackBar(
-    const SnackBar(content: Text("✅ Datos sincronizados con éxito")),
+    const SnackBar(content: Text("✅ Datos sincronizados")),
   );
+}
 }
   void _activarSOSDesdeBoton() async {
     await mostrarubicacion(widget.usuarioId);
@@ -394,7 +387,11 @@ Future<bool> _mostrarConfirmacionSiguiente(BuildContext context) async {
       ) ??
       false;
 }
-
+@override
+void dispose() {
+  _syncTimer?.cancel();
+  super.dispose();
+}
 //==================UI================
   @override
   Widget build(BuildContext context) {

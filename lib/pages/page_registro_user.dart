@@ -431,13 +431,18 @@ final userId = await DatabaseHelper.instance.insertUsuario({
   'foto': _profileImage?.path ?? googlePhoto ?? 'assets/avatar.png',
 });
       // ✔️ MENSAJE DE ÉXITO
-      ScaffoldMessenger.of(context).showSnackBar(
-  const SnackBar(
+ScaffoldMessenger.of(context).showSnackBar(
+  SnackBar(
     content: Text('Usuario creado correctamente'),
     backgroundColor: Colors.green,
-    duration: Duration(seconds: 2),
+    duration: const Duration(seconds: 2),
+    behavior: SnackBarBehavior.floating,
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(20),
+    ),
   ),
 );
+
       final prefs = await SharedPreferences.getInstance();
       await prefs.setInt('userId', userId);
 

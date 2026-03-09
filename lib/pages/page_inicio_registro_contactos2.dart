@@ -6,6 +6,7 @@ import 'page_carga.dart';
 import 'package:alertme/database/database_helper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:telephony/telephony.dart';
+import 'package:url_launcher/url_launcher.dart';
 class Contact2 extends StatefulWidget {
   final int usuarioId;
 
@@ -140,57 +141,33 @@ final ImagePicker _picker = ImagePicker();
     });
   }
 }
-
-  void mostrarConfirmacionContacto(String nombre) {
-  showDialog(
-    context: context,
-    builder: (_) => AlertDialog(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
-      ),
-      title: const Text(
-        "Contacto registrado",
-        style: TextStyle(
-          color: Colors.deepPurple,
-          fontWeight: FontWeight.bold,
-        ),
-      ),
-      content: Text(
-        "$nombre fue agregado como contacto de emergencia.",
-      ),
-      actions: [
-        TextButton(
-          onPressed: () {
-            Navigator.pop(context);
-          },
-          child: const Text("OK"),
-        )
-      ],
-    ),
-  );
-}
-
-  Future<void> verificarPermisos() async {
-  bool? permisos = await telephony.requestSmsPermissions;
-
-  if (permisos != true) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text("Se necesitan permisos para enviar SMS"),
-      ),
-    );
+  Future<void> pedirPermisosSMS() async {
+  bool? permissionsGranted = await telephony.requestSmsPermissions;
   }
-}
+  
+Future<void> enviarSMS(String telefono, String nombreContacto,String nombreUsuarioRegistrador,) async {
+    String mensaje = "Has sido registrado como contacto de emergencia en AlertMe por $nombreUsuarioRegistrador.";
 
-  Future<void> enviarSMS(String telefono, String nombreContacto) async {
-
-  String mensaje =
-      "Has sido registrado como contacto de emergencia en AlertMe.";
-
-  await telephony.sendSms(
-    to: telefono,
-    message: mensaje,
-  );
+  if (Platform.isAndroid) {
+    await pedirPermisosSMS();
+    // Solo Android usa telephony
+    try {
+      await telephony.sendSms(
+        to: telefono,
+        message: mensaje,
+      );
+    } catch (e) {
+      print("Error enviando SMS en Android: $e");
+    }
+  } else if (Platform.isIOS) {
+    // iOS: abrir app de SMS con url_launcher
+    final smsUrl = Uri.parse('sms:$telefono?body=${Uri.encodeComponent(mensaje)}');
+    if (await canLaunchUrl(smsUrl)) {
+      await launchUrl(smsUrl);
+    } else {
+      print("No se pudo abrir la app de SMS en iOS");
+    }
+  }
 }
   @override
     void dispose() {
@@ -251,9 +228,9 @@ final ImagePicker _picker = ImagePicker();
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: const [
                          Padding(
-                        padding: EdgeInsets.only(left: 10),
+                        padding: EdgeInsets.only(left: 25),
                         child: Text(
-                          'REGISTRO DE CONTACTOS',
+                          'REGISTRO DE CONTACTOS    No.2',
                           style: TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.w600,
@@ -261,17 +238,6 @@ final ImagePicker _picker = ImagePicker();
                           ),
                         ),
                       ),     
-                      Padding(
-                        padding: EdgeInsets.only(right: 20),
-                        child: Text(
-                          'NO.2',
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.deepPurple,
-                          ),       
-                      ),
-                      ),
                       ],
                     ),
                   const SizedBox(height: 40),
@@ -496,18 +462,40 @@ const SizedBox(height: 30),
       'foto': _profileImage?.path,
     });
 
-    await enviarSMS(telController.text, nomController.text);
+    var usuario = await DatabaseHelper.instance.loginById(widget.usuarioId);
+    String nombreUsuario = usuario?['nombre'] ?? "Usuario";
 
-    mostrarConfirmacionContacto(nomController.text);
-
-    await showLoading(context, seconds: 2);
-
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => Contact3(usuarioId: widget.usuarioId),
-      ),
+    await enviarSMS(
+      telController.text,
+      nomController.text,
+      nombreUsuario,
     );
+    // Mostrar SnackBar
+ScaffoldMessenger.of(context).showSnackBar(
+  SnackBar(
+    content: Text('${nomController.text} fue agregado como contacto de emergencia.'),
+    backgroundColor: Colors.green,
+    duration: const Duration(seconds: 2),
+    behavior: SnackBarBehavior.floating,
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(20),
+    ),
+  ),
+);
+
+// Esperar un momento para que se vea
+await Future.delayed(const Duration(milliseconds: 500));
+
+// Luego mostrar loading
+await showLoading(context, seconds: 2);
+
+// Finalmente navegar
+Navigator.push(
+  context,
+  MaterialPageRoute(
+    builder: (context) => Contact3(usuarioId: widget.usuarioId),
+  ),
+);
   }
 },
 

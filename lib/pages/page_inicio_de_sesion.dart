@@ -5,6 +5,36 @@ import 'page_carga.dart';
 import 'package:alertme/database/database_helper.dart';
 import 'package:shared_preferences/shared_preferences.dart'; //sesion abierta
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:alertme/database/firebase_helper.dart';
+import 'package:http/http.dart' as http;
+import 'dart:io';
+import 'package:path_provider/path_provider.dart';
+
+Future<String?> guardarFotoGoogle(String url, int userId) async {
+  try {
+    final response = await http.get(Uri.parse(url));
+
+    if (response.statusCode == 200) {
+      final dir = await getApplicationDocumentsDirectory();
+
+      final filePath = "${dir.path}/google_profile_$userId.png";
+
+      final file = File(filePath);
+      await file.writeAsBytes(response.bodyBytes);
+
+      return filePath;
+    }
+  } catch (e) {
+    print("Error descargando foto: $e");
+  }
+
+  return null;
+}
+Future<bool> hayInternet() async {
+  var connectivityResult = await (Connectivity().checkConnectivity());
+  return connectivityResult != ConnectivityResult.none;
+}
 class InicioDeSesion extends StatefulWidget {
   const InicioDeSesion({super.key});
 
@@ -30,57 +60,128 @@ class InicioDeSesionState extends State<InicioDeSesion> {
   }
 
   //guarda la sesion
-  Future<void> guardarSesion(int userId) async {
+Future<void> guardarSesion(int userId) async {
   final prefs = await SharedPreferences.getInstance();
   await prefs.setBool('isLogged', true);
-  await prefs.setInt('userId', userId);
-  }
+  await prefs.setInt('userId', userId); 
+}
   Future signInWithGoogle() async {
-
   try {
+    final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
 
-    final GoogleSignInAccount? googleUser =
-        await GoogleSignIn().signIn();
+if (googleUser == null) return;
 
-    if (googleUser == null) return;
+final photoUrl = googleUser.photoUrl;
 
     final email = googleUser.email;
 
-    final user =
-        await DatabaseHelper.instance.loginWithEmail(email);
+    if (await hayInternet()) {
 
-    if (user != null) {
+      final userFirebase =
+    await FirebaseHelper.instance.getUserByEmail(email);
 
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setInt('userId', user['id']);
+if (userFirebase != null) {
 
-      await showLoading(context, seconds: 2);
+  final userLocal =
+      await DatabaseHelper.instance.loginWithEmail(email);
 
-      Navigator.pushAndRemoveUntil(
-        context,
-        MaterialPageRoute(
-          builder: (_) => MenuUI(usuarioId: user['id']),
-        ),
-        (route) => false,
-      );
+  int usuarioId;
+
+  if (userLocal == null) {
+
+    // 🔥 Guardar usuario en SQLite
+    usuarioId = await DatabaseHelper.instance.insertUsuario({
+      'nombre': userFirebase['nombre'],
+      'edad': userFirebase['edad'],
+      'direccion': userFirebase['direccion'],
+      'telefono': userFirebase['telefono'],
+      'email': userFirebase['email'],
+      'password': '',
+      'foto': userFirebase['foto'],
+      'sync': 1
+    });
+    if (photoUrl != null) {
+  String? fotoLocal = await guardarFotoGoogle(photoUrl, usuarioId);
+
+  if (fotoLocal != null) {
+    await DatabaseHelper.instance.updateUsuarioFoto(usuarioId, fotoLocal);
+  }
+}
+
+    // 🔥 Descargar contactos desde Firebase
+    final contactosFirebase =
+        await FirebaseHelper.instance.getContactosFirebase(userFirebase['firebaseId']);
+
+    for (var contacto in contactosFirebase) {
+      await DatabaseHelper.instance.insertContactoLimitado({
+        'usuario_id': usuarioId,
+        'nombre': contacto['nombre'],
+        'edad': contacto['edad'],
+        'telefono': contacto['telefono'],
+        'parentesco': contacto['parentesco'],
+        'foto': contacto['foto'],
+        'sync': 1
+      });
+    }
+
+  } else {
+    usuarioId = userLocal['id'];
+  }
+
+  await guardarSesion(usuarioId);
+
+  await showLoading(context, seconds: 2);
+
+  Navigator.pushAndRemoveUntil(
+    context,
+    MaterialPageRoute(
+      builder: (_) => MenuUI(usuarioId: usuarioId),
+    ),
+    (route) => false,
+  );
+} else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("Este correo no está registrado"),
+          ),
+        );
+      }
 
     } else {
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-              "Este correo no está registrado en AlertMe"),
-        ),
-      );
+      // 🔹 SIN INTERNET → SQLite
+      final userLocal =
+          await DatabaseHelper.instance.loginWithEmail(email);
 
+      if (userLocal != null) {
+
+        await guardarSesion(userLocal['id']);
+
+        await showLoading(context, seconds: 2);
+
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(
+            builder: (_) => MenuUI(usuarioId: userLocal['id']),
+          ),
+          (route) => false,
+        );
+
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("No hay conexión y el usuario no existe localmente"),
+          ),
+        );
+      }
     }
-
   } catch (e) {
-
     print("Error login Google: $e");
 
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text("Error al iniciar sesión: $e")),
+    );
   }
-
 }
   //limpia los campos
   @override

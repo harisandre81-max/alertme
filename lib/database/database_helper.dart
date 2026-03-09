@@ -81,29 +81,6 @@ Future _createDB(Database db, int version) async {
       FOREIGN KEY(usuario_id) REFERENCES usuarios(id) ON DELETE CASCADE
     )
   ''');
-
-  // 🔹 Insertar usuario admin de prueba
-  final hashedPassword = BCrypt.hashpw('admin123%', BCrypt.gensalt());
-
-  int adminId = await db.insert('usuarios', {
-    'nombre': 'admin',
-    'edad': 14,
-    'direccion': 'Villa Union',
-    'telefono': '555555555',
-    'email': 'admin81@gmail.com',
-    'password': hashedPassword,
-    'foto': 'assets/avatar.png',
-  });
-
-  // 🔹 Insertar contacto de prueba
-  await db.insert('contactos', {
-    'usuario_id': adminId,
-    'nombre': 'randomcontact',
-    'edad': 28,
-    'telefono': '6751107805',
-    'parentesco': 'Profesor',
-    'foto': 'assets/avatar.png',
-  });
 }
 
   // 🔹 Insertar usuario
@@ -156,9 +133,10 @@ Future<Map<String, dynamic>?> loginById(int id) async {
   return null;
 }
 
-// 🔹 Actualizar usuario por ID
+// Actualizar usuario y marcar para sincronización
 Future<int> updateUsuario(int id, Map<String, dynamic> row) async {
   final db = await database;
+  row['sync'] = 0; // marca como pendiente
   return await db.update(
     'usuarios',
     row,
@@ -166,16 +144,18 @@ Future<int> updateUsuario(int id, Map<String, dynamic> row) async {
     whereArgs: [id],
   );
 }
-// 🔹 Actualizar contacto por ID
+
+// Actualizar contacto y marcar para sincronización
 Future<int> updateContact(int id, Map<String, dynamic> values) async {
-    final db = await database;
-    return await db.update(
-      'contactos',
-      values,
-      where: 'id = ?',
-      whereArgs: [id],
-    );
-  }
+  final db = await database;
+  values['sync'] = 0; // marca como pendiente
+  return await db.update(
+    'contactos',
+    values,
+    where: 'id = ?',
+    whereArgs: [id],
+  );
+}
 Future<Map<String, dynamic>?> loginWithEmail(String email) async {
   final db = await instance.database;
 
@@ -252,6 +232,19 @@ Future<void> marcarContactoSincronizado(int contactoId) async {
     {'sync': 1},
     where: 'id = ?',
     whereArgs: [contactoId],
+  );
+}
+Future<int> updateUsuarioFoto(int id, String fotoPath) async {
+  final db = await database;
+
+  return await db.update(
+    'usuarios',
+    {
+      'foto': fotoPath,
+      'sync': 0
+    },
+    where: 'id = ?',
+    whereArgs: [id],
   );
 }
 }

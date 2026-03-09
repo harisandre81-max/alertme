@@ -141,36 +141,6 @@ final ImagePicker _picker = ImagePicker();
     });
   }
 }
-  
-  void mostrarConfirmacionContacto(String nombre) {
-  showDialog(
-    context: context,
-    builder: (_) => AlertDialog(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
-      ),
-      title: const Text(
-        "Contacto registrado",
-        style: TextStyle(
-          color: Colors.deepPurple,
-          fontWeight: FontWeight.bold,
-        ),
-      ),
-      content: Text(
-        "$nombre fue agregado como contacto de emergencia.",
-      ),
-      actions: [
-        TextButton(
-          onPressed: () {
-            Navigator.pop(context);
-          },
-          child: const Text("OK"),
-        )
-      ],
-    ),
-  );
-}
-
   Future<void> pedirPermisosSMS() async {
   bool? permissionsGranted = await telephony.requestSmsPermissions;
   }
@@ -258,9 +228,9 @@ Future<void> enviarSMS(String telefono, String nombreContacto,String nombreUsuar
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: const [
                          Padding(
-                        padding: EdgeInsets.only(left: 10),
+                        padding: EdgeInsets.only(left: 25),
                         child: Text(
-                          'REGISTRO DE CONTACTOS',
+                          'REGISTRO DE CONTACTOS    No.1',
                           style: TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.w600,
@@ -268,17 +238,6 @@ Future<void> enviarSMS(String telefono, String nombreContacto,String nombreUsuar
                           ),
                         ),
                       ),     
-                      Padding(
-                        padding: EdgeInsets.only(right: 20),
-                        child: Text(
-                          'NO.1',
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.deepPurple,
-                          ),       
-                      ),
-                      ),
                       ],
                     ),
                   const SizedBox(height: 40),
@@ -511,17 +470,32 @@ const SizedBox(height: 30),
       nomController.text,
       nombreUsuario,
     );
+    // Mostrar SnackBar
+ScaffoldMessenger.of(context).showSnackBar(
+  SnackBar(
+    content: Text('${nomController.text} fue agregado como contacto de emergencia.'),
+    backgroundColor: Colors.green,
+    duration: const Duration(seconds: 2),
+    behavior: SnackBarBehavior.floating,
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(20),
+    ),
+  ),
+);
 
-    mostrarConfirmacionContacto(nomController.text);
+// Esperar un momento para que se vea
+await Future.delayed(const Duration(milliseconds: 500));
 
-    await showLoading(context, seconds: 2);
+// Luego mostrar loading
+await showLoading(context, seconds: 2);
 
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => Contact2(usuarioId: widget.usuarioId),
-      ),
-    );
+// Finalmente navegar
+Navigator.push(
+  context,
+  MaterialPageRoute(
+    builder: (context) => Contact2(usuarioId: widget.usuarioId),
+  ),
+);
   }
 },
 
