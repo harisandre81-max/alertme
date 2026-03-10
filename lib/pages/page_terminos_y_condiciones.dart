@@ -128,7 +128,15 @@ El chatbot de Alertme:
 _buildBloque(
   "7. CONTENIDO INFORMATIVO",
   '''
-Las infografías y materiales informativos tienen fines educativos y de concientización. 
+Las infografías y materiales informativos tienen fines educativos y de concientización.
+
+La información fue recolectada de fuentes oficiales y confiables, tales como:
+
+• La página oficial del Gobierno de México
+
+• UNESCO
+
+• Sitios especializados en psicología y bienestar, como Psicología Online 
 
 Aunque se procura que la información sea actualizada y confiable, no se garantiza su total exactitud o vigencia.
   ''',

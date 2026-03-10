@@ -402,7 +402,7 @@ const SizedBox(height: 40),
                             },
                         
                             child: Text(
-                                '¿Aún no tienes una cuenta?',
+                                '¿Aún no tienes una cuenta? da clic aquí',
                                 style: TextStyle(
                                   fontSize: 18,
                                   fontWeight: FontWeight.w600,

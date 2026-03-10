@@ -554,7 +554,7 @@ const SizedBox(height: 40),
                             },
                         
                             child: Text(
-                                '¿Ya tienes una cuenta?',
+                                '¿Ya tienes una cuenta? da clic aquí',
                                 style: TextStyle(
                                   fontSize: 18,
                                   fontWeight: FontWeight.w600,
