@@ -416,11 +416,6 @@ final ImagePicker _picker = ImagePicker();
     }
 
     try {
-
-      final fotoPath = _profileImage?.path ??
-                 googlePhoto ??
-                 'assets/avatar.png';
-
       // Determina la contraseña a guardar
 String passwordToSave = passwordController.text.isNotEmpty
     ? passwordController.text

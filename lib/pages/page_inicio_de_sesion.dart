@@ -5,7 +5,6 @@ import 'page_carga.dart';
 import 'package:alertme/database/database_helper.dart';
 import 'package:shared_preferences/shared_preferences.dart'; //sesion abierta
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:alertme/database/firebase_helper.dart';
 import 'package:http/http.dart' as http;
 import 'dart:io';

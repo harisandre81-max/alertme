@@ -9,13 +9,16 @@ import 'package:location/location.dart';
 import 'package:alertme/database/database_helper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter/services.dart';
-import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 Future<bool> hayInternet() async {
-  final result = await Connectivity().checkConnectivity();
-  return result != ConnectivityResult.none;
+  try {
+    final result = await InternetAddress.lookup('google.com');
+    return result.isNotEmpty && result[0].rawAddress.isNotEmpty;
+  } catch (_) {
+    return false;
+  }
 }
 //================funcion para odenar los contactos por prioridad================
   int obtenerPrioridad(String parentesco) {
@@ -389,9 +392,6 @@ print("Usuarios pendientes: $usuarios"); // 🔹 Esto te dice qué hay en SQLite
   );
 }
 }
-  void _activarSOSDesdeBoton() async {
-    await mostrarubicacion(widget.usuarioId);
-  }
   
 //==================PANTALLA DE CARGA============
   Future<void> showLoading(BuildContext context, {int seconds = 3}) async {
@@ -1812,81 +1812,6 @@ void showDetailCard(BuildContext context, InstitucionInfo user) {
       );
     },
   );
-}
-
-
-//=============Mini card widget, para mostrar las infografias=======================
-class _HorizontalButton extends StatelessWidget {
-  final String text;
-  final String image;
-
-  const _HorizontalButton({
-    required this.text,
-    required this.image,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () {
-        showDialog(
-          context: context,
-          builder: (_) => Dialog(
-            child: InteractiveViewer(
-              child: Image.asset(image),
-            ),
-          ),
-        );
-      },
-      child: Container(
-        width: 100,
-        height: 120, // más alto para imagen + texto
-        padding: const EdgeInsets.all(8),
-        decoration: BoxDecoration(
-          color: const Color(0xFFE6F0D5),
-          borderRadius: BorderRadius.circular(12),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black12,
-              blurRadius: 4,
-              offset: Offset(0, 3),
-            ),
-          ],
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            
-            // Imagen pequeña
-            Container(
-              width: 50,
-              height: 50,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(8),
-                image: DecorationImage(
-                  image: AssetImage(image),
-                  fit: BoxFit.cover,
-                ),
-              ),
-            ),
-
-            const SizedBox(height: 8),
-
-            // Texto debajo
-            Text(
-              text,
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-                color: Colors.deepPurple,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 }
 
 //=============Mini card button, funcionalidad para ver las imagenes=======================
