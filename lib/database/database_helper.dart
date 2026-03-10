@@ -247,4 +247,17 @@ Future<int> updateUsuarioFoto(int id, String fotoPath) async {
     whereArgs: [id],
   );
 }
+Future<Map<String, dynamic>> getUsuario(int id) async {
+
+  final db = await database;
+
+  final result = await db.query(
+    'usuarios',
+    where: 'id = ?',
+    whereArgs: [id],
+  );
+
+  return result.first;
+
+}
 }

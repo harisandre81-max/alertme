@@ -9,6 +9,15 @@ import 'package:image_picker/image_picker.dart';
 import 'package:bcrypt/bcrypt.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+Future<bool> hayInternet() async {
+  try {
+    final result = await InternetAddress.lookup('google.com');
+    return result.isNotEmpty && result[0].rawAddress.isNotEmpty;
+  } catch (_) {
+    return false;
+  }
+}
 class RegisterUser extends StatefulWidget {
   const RegisterUser({super.key});
 
@@ -414,11 +423,11 @@ final ImagePicker _picker = ImagePicker();
 
       // Determina la contraseña a guardar
 String passwordToSave = passwordController.text.isNotEmpty
-    ? passwordController.text      // si el usuario escribió manualmente
-    : generateSecurePassword();    // si es registro Google
+    ? passwordController.text
+    : generateSecurePassword();
 
 String hashedPassword = BCrypt.hashpw(
-  passwordController.text,
+  passwordToSave,
   BCrypt.gensalt(),
 );
 final userId = await DatabaseHelper.instance.insertUsuario({
@@ -430,6 +439,24 @@ final userId = await DatabaseHelper.instance.insertUsuario({
   'password': hashedPassword,   // ✅ guardamos hash
   'foto': _profileImage?.path ?? googlePhoto ?? 'assets/avatar.png',
 });
+bool conectado = await hayInternet();
+
+if (conectado) {
+  try {
+
+    await FirebaseAuth.instance.createUserWithEmailAndPassword(
+      email: emailController.text,
+      password: passwordController.text,
+    );
+
+    print("Usuario creado en Firebase");
+
+  } catch (e) {
+
+    print("Firebase error: $e");
+
+  }
+}
       // ✔️ MENSAJE DE ÉXITO
 ScaffoldMessenger.of(context).showSnackBar(
   SnackBar(

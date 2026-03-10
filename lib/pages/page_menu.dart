@@ -11,6 +11,8 @@ import 'package:image_picker/image_picker.dart';
 import 'package:flutter/services.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+
 Future<bool> hayInternet() async {
   final result = await Connectivity().checkConnectivity();
   return result != ConnectivityResult.none;
@@ -186,8 +188,117 @@ class _MenuUIState extends State<MenuUI> {
         );
       }
     });
+     _verificarAutenticacion();
     _checarSincronizacion();
   }
+  Future<void> _verificarAutenticacion() async {
+
+  User? user = FirebaseAuth.instance.currentUser;
+
+  if (user == null) {
+
+    print("Usuario NO autenticado");
+
+    await Future.delayed(const Duration(seconds: 2));
+
+    if (!mounted) return;
+
+    final db = DatabaseHelper.instance;
+    final usuario = await db.getUsuario(widget.usuarioId);
+
+    final email = usuario['email'];
+
+    final datos = await _mostrarFormularioFirebase(email);
+
+    if (datos != null) {
+      await _crearCuentaFirebase(datos["password"]!);
+    }
+
+  } else {
+
+    print("Usuario autenticado: ${user.uid}");
+
+  }
+}
+Future<Map<String, String>?> _mostrarFormularioFirebase(String email) async {
+
+  final passwordController = TextEditingController();
+
+  return showDialog<Map<String, String>>(
+    context: context,
+    builder: (context) {
+
+      return AlertDialog(
+        title: const Text("Crear cuenta para sincronizar"),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+
+            Text("Email: $email"),
+
+            const SizedBox(height: 10),
+
+            TextField(
+              controller: passwordController,
+              obscureText: true,
+              decoration: const InputDecoration(
+                labelText: "Contraseña",
+                border: OutlineInputBorder(),
+              ),
+            ),
+
+          ],
+        ),
+        actions: [
+
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+            },
+            child: const Text("Cancelar"),
+          ),
+
+          ElevatedButton(
+            onPressed: () {
+
+              Navigator.pop(context, {
+                "password": passwordController.text
+              });
+
+            },
+            child: const Text("Crear cuenta"),
+          )
+
+        ],
+      );
+    },
+  );
+}
+Future<void> _crearCuentaFirebase(String password) async {
+
+  try {
+
+    final db = DatabaseHelper.instance;
+    final usuario = await db.getUsuario(widget.usuarioId);
+
+    final email = usuario['email'];
+
+    final cred = await FirebaseAuth.instance
+        .createUserWithEmailAndPassword(
+      email: email,
+      password: password,
+    );
+
+    print("Usuario creado Firebase: ${cred.user?.uid}");
+
+    await _subirDatosAFirebase();
+
+  } catch (e) {
+
+    print("Error creando cuenta: $e");
+
+  }
+}
   Timer? _syncTimer;
 
 void _checarSincronizacion() {
@@ -195,7 +306,9 @@ void _checarSincronizacion() {
 
   _syncTimer = Timer.periodic(const Duration(minutes: 1), (_) async {
     bool conectado = await hayInternet();
-    if (!conectado) return;
+User? user = FirebaseAuth.instance.currentUser;
+
+if (!conectado || user == null) return;
 
     final db = DatabaseHelper.instance;
 
@@ -211,6 +324,11 @@ void _checarSincronizacion() {
 }
   Future<void> _subirDatosAFirebase() async {
   // 🔹 Usuarios
+  User? user = FirebaseAuth.instance.currentUser;
+
+  if (user == null) return;
+  final uid = user.uid;
+  
   final usuarios = await DatabaseHelper.instance.getUsuariosPendientes(widget.usuarioId);
 print("Usuarios pendientes: $usuarios"); // 🔹 Esto te dice qué hay en SQLite
   for (var usuario in usuarios) {
@@ -218,7 +336,7 @@ print("Usuarios pendientes: $usuarios"); // 🔹 Esto te dice qué hay en SQLite
     try {
     await FirebaseFirestore.instance
         .collection('usuarios')
-        .doc(widget.usuarioId.toString())
+        .doc(uid)
         .set({
           'nombre': usuario['nombre'],
           'edad': usuario['edad'],
@@ -240,7 +358,7 @@ print("Usuarios pendientes: $usuarios"); // 🔹 Esto te dice qué hay en SQLite
     try {
     await FirebaseFirestore.instance
         .collection('usuarios')
-        .doc(widget.usuarioId.toString())
+        .doc(uid)
         .collection('contactos')
         .doc(contacto['id'].toString())
         .set({

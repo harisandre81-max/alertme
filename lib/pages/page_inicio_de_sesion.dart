@@ -10,7 +10,7 @@ import 'package:alertme/database/firebase_helper.dart';
 import 'package:http/http.dart' as http;
 import 'dart:io';
 import 'package:path_provider/path_provider.dart';
-
+import 'package:firebase_auth/firebase_auth.dart';
 Future<String?> guardarFotoGoogle(String url, int userId) async {
   try {
     final response = await http.get(Uri.parse(url));
@@ -32,8 +32,12 @@ Future<String?> guardarFotoGoogle(String url, int userId) async {
   return null;
 }
 Future<bool> hayInternet() async {
-  var connectivityResult = await (Connectivity().checkConnectivity());
-  return connectivityResult != ConnectivityResult.none;
+  try {
+    final result = await InternetAddress.lookup('google.com');
+    return result.isNotEmpty && result[0].rawAddress.isNotEmpty;
+  } catch (_) {
+    return false;
+  }
 }
 class InicioDeSesion extends StatefulWidget {
   const InicioDeSesion({super.key});
@@ -295,37 +299,114 @@ if (userFirebase != null) {
                       // SIGUIENTE
                        GestureDetector(
                             onTap: () async {
-                            if (_formKey.currentState!.validate()) {
 
-                              final user = await DatabaseHelper.instance.login(
-                                emailController.text,
-                                passwordController.text,
-                              );
-                              if (user != null) {
-                                final prefs = await SharedPreferences.getInstance();
-                                await prefs.setInt('userId', user['id']); // 👈 GUARDAR SESIÓN
-                                await showLoading(context, seconds: 2);
-                                Navigator.pushAndRemoveUntil(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => MenuUI(
-                                      usuarioId: user['id'],
-                                    ),
-                                  ),
-                                  (route) => false, // 👈 elimina todo el historial
-                                );
+  if (_formKey.currentState!.validate()) {
 
-                              } else {
+    if (await hayInternet()) {
 
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text('Correo o contraseña incorrectos'),
-                                  ),
-                                );
-                              }
-                            }
-                          },
+      try {
 
+        // 🔐 LOGIN FIREBASE AUTH
+        final credential =
+            await FirebaseAuth.instance.signInWithEmailAndPassword(
+          email: emailController.text,
+          password: passwordController.text,
+        );
+
+        final uid = credential.user!.uid;
+
+        // 🔥 OBTENER DATOS DE FIREBASE
+        final userFirebase =
+    await FirebaseHelper.instance.getUserByEmail(emailController.text);
+
+if (userFirebase == null) {
+
+  ScaffoldMessenger.of(context).showSnackBar(
+    const SnackBar(
+      content: Text("Usuario no encontrado en Firebase"),
+    ),
+  );
+
+  return;
+
+}
+        int usuarioId;
+
+        final userLocal =
+            await DatabaseHelper.instance.loginWithEmail(emailController.text);
+
+        if (userLocal == null) {
+
+          // guardar usuario en SQLite
+          usuarioId = await DatabaseHelper.instance.insertUsuario({
+            'nombre': userFirebase['nombre'],
+            'edad': userFirebase['edad'],
+            'direccion': userFirebase['direccion'],
+            'telefono': userFirebase['telefono'],
+            'email': userFirebase['email'],
+            'password': '',
+            'foto': userFirebase['foto'],
+          });
+
+        } else {
+
+          usuarioId = userLocal['id'];
+
+        }
+
+        await guardarSesion(usuarioId);
+
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (_) => MenuUI(usuarioId: usuarioId),
+          ),
+        );
+
+      } catch (e) {
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("Credenciales incorrectas"),
+          ),
+        );
+
+      }
+
+    } else {
+
+      // 🔵 LOGIN SQLITE OFFLINE
+      final userLocal = await DatabaseHelper.instance.login(
+        emailController.text,
+        passwordController.text,
+      );
+
+      if (userLocal != null) {
+
+        await guardarSesion(userLocal['id']);
+
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (_) => MenuUI(usuarioId: userLocal['id']),
+          ),
+        );
+
+      } else {
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("Usuario no encontrado offline"),
+          ),
+        );
+
+      }
+
+    }
+
+  }
+
+},
                             child: Container(
                               height: 56, 
                               width: double.infinity,
