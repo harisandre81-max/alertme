@@ -65,6 +65,7 @@ Future _createDB(Database db, int version) async {
       email TEXT NOT NULL UNIQUE,
       password TEXT NOT NULL,
       foto TEXT DEFAULT 'assets/avatar.png',
+      firebase_uid TEXT,
       sync INTEGER DEFAULT 0
     )
   ''');
@@ -259,5 +260,32 @@ Future<Map<String, dynamic>> getUsuario(int id) async {
 
   return result.first;
 
+}
+Future<int> updateFirebaseUid(int id, String uid) async {
+  final db = await database;
+
+  return await db.update(
+    'usuarios',
+    {
+      'firebase_uid': uid
+    },
+    where: 'id = ?',
+    whereArgs: [id],
+  );
+}
+Future<Map<String, dynamic>?> getUserByFirebaseUid(String uid) async {
+  final db = await database;
+
+  final result = await db.query(
+    'usuarios',
+    where: 'firebase_uid = ?',
+    whereArgs: [uid],
+  );
+
+  if (result.isNotEmpty) {
+    return result.first;
+  }
+
+  return null;
 }
 }

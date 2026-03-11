@@ -68,124 +68,6 @@ Future<void> guardarSesion(int userId) async {
   await prefs.setBool('isLogged', true);
   await prefs.setInt('userId', userId); 
 }
-  Future signInWithGoogle() async {
-  try {
-    final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
-
-if (googleUser == null) return;
-
-final photoUrl = googleUser.photoUrl;
-
-    final email = googleUser.email;
-
-    if (await hayInternet()) {
-
-      final userFirebase =
-    await FirebaseHelper.instance.getUserByEmail(email);
-
-if (userFirebase != null) {
-
-  final userLocal =
-      await DatabaseHelper.instance.loginWithEmail(email);
-
-  int usuarioId;
-
-  if (userLocal == null) {
-
-    // 🔥 Guardar usuario en SQLite
-    usuarioId = await DatabaseHelper.instance.insertUsuario({
-      'nombre': userFirebase['nombre'],
-      'edad': userFirebase['edad'],
-      'direccion': userFirebase['direccion'],
-      'telefono': userFirebase['telefono'],
-      'email': userFirebase['email'],
-      'password': '',
-      'foto': userFirebase['foto'],
-      'sync': 1
-    });
-    if (photoUrl != null) {
-  String? fotoLocal = await guardarFotoGoogle(photoUrl, usuarioId);
-
-  if (fotoLocal != null) {
-    await DatabaseHelper.instance.updateUsuarioFoto(usuarioId, fotoLocal);
-  }
-}
-
-    // 🔥 Descargar contactos desde Firebase
-    final contactosFirebase =
-        await FirebaseHelper.instance.getContactosFirebase(userFirebase['firebaseId']);
-
-    for (var contacto in contactosFirebase) {
-      await DatabaseHelper.instance.insertContactoLimitado({
-        'usuario_id': usuarioId,
-        'nombre': contacto['nombre'],
-        'edad': contacto['edad'],
-        'telefono': contacto['telefono'],
-        'parentesco': contacto['parentesco'],
-        'foto': contacto['foto'],
-        'sync': 1
-      });
-    }
-
-  } else {
-    usuarioId = userLocal['id'];
-  }
-
-  await guardarSesion(usuarioId);
-
-  await showLoading(context, seconds: 2);
-
-  Navigator.pushAndRemoveUntil(
-    context,
-    MaterialPageRoute(
-      builder: (_) => MenuUI(usuarioId: usuarioId),
-    ),
-    (route) => false,
-  );
-} else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("Este correo no está registrado"),
-          ),
-        );
-      }
-
-    } else {
-
-      // 🔹 SIN INTERNET → SQLite
-      final userLocal =
-          await DatabaseHelper.instance.loginWithEmail(email);
-
-      if (userLocal != null) {
-
-        await guardarSesion(userLocal['id']);
-
-        await showLoading(context, seconds: 2);
-
-        Navigator.pushAndRemoveUntil(
-          context,
-          MaterialPageRoute(
-            builder: (_) => MenuUI(usuarioId: userLocal['id']),
-          ),
-          (route) => false,
-        );
-
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("No hay conexión y el usuario no existe localmente"),
-          ),
-        );
-      }
-    }
-  } catch (e) {
-    print("Error login Google: $e");
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text("Error al iniciar sesión: $e")),
-    );
-  }
-}
   //limpia los campos
   @override
     void dispose() {
@@ -305,72 +187,83 @@ if (userFirebase != null) {
 
       try {
 
-        // 🔐 LOGIN FIREBASE AUTH
-        final credential =
-            await FirebaseAuth.instance.signInWithEmailAndPassword(
-          email: emailController.text,
-          password: passwordController.text,
-        );
+  final credential =
+      await FirebaseAuth.instance.signInWithEmailAndPassword(
+    email: emailController.text,
+    password: passwordController.text,
+  );
 
-        final uid = credential.user!.uid;
+  final uid = credential.user!.uid;
 
-        // 🔥 OBTENER DATOS DE FIREBASE
-        final userFirebase =
-    await FirebaseHelper.instance.getUserByEmail(emailController.text);
+  int usuarioId;
 
-if (userFirebase == null) {
+  final userLocal =
+    await DatabaseHelper.instance.getUserByFirebaseUid(uid);
+  if (userLocal == null) {
 
-  ScaffoldMessenger.of(context).showSnackBar(
-    const SnackBar(
-      content: Text("Usuario no encontrado en Firebase"),
+  // 🔹 DESCARGAR USUARIO DE FIREBASE
+  final userFirebase =
+    await FirebaseHelper.instance.getUsuarioFirebase(uid);
+
+  if (userFirebase == null) {
+    throw Exception("Usuario no encontrado en Firebase");
+  }
+
+  // 🔹 GUARDAR USUARIO EN SQLITE
+  usuarioId = await DatabaseHelper.instance.insertUsuario({
+    'nombre': userFirebase['nombre'],
+    'edad': userFirebase['edad'],
+    'direccion': userFirebase['direccion'],
+    'telefono': userFirebase['telefono'],
+    'email': userFirebase['email'],
+    'password': '', // no necesitas guardarla
+    'foto': userFirebase['foto'],
+    'firebase_uid': uid,
+  });
+
+  // 🔹 DESCARGAR CONTACTOS
+  final contactosFirebase =
+      await FirebaseHelper.instance.getContactosFirebase(uid);
+
+  for (var contacto in contactosFirebase) {
+
+    await DatabaseHelper.instance.insertContactoLimitado({
+      'usuario_id': usuarioId,
+      'nombre': contacto['nombre'],
+      'edad': contacto['edad'],
+      'telefono': contacto['telefono'],
+      'parentesco': contacto['parentesco'],
+      'foto': contacto['foto'],
+    });
+
+  }
+
+} else {
+
+    usuarioId = userLocal['id'];
+
+await DatabaseHelper.instance.updateFirebaseUid(usuarioId, uid);
+
+  }
+
+  await guardarSesion(usuarioId);
+
+  Navigator.pushReplacement(
+    context,
+    MaterialPageRoute(
+      builder: (_) => MenuUI(usuarioId: usuarioId),
     ),
   );
 
-  return;
+} catch (e) {
+
+  ScaffoldMessenger.of(context).showSnackBar(
+    const SnackBar(
+      content: Text("Credenciales incorrectas"),
+    ),
+  );
 
 }
-        int usuarioId;
-
-        final userLocal =
-            await DatabaseHelper.instance.loginWithEmail(emailController.text);
-
-        if (userLocal == null) {
-
-          // guardar usuario en SQLite
-          usuarioId = await DatabaseHelper.instance.insertUsuario({
-            'nombre': userFirebase['nombre'],
-            'edad': userFirebase['edad'],
-            'direccion': userFirebase['direccion'],
-            'telefono': userFirebase['telefono'],
-            'email': userFirebase['email'],
-            'password': '',
-            'foto': userFirebase['foto'],
-          });
-
-        } else {
-
-          usuarioId = userLocal['id'];
-
-        }
-
-        await guardarSesion(usuarioId);
-
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (_) => MenuUI(usuarioId: usuarioId),
-          ),
-        );
-
-      } catch (e) {
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("Credenciales incorrectas"),
-          ),
-        );
-
-      }
 
     } else {
 
@@ -436,38 +329,6 @@ if (userFirebase == null) {
                             ),
                           ),  
                           const SizedBox(height: 40),
-                 Row(
-  children: const [
-    Expanded(child: Divider()),
-    Padding(
-      padding: EdgeInsets.symmetric(horizontal: 10),
-      child: Text("o",style: TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w600,
-                                  color: Colors.deepPurple,
-                                ),),
-    ),
-    Expanded(child: Divider()),
-  ],
-),
-const SizedBox(height: 10),
-                 Center(
-  child: SizedBox(
-    width: 250,
-    child: ElevatedButton.icon(
-      icon: Image.asset(
-        'assets/google.png',
-        height: 24,
-      ),
-      label: const Text("Continuar con Google"),
-      onPressed: () async {
-        await signInWithGoogle();
-      },
-    ),
-  ),
-),
-const SizedBox(height: 40),
-
                            Center( 
                             child: GestureDetector(
                             onTap: () async {

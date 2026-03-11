@@ -8,8 +8,8 @@ import 'package:alertme/database/database_helper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:bcrypt/bcrypt.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:google_sign_in/google_sign_in.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+
 Future<bool> hayInternet() async {
   try {
     final result = await InternetAddress.lookup('google.com');
@@ -65,20 +65,7 @@ class _RegisterUserState extends State<RegisterUser> {
 
     Navigator.of(context).pop(); // cerrar loading
     }
-    // signInWithGoogle simplificado
-Future<void> signInWithGoogle() async {
-  final GoogleSignInAccount? user = await GoogleSignIn().signIn();
-  if (user != null) {
-    setState(() {
-      nomController.text = user.displayName ?? "";
-      emailController.text = user.email;
-      googlePhoto = user.photoUrl;
-      // ✅ Generar contraseña automáticamente
-      String generatedPassword = generateSecurePassword();
-      passwordController.text = generatedPassword;
-    });
-  }
-}
+
   @override
     void dispose() {
       nomController.dispose();
@@ -106,38 +93,6 @@ final ImagePicker _picker = ImagePicker();
       _profileImage = File(image.path);
     });
   }
-}
-  void confirmarGoogle() {
-  showDialog(
-    context: context,
-    builder: (context) {
-      return AlertDialog(
-        title: const Text("Registro con Google"),
-        content: const Text(
-          "¿Quieres registrarte con tu cuenta de Google?"
-        ),
-        actions: [
-
-          TextButton(
-            child: const Text("No"),
-            onPressed: () {
-              Navigator.pop(context);
-            },
-          ),
-
-          ElevatedButton(
-            child: const Text("Sí"),
-            onPressed: () {
-              Navigator.pop(context);
-              signInWithGoogle();
-            },
-          ),
-
-        ],
-      );
-    },
-  );
-
 }
 
   @override
@@ -212,9 +167,8 @@ final ImagePicker _picker = ImagePicker();
                             backgroundColor: const Color.fromARGB(136, 255, 182, 98),
                             backgroundImage: _profileImage != null
     ? FileImage(_profileImage!)
-    : googlePhoto != null
-        ? NetworkImage(googlePhoto!)
         : const AssetImage('assets/avatar.png') as ImageProvider,
+        
                           ),
                           GestureDetector(
                             onTap: () {
@@ -425,31 +379,35 @@ String hashedPassword = BCrypt.hashpw(
   passwordToSave,
   BCrypt.gensalt(),
 );
+//sqlite
 final userId = await DatabaseHelper.instance.insertUsuario({
   'nombre': nomController.text,
   'edad': int.parse(edadController.text),
   'direccion': dirController.text,
   'telefono': telController.text,
   'email': emailController.text,
-  'password': hashedPassword,   // ✅ guardamos hash
-  'foto': _profileImage?.path ?? googlePhoto ?? 'assets/avatar.png',
+  'password': hashedPassword,
+  'foto': _profileImage?.path ?? 'assets/avatar.png',
+  'firebase_uid': null
 });
-bool conectado = await hayInternet();
 
+//firebase
+bool conectado = await hayInternet();
 if (conectado) {
   try {
 
-    await FirebaseAuth.instance.createUserWithEmailAndPassword(
-  email: emailController.text,
-  password: passwordToSave,
-);
+    UserCredential cred = await FirebaseAuth.instance
+        .createUserWithEmailAndPassword(
+          email: emailController.text,
+          password: passwordToSave,
+        );
 
-    print("Usuario creado en Firebase");
+    String uid = cred.user!.uid;
+
+    await DatabaseHelper.instance.updateFirebaseUid(userId, uid);
 
   } catch (e) {
-
-    print("Firebase error: $e");
-
+    print(e);
   }
 }
       // ✔️ MENSAJE DE ÉXITO
@@ -530,38 +488,6 @@ ScaffoldMessenger.of(context).showSnackBar(
                             ),
                           ),
                            const SizedBox(height: 40),
-                 Row(
-  children: const [
-    Expanded(child: Divider()),
-    Padding(
-      padding: EdgeInsets.symmetric(horizontal: 10),
-      child: Text("o",style: TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w600,
-                                  color: Colors.deepPurple,
-                                ),),
-    ),
-    Expanded(child: Divider()),
-  ],
-),
-const SizedBox(height: 10),
-Center(
-  child: SizedBox(
-    width: 250,
-    child: ElevatedButton.icon(
-      icon: Image.asset(
-        'assets/google.png',
-        height: 24,
-      ),
-      label: const Text("Continuar con Google"),
-      onPressed: () async {
-        await signInWithGoogle();
-      },
-    ),
-  ),
-),
-const SizedBox(height: 40),
-
                            Center( 
                             child: GestureDetector(
                             onTap: () async {
