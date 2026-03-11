@@ -5,6 +5,7 @@ import 'page_inicio_registro_contactos.dart';
 import 'page_terminos_y_condiciones.dart';
 import 'page_carga.dart';
 import 'package:alertme/database/database_helper.dart';
+import 'package:alertme/database/firebase_helper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:bcrypt/bcrypt.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -23,24 +24,6 @@ class RegisterUser extends StatefulWidget {
 
   @override
   State<RegisterUser> createState() => _RegisterUserState();
-}
-  // Generador de contraseña segura
-String generateSecurePassword() {
-  const letters = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
-  const numbers = '0123456789';
-  const symbols = '@\$!%*?&._-';
-
-  final rand = DateTime.now().millisecondsSinceEpoch;
-
-  String letter = letters[rand % letters.length];
-  String number = numbers[(rand ~/ 2) % numbers.length];
-  String symbol = symbols[(rand ~/ 3) % symbols.length];
-
-  // Generar 5 caracteres aleatorios de letters + numbers + symbols
-  const allChars = letters + numbers + symbols;
-  final random = List.generate(5, (i) => allChars[(rand + i) % allChars.length]).join();
-
-  return '$letter$number$symbol$random'; // Total: 1+1+1+5 = 8 caracteres
 }
 class _RegisterUserState extends State<RegisterUser> {
     //==================controladores para los campos============
@@ -163,13 +146,12 @@ final ImagePicker _picker = ImagePicker();
                         alignment: Alignment.bottomRight,
                         children: [
                           CircleAvatar(
-                            radius: 60,
-                            backgroundColor: const Color.fromARGB(136, 255, 182, 98),
-                            backgroundImage: _profileImage != null
+  radius: 60,
+  backgroundColor: const Color(0xFFE6F0D5),
+  backgroundImage: _profileImage != null
     ? FileImage(_profileImage!)
-        : const AssetImage('assets/avatar.png') as ImageProvider,
-        
-                          ),
+    : const AssetImage('assets/avatar.png'),
+),
                           GestureDetector(
                             onTap: () {
                               _pickImage();
@@ -371,9 +353,7 @@ final ImagePicker _picker = ImagePicker();
 
     try {
       // Determina la contraseña a guardar
-String passwordToSave = passwordController.text.isNotEmpty
-    ? passwordController.text
-    : generateSecurePassword();
+String passwordToSave = passwordController.text;
 
 String hashedPassword = BCrypt.hashpw(
   passwordToSave,
@@ -387,28 +367,42 @@ final userId = await DatabaseHelper.instance.insertUsuario({
   'telefono': telController.text,
   'email': emailController.text,
   'password': hashedPassword,
-  'foto': _profileImage?.path ?? 'assets/avatar.png',
+  'foto': null,
   'firebase_uid': null
 });
 
-//firebase
 bool conectado = await hayInternet();
+
 if (conectado) {
   try {
 
     UserCredential cred = await FirebaseAuth.instance
         .createUserWithEmailAndPassword(
-          email: emailController.text,
-          password: passwordToSave,
-        );
+      email: emailController.text,
+      password: passwordToSave,
+    );
 
     String uid = cred.user!.uid;
 
     await DatabaseHelper.instance.updateFirebaseUid(userId, uid);
 
+    // 🔹 GUARDAR USUARIO EN FIRESTORE
+    await FirebaseHelper.instance.subirUsuario(uid, {
+      'nombre': nomController.text,
+      'edad': int.parse(edadController.text),
+      'direccion': dirController.text,
+      'telefono': telController.text,
+      'email': emailController.text,
+      'foto': null,
+    });
+
   } catch (e) {
-    print(e);
-  }
+  print("ERROR FIREBASE: $e");
+
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(content: Text("Error Firebase: $e")),
+  );
+}
 }
       // ✔️ MENSAJE DE ÉXITO
 ScaffoldMessenger.of(context).showSnackBar(

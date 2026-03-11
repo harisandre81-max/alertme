@@ -33,17 +33,26 @@ Future<void> _loadUserData() async {
   final usuario = await db.loginById(widget.usuarioId);
 
   if (usuario != null) {
+
+    File? imageFile;
+
+    if (usuario['foto'] != null && usuario['foto'].toString().isNotEmpty) {
+      final path = usuario['foto'];
+
+      if (File(path).existsSync()) {
+        imageFile = File(path);
+      }
+    }
+
     setState(() {
       userName = usuario['nombre'];
       email = usuario['email'];
       phone = usuario['telefono'];
       age = usuario['edad'].toString();
       city = usuario['direccion'];
-      password = usuario['password']; 
-      fotoPath = usuario['foto']; // si tu tabla tiene la columna 'foto'
-      if (usuario['foto'] != null && usuario['foto'].toString().isNotEmpty) {
-  _profileImage = File(usuario['foto']);
-    }
+      password = usuario['password'];
+      fotoPath = usuario['foto'];
+      _profileImage = imageFile;
     });
   }
 }
@@ -298,12 +307,12 @@ void initState() {
                 alignment: Alignment.bottomRight,
                 children: [
                   CircleAvatar(
-                    radius: 60,
-                    backgroundColor: const Color(0xFFE6F0D5),
-                    backgroundImage: _profileImage != null
-                        ? FileImage(_profileImage!)
-                        : const AssetImage('assets/avatar.png') as ImageProvider,
-                  ),
+  radius: 60,
+  backgroundColor: const Color(0xFFE6F0D5),
+  backgroundImage: _profileImage != null
+      ? FileImage(_profileImage!)
+      : const AssetImage('assets/avatar.png') as ImageProvider,
+),
                   GestureDetector(
                     onTap: () {
                       _pickImage();

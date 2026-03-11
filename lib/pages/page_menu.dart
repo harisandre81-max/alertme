@@ -46,6 +46,7 @@ class MenuUI extends StatefulWidget {
   @override
   State<MenuUI> createState() => _MenuUIState();
 }
+bool mostrarSyncBanner = false;
 
 //===================================================
 //==============EMERGENCY POPU=======================
@@ -194,32 +195,38 @@ class _MenuUIState extends State<MenuUI> {
      _verificarAutenticacion();
     _checarSincronizacion();
   }
-  Future<void> _verificarAutenticacion() async {
+Future<void> _verificarAutenticacion() async {
 
-  User? user = FirebaseAuth.instance.currentUser;
+  final db = DatabaseHelper.instance;
+  final usuario = await db.getUsuario(widget.usuarioId);
+  final firebaseUid = usuario['firebase_uid'];
 
-  if (user == null) {
+  bool conectado = await hayInternet();
 
-    print("Usuario NO autenticado");
+  if (firebaseUid == null && conectado) {
 
-    await Future.delayed(const Duration(seconds: 2));
+    setState(() {
+      mostrarSyncBanner = true;
+    });
 
-    if (!mounted) return;
+  }
 
-    final db = DatabaseHelper.instance;
-    final usuario = await db.getUsuario(widget.usuarioId);
+  else if (firebaseUid != null) {
 
-    final email = usuario['email'];
+    User? user = FirebaseAuth.instance.currentUser;
 
-    final datos = await _mostrarFormularioFirebase(email);
+    if (user == null && conectado) {
 
-    if (datos != null) {
-      await _crearCuentaFirebase(datos["password"]!);
+      try {
+        await FirebaseAuth.instance.signInWithEmailAndPassword(
+          email: usuario['email'],
+          password: usuario['password'],
+        );
+      } catch (e) {
+        print("No se pudo autenticar automáticamente");
+      }
+
     }
-
-  } else {
-
-    print("Usuario autenticado: ${user.uid}");
 
   }
 }
@@ -292,7 +299,12 @@ Future<void> _crearCuentaFirebase(String password) async {
       password: password,
     );
 
-    print("Usuario creado Firebase: ${cred.user?.uid}");
+    final uid = cred.user!.uid;
+
+    // 🔹 Guardar UID en SQLite
+    await db.updateFirebaseUid(widget.usuarioId, uid);
+
+    print("Usuario creado Firebase: $uid");
 
     await _subirDatosAFirebase();
 
@@ -301,6 +313,7 @@ Future<void> _crearCuentaFirebase(String password) async {
     print("Error creando cuenta: $e");
 
   }
+
 }
   Timer? _syncTimer;
 
@@ -308,13 +321,25 @@ void _checarSincronizacion() {
   _syncTimer?.cancel(); // evita duplicados
 
   _syncTimer = Timer.periodic(const Duration(minutes: 1), (_) async {
-    bool conectado = await hayInternet();
-User? user = FirebaseAuth.instance.currentUser;
 
-if (!conectado || user == null) return;
+    bool conectado = await hayInternet();
+    if (!conectado) return;
 
     final db = DatabaseHelper.instance;
 
+    final usuario = await db.getUsuario(widget.usuarioId);
+
+    // 🔹 Mostrar banner si tiene internet pero no Firebase
+    if (usuario['firebase_uid'] == null) {
+      if (mounted) {
+        setState(() {
+          mostrarSyncBanner = true;
+        });
+      }
+      return;
+    }
+
+    // 🔹 Revisar datos pendientes
     bool pendientes =
         await db.hayDatosPendientesUsuario(widget.usuarioId) ||
         await db.hayContactosPendientes(widget.usuarioId);
@@ -323,14 +348,17 @@ if (!conectado || user == null) return;
       print("🔄 Sincronizando datos...");
       await _subirDatosAFirebase();
     }
+
   });
 }
   Future<void> _subirDatosAFirebase() async {
-  // 🔹 Usuarios
-  User? user = FirebaseAuth.instance.currentUser;
+    final db = DatabaseHelper.instance;
 
-  if (user == null) return;
-  final uid = user.uid;
+final usuario = await db.getUsuario(widget.usuarioId);
+
+  if (usuario['firebase_uid'] == null) return;
+
+  final uid = usuario['firebase_uid'];
   
   final usuarios = await DatabaseHelper.instance.getUsuariosPendientes(widget.usuarioId);
 print("Usuarios pendientes: $usuarios"); // 🔹 Esto te dice qué hay en SQLite
@@ -580,6 +608,57 @@ void dispose() {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    if (mostrarSyncBanner)
+  GestureDetector(
+    onTap: () async {
+
+      final db = DatabaseHelper.instance;
+      final usuario = await db.getUsuario(widget.usuarioId);
+
+      final datos = await _mostrarFormularioFirebase(usuario['email']);
+
+      if (datos != null) {
+
+        await _crearCuentaFirebase(datos["password"]!);
+
+        setState(() {
+          mostrarSyncBanner = false;
+        });
+
+      }
+
+    },
+    child: Container(
+      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+      padding: const EdgeInsets.all(15),
+      decoration: BoxDecoration(
+        color: Colors.orange.shade100,
+        borderRadius: BorderRadius.circular(15),
+        border: Border.all(color: Colors.orange),
+      ),
+      child: Row(
+        children: const [
+
+          Icon(Icons.cloud_upload, color: Colors.orange),
+
+          SizedBox(width: 10),
+
+          Expanded(
+            child: Text(
+              "¿Quieres sincronizar tus datos en la nube?",
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                color: Colors.orange,
+              ),
+            ),
+          ),
+
+          Icon(Icons.arrow_forward_ios, size: 16)
+
+        ],
+      ),
+    ),
+  ),
 //==================DATOS DE LOS CONTACTOS DE EMERGENCIA=========
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 20),
