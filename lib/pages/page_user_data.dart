@@ -261,7 +261,7 @@ void initState() {
       appBar: AppBar(
         toolbarHeight: 110,
         elevation: 0,
-        leadingWidth: 100,
+        leadingWidth: 90,
         backgroundColor: const Color(0xFFE6F0D5),
         titleSpacing: 90, // 👈 espacio entre leading y title
         leading: Padding(

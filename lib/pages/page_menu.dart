@@ -606,7 +606,7 @@ void dispose() {
       appBar: AppBar(
         toolbarHeight: 110,
         elevation: 0,
-        leadingWidth: 100,
+        leadingWidth: 90,
         backgroundColor: const Color(0xFFE6F0D5),
         leading: Padding(
           padding: const EdgeInsets.all(5.0),
