@@ -611,7 +611,7 @@ void dispose() {
         leading: Padding(
           padding: const EdgeInsets.all(5.0),
           child: Image.asset(
-      'assets/logo_inter/logo-interfaces.png',
+      'assets/logo_inter/logo.png',
       width: 70,
       height: 70,
       fit: BoxFit.contain,
