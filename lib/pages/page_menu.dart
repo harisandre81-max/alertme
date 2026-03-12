@@ -277,14 +277,6 @@ Future<Map<String, String>?> _mostrarFormularioFirebase(String email) async {
     ],
   ),
         actions: [
-
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-            },
-            child: const Text("Cancelar"),
-          ),
-
           TextButton(
       onPressed: () {
         Navigator.pop(context);
@@ -294,7 +286,6 @@ Future<Map<String, String>?> _mostrarFormularioFirebase(String email) async {
         style: TextStyle(color: Colors.deepPurple),
       ),
     ),
-
     ElevatedButton(
       style: ElevatedButton.styleFrom(
         backgroundColor: Colors.deepPurple,
