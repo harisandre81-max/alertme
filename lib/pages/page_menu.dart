@@ -238,26 +238,44 @@ Future<Map<String, String>?> _mostrarFormularioFirebase(String email) async {
     builder: (context) {
 
       return AlertDialog(
-        title: const Text("Crear cuenta para sincronizar"),
+        backgroundColor: const Color.fromARGB(255, 255, 252, 247), // fondo
+        title: const Text("Crear cuenta para sincronizar",
+    style: TextStyle(
+      color: Colors.deepPurple,
+      fontWeight: FontWeight.bold,
+    ),),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
 
-            Text("Email: $email"),
-
-            const SizedBox(height: 10),
-
-            TextField(
-              controller: passwordController,
-              obscureText: true,
-              decoration: const InputDecoration(
-                labelText: "Contraseña",
-                border: OutlineInputBorder(),
-              ),
-            ),
-
-          ],
+            Text(
+        "Email: $email",
+        style: const TextStyle(
+          color: Colors.deepPurple,
+          fontSize: 16,
         ),
+      ),
+
+      const SizedBox(height: 10),
+
+      TextField(
+        controller: passwordController,
+        obscureText: true,
+        decoration: const InputDecoration(
+          labelText: "Contraseña",
+          labelStyle: TextStyle(color: Colors.deepPurple),
+          border: OutlineInputBorder(),
+          enabledBorder: OutlineInputBorder(
+            borderSide: BorderSide(color: Colors.deepPurple),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderSide: BorderSide(color: Colors.deepPurple, width: 2),
+          ),
+        ),
+      ),
+
+    ],
+  ),
         actions: [
 
           TextButton(
@@ -267,16 +285,29 @@ Future<Map<String, String>?> _mostrarFormularioFirebase(String email) async {
             child: const Text("Cancelar"),
           ),
 
-          ElevatedButton(
-            onPressed: () {
+          TextButton(
+      onPressed: () {
+        Navigator.pop(context);
+      },
+      child: const Text(
+        "Cancelar",
+        style: TextStyle(color: Colors.deepPurple),
+      ),
+    ),
 
-              Navigator.pop(context, {
-                "password": passwordController.text
-              });
+    ElevatedButton(
+      style: ElevatedButton.styleFrom(
+        backgroundColor: Colors.deepPurple,
+        foregroundColor: Colors.white,
+      ),
+      onPressed: () {
+        Navigator.pop(context, {
+          "password": passwordController.text
+        });
+      },
+      child: const Text("Crear cuenta"),
+    )
 
-            },
-            child: const Text("Crear cuenta"),
-          )
 
         ],
       );
@@ -517,20 +548,41 @@ Future<bool> _mostrarConfirmacionSiguiente(BuildContext context) async {
         context: context,
         barrierDismissible: false,
         builder: (_) => AlertDialog(
-          backgroundColor: const Color.fromARGB(255, 255, 229, 233),
+          backgroundColor: const Color.fromARGB(255, 255, 252, 247),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+
           title: const Text(
             "Mensaje enviado",
-            style: TextStyle(color: Colors.deepPurple),
+            style: TextStyle(
+              color: Colors.deepPurple,
+              fontWeight: FontWeight.bold,
+            ),
           ),
+
           content: const Text(
             "¿Deseas enviar la alerta al siguiente contacto?",
+            style: TextStyle(
+              color: Colors.deepPurple,
+              fontSize: 16,
+            ),
           ),
+
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context, false),
-              child: const Text("No"),
+              child: const Text(
+                "No",
+                style: TextStyle(color: Colors.deepPurple),
+              ),
             ),
+
             ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.deepPurple,
+                foregroundColor: Colors.white,
+              ),
               onPressed: () => Navigator.pop(context, true),
               child: const Text("Sí"),
             ),
@@ -607,33 +659,53 @@ void dispose() {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    if (mostrarSyncBanner)
-  GestureDetector(
-    onTap: () async {
-      final db = DatabaseHelper.instance;
+                    AnimatedSize(
+  duration: const Duration(milliseconds: 300),
+  child: mostrarSyncBanner
+      ? Column(
+          children: [
+            GestureDetector(
+              onTap: () async { 
+                final db = DatabaseHelper.instance;
       final usuario = await db.getUsuario(widget.usuarioId);
       final datos = await _mostrarFormularioFirebase(usuario['email']);
       if (datos != null) {
   await _crearCuentaFirebase(datos["password"]!);
 }
-    },
-    child: Container(
-      padding: const EdgeInsets.all(10),
-      margin: const EdgeInsets.symmetric(vertical: 10),
-      decoration: BoxDecoration(
-        color: Colors.yellow[100],
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: const Text(
-        "📡 ¿Quieres sincronizar tus datos?",
-        style: TextStyle(
-          color: Colors.black87,
-          fontWeight: FontWeight.bold,
-        ),
-        textAlign: TextAlign.center,
-      ),
-    ),
+               },
+              child: Container(
+  padding: const EdgeInsets.all(12),
+  margin: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
+  decoration: BoxDecoration(
+    color: const Color(0xFFFFB562),
+    borderRadius: BorderRadius.circular(12),
   ),
+  child: Row(
+    children: const [
+      Expanded(
+        child: Text(
+          "Sincroniza tus datos para acceder desde cualquier dispositivo",
+          style: TextStyle(
+            fontSize: 18,
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ),
+      SizedBox(width: 10),
+      Icon(
+        Icons.sync,
+        color: Colors.white,
+      ),
+    ],
+  ),
+),
+            ),
+            const SizedBox(height: 20),
+          ],
+        )
+      : const SizedBox(),
+),
 //==================DATOS DE LOS CONTACTOS DE EMERGENCIA=========
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 20),
