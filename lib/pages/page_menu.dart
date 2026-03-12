@@ -46,8 +46,6 @@ class MenuUI extends StatefulWidget {
   @override
   State<MenuUI> createState() => _MenuUIState();
 }
-bool mostrarSyncBanner = false;
-
 //===================================================
 //==============EMERGENCY POPU=======================
 //===================================================
@@ -176,6 +174,7 @@ class SectionHeader extends StatelessWidget {
 
 //==================Menu state=================
 class _MenuUIState extends State<MenuUI> {
+  bool mostrarSyncBanner = false;
   static const platform = MethodChannel('sos_channel');
 
   @override
@@ -285,53 +284,54 @@ Future<Map<String, String>?> _mostrarFormularioFirebase(String email) async {
   );
 }
 Future<void> _crearCuentaFirebase(String password) async {
-
   try {
-
     final db = DatabaseHelper.instance;
     final usuario = await db.getUsuario(widget.usuarioId);
-
     final email = usuario['email'];
-
+    print("Intentando crear cuenta con email: $email");
     final cred = await FirebaseAuth.instance
-        .createUserWithEmailAndPassword(
-      email: email,
-      password: password,
-    );
-
+        .createUserWithEmailAndPassword(email: email, password: password);
     final uid = cred.user!.uid;
 
-    // 🔹 Guardar UID en SQLite
     await db.updateFirebaseUid(widget.usuarioId, uid);
-
     print("Usuario creado Firebase: $uid");
 
     await _subirDatosAFirebase();
 
+    if (mounted) {
+      setState(() {
+        mostrarSyncBanner = false; // ✅ Ocultar banner después de crear cuenta
+      });
+    }
+
   } catch (e) {
+  print("Error creando cuenta: $e");
 
-    print("Error creando cuenta: $e");
-
+  if (mounted) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text("Error Firebase: $e"),
+        backgroundColor: Colors.red,
+      ),
+    );
   }
-
+}
 }
   Timer? _syncTimer;
 
 void _checarSincronizacion() {
-  _syncTimer?.cancel(); // evita duplicados
+  _syncTimer?.cancel();
 
   _syncTimer = Timer.periodic(const Duration(minutes: 1), (_) async {
-
     bool conectado = await hayInternet();
     if (!conectado) return;
 
     final db = DatabaseHelper.instance;
-
     final usuario = await db.getUsuario(widget.usuarioId);
 
     // 🔹 Mostrar banner si tiene internet pero no Firebase
     if (usuario['firebase_uid'] == null) {
-      if (mounted) {
+      if (mounted && !mostrarSyncBanner) {
         setState(() {
           mostrarSyncBanner = true;
         });
@@ -339,7 +339,7 @@ void _checarSincronizacion() {
       return;
     }
 
-    // 🔹 Revisar datos pendientes
+    // 🔹 Revisar datos pendientes y sincronizar
     bool pendientes =
         await db.hayDatosPendientesUsuario(widget.usuarioId) ||
         await db.hayContactosPendientes(widget.usuarioId);
@@ -348,7 +348,6 @@ void _checarSincronizacion() {
       print("🔄 Sincronizando datos...");
       await _subirDatosAFirebase();
     }
-
   });
 }
   Future<void> _subirDatosAFirebase() async {
@@ -611,51 +610,27 @@ void dispose() {
                     if (mostrarSyncBanner)
   GestureDetector(
     onTap: () async {
-
       final db = DatabaseHelper.instance;
       final usuario = await db.getUsuario(widget.usuarioId);
-
       final datos = await _mostrarFormularioFirebase(usuario['email']);
-
       if (datos != null) {
-
-        await _crearCuentaFirebase(datos["password"]!);
-
-        setState(() {
-          mostrarSyncBanner = false;
-        });
-
-      }
-
+  await _crearCuentaFirebase(datos["password"]!);
+}
     },
     child: Container(
-      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-      padding: const EdgeInsets.all(15),
+      padding: const EdgeInsets.all(10),
+      margin: const EdgeInsets.symmetric(vertical: 10),
       decoration: BoxDecoration(
-        color: Colors.orange.shade100,
-        borderRadius: BorderRadius.circular(15),
-        border: Border.all(color: Colors.orange),
+        color: Colors.yellow[100],
+        borderRadius: BorderRadius.circular(10),
       ),
-      child: Row(
-        children: const [
-
-          Icon(Icons.cloud_upload, color: Colors.orange),
-
-          SizedBox(width: 10),
-
-          Expanded(
-            child: Text(
-              "¿Quieres sincronizar tus datos en la nube?",
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                color: Colors.orange,
-              ),
-            ),
-          ),
-
-          Icon(Icons.arrow_forward_ios, size: 16)
-
-        ],
+      child: const Text(
+        "📡 ¿Quieres sincronizar tus datos?",
+        style: TextStyle(
+          color: Colors.black87,
+          fontWeight: FontWeight.bold,
+        ),
+        textAlign: TextAlign.center,
       ),
     ),
   ),

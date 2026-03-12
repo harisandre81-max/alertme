@@ -145,7 +145,7 @@ final ImagePicker _picker = ImagePicker();
   }
   
 Future<void> enviarSMS(String telefono, String nombreContacto,String nombreUsuarioRegistrador,) async {
-    String mensaje = "Has sido registrado como contacto de emergencia en AlertMe por $nombreUsuarioRegistrador.";
+    String mensaje = "Has sido registrado como contacto de emergencia en la aplicación AlertMe por $nombreUsuarioRegistrador.";
 
   if (Platform.isAndroid) {
     await pedirPermisosSMS();
